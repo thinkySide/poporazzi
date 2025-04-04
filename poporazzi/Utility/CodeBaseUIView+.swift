@@ -15,11 +15,14 @@ protocol CodeBaseUIViewProtocol: UIView {
     
     associatedtype Action
     
+    /// FlexLayout을 위한 Container View
+    var containerView: UIView { get }
+    
     /// 화면 세팅
     func setup()
     
     /// 레이아웃 구성
-    func configurationLayout()
+    func configLayout()
     
     /// 화면에서 실행 가능한 액션
     func action(_ action: Action)
@@ -30,8 +33,10 @@ protocol CodeBaseUIViewProtocol: UIView {
 extension CodeBaseUIViewProtocol {
     
     func setup() {
-        self.backgroundColor = .white
-        configurationLayout()
+        backgroundColor = .white
+        containerView.backgroundColor = .white
+        addSubview(containerView)
+        configLayout()
     }
 }
 

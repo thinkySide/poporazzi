@@ -11,9 +11,24 @@ import FlexLayout
 
 final class MomentTitleInputView: CodeBaseUIView {
     
+    var containerView = UIView()
+    
+    /// 상단 라벨
+    private let headerLabel: UILabel = {
+        let label = UILabel()
+        label.text = "어떤 순간을 기록하고 싶으신가요?"
+        label.font = .systemFont(ofSize: 20, weight: .bold)
+        return label
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
+    }
+    
+    override func layoutSubviews() {
+        containerView.pin.all(pin.safeArea)
+        containerView.flex.layout()
     }
 }
 
@@ -36,7 +51,9 @@ extension MomentTitleInputView {
 
 extension MomentTitleInputView {
     
-    func configurationLayout() {
-        //
+    func configLayout() {
+        containerView.flex.direction(.column).paddingHorizontal(20).define { flex in
+            flex.addItem(headerLabel).marginTop(40)
+        }
     }
 }
