@@ -21,8 +21,13 @@ final class MomentTitleInputView: CodeBaseUIView {
         return label
     }()
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    /// 제목 텍스트필드
+    private let titleTextField = LineTextField(
+        placeholder: "제주도 우정 여행, 성수동 데이트"
+    )
+    
+    init() {
+        super.init(frame: .zero)
         setup()
     }
     
@@ -54,6 +59,7 @@ extension MomentTitleInputView {
     func configLayout() {
         containerView.flex.direction(.column).paddingHorizontal(20).define { flex in
             flex.addItem(headerLabel).marginTop(40)
+            flex.addItem(titleTextField).marginTop(40)
         }
     }
 }

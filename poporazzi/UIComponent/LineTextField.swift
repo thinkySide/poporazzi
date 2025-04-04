@@ -1,0 +1,65 @@
+//
+//  LineTextField.swift
+//  poporazzi
+//
+//  Created by 김민준 on 4/4/25.
+//
+
+import UIKit
+import PinLayout
+import FlexLayout
+
+final class LineTextField: CodeBaseUIView {
+    
+    var containerView = UIView()
+    
+    /// 텍스트필드
+    private let textField: UITextField = {
+        let textField = UITextField()
+        textField.font = .systemFont(ofSize: 24, weight: .semibold)
+        return textField
+    }()
+    
+    /// 하단 라인
+    private let bottomLine: UIView = {
+        let line = UIView()
+        line.backgroundColor = .gray
+        return line
+    }()
+    
+    init(placeholder: String) {
+        super.init(frame: .zero)
+        textField.placeholder = placeholder
+        setup()
+    }
+    
+    override func layoutSubviews() {
+        containerView.pin.all(pin.safeArea)
+        containerView.flex.layout()
+    }
+}
+
+// MARK: - Action
+
+extension LineTextField {
+    
+    enum Action {
+        
+    }
+    
+    func action(_ action: Action) {
+        //
+    }
+}
+
+// MARK: - Layout
+
+extension LineTextField {
+    
+    func configLayout() {
+        containerView.flex.direction(.column).define { flex in
+            flex.addItem(textField)
+            flex.addItem(bottomLine).marginTop(14).height(2)
+        }
+    }
+}
