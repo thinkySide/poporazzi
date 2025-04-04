@@ -22,8 +22,13 @@ final class MomentTitleInputView: CodeBaseUIView {
     }()
     
     /// 제목 텍스트필드
-    private let titleTextField = LineTextField(
+    private lazy var titleTextField = LineTextField(
         placeholder: "제주도 우정 여행, 성수동 데이트"
+    )
+    
+    /// 액션 버튼
+    private let actionButton = ActionButton(
+        title: "기록 시작하기"
     )
     
     init() {
@@ -32,8 +37,10 @@ final class MomentTitleInputView: CodeBaseUIView {
     }
     
     override func layoutSubviews() {
+        super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
+        titleTextField.action(.setupInputAccessoryView(actionButton))
     }
 }
 
@@ -57,9 +64,15 @@ extension MomentTitleInputView {
 extension MomentTitleInputView {
     
     func configLayout() {
-        containerView.flex.direction(.column).paddingHorizontal(20).define { flex in
-            flex.addItem(headerLabel).marginTop(40)
-            flex.addItem(titleTextField).marginTop(40)
+        containerView.flex
+            .direction(.column)
+            .define { flex in
+            flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
+                flex.addItem(headerLabel).marginTop(40)
+                flex.addItem(titleTextField).marginTop(40)
+            }
         }
+        
+        actionButton.pin.height(56)
     }
 }

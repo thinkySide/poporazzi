@@ -34,6 +34,7 @@ final class LineTextField: CodeBaseUIView {
     }
     
     override func layoutSubviews() {
+        super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
     }
@@ -44,11 +45,15 @@ final class LineTextField: CodeBaseUIView {
 extension LineTextField {
     
     enum Action {
-        
+        case setupInputAccessoryView(UIView)
     }
     
     func action(_ action: Action) {
-        //
+        switch action {
+        case let .setupInputAccessoryView(view):
+            textField.inputAccessoryView = view
+            textField.becomeFirstResponder()
+        }
     }
 }
 
