@@ -17,6 +17,7 @@ final class MomentTitleInputView: CodeBaseUIView {
     private let headerLabel: UILabel = {
         let label = UILabel()
         label.text = "어떤 순간을 기록하고 싶으신가요?"
+        label.textColor = .label
         label.font = .setPretendard(.bold, 20)
         return label
     }()

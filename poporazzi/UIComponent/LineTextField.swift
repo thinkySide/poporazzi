@@ -17,13 +17,14 @@ final class LineTextField: CodeBaseUIView {
     private let textField: UITextField = {
         let textField = UITextField()
         textField.font = .setPretendard(.semiBold, 24)
+        textField.textColor = .label
         return textField
     }()
     
     /// 하단 라인
     private let bottomLine: UIView = {
         let line = UIView()
-        line.backgroundColor = .gray
+        line.backgroundColor = .line
         return line
     }()
     
