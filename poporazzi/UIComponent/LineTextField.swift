@@ -14,10 +14,12 @@ final class LineTextField: CodeBaseUIView {
     var containerView = UIView()
     
     /// 텍스트필드
-    private let textField: UITextField = {
+    let textField: UITextField = {
         let textField = UITextField()
         textField.font = .setPretendard(.semiBold, 24)
         textField.textColor = .label
+        textField.autocorrectionType = .no
+        textField.autocapitalizationType = .none
         return textField
     }()
     

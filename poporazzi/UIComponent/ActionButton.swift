@@ -14,7 +14,7 @@ final class ActionButton: CodeBaseUIView {
     var containerView = UIView()
     
     /// 버튼
-    private let button: UIButton = {
+    let button: UIButton = {
         let button = UIButton()
         button.backgroundColor = .brandPrimary
         button.titleLabel?.font = .setPretendard(.bold, 16)
@@ -40,17 +40,14 @@ final class ActionButton: CodeBaseUIView {
 extension ActionButton {
     
     enum Action {
-        case active
-        case disabled
+        case toggleEnabled(Bool)
     }
     
     func action(_ action: Action) {
         switch action {
-        case .active:
-            button.alpha = 1
-            
-        case .disabled:
-            button.alpha = 0.3
+        case let .toggleEnabled(isEnabled):
+            button.isEnabled = isEnabled
+            button.alpha = isEnabled ? 1 : 0.3
         }
     }
 }
