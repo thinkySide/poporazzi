@@ -17,7 +17,7 @@ final class MomentTitleInputView: CodeBaseUIView {
     private let headerLabel: UILabel = {
         let label = UILabel()
         label.text = "어떤 순간을 기록하고 싶으신가요?"
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.setPretendard(.bold, 20)
         return label
     }()
     
