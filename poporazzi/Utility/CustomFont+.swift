@@ -7,20 +7,18 @@
 
 import UIKit
 
-extension UILabel {
+extension UIFont {
     
     /// 프리텐다드 폰트를 설정합니다.
-    func setPretendard(_ weight: Pretendard, _ size: CGFloat) {
-        self.font = UIFont(
+    static func setPretendard(_ weight: Pretendard, _ size: CGFloat) -> UIFont? {
+        UIFont(
             name: weight.fileName(),
             size: size
         )
     }
 }
 
-// MARK: - CustomFont
-
-extension UILabel {
+extension UIFont {
     
     /// 커스텀 폰트 프로토콜
     protocol CustomFont {

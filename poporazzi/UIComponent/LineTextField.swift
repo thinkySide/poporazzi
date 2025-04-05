@@ -16,7 +16,7 @@ final class LineTextField: CodeBaseUIView {
     /// 텍스트필드
     private let textField: UITextField = {
         let textField = UITextField()
-        textField.font = .systemFont(ofSize: 24, weight: .semibold)
+        textField.font = .setPretendard(.semiBold, 24)
         return textField
     }()
     
