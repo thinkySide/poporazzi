@@ -23,12 +23,12 @@ final class MomentTitleInputView: CodeBaseUIView {
     }()
     
     /// 제목 텍스트필드
-    private lazy var titleTextField = LineTextField(
+    let titleTextField = LineTextField(
         placeholder: "제주도 우정 여행, 성수동 데이트"
     )
     
     /// 액션 버튼
-    private let actionButton = ActionButton(
+    let actionButton = ActionButton(
         title: "기록 시작하기"
     )
     
@@ -55,7 +55,7 @@ extension MomentTitleInputView {
     
     func action(_ action: Action) {
         switch action {
-            
+        
         }
     }
 }
