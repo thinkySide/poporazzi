@@ -17,7 +17,8 @@ final class MomentTitleInputView: CodeBaseUIView {
     private let headerLabel: UILabel = {
         let label = UILabel()
         label.text = "어떤 순간을 기록하고 싶으신가요?"
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.textColor = .label
+        label.font = .setPretendard(.bold, 20)
         return label
     }()
     
@@ -67,11 +68,11 @@ extension MomentTitleInputView {
         containerView.flex
             .direction(.column)
             .define { flex in
-            flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                flex.addItem(headerLabel).marginTop(40)
-                flex.addItem(titleTextField).marginTop(40)
+                flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
+                    flex.addItem(headerLabel).marginTop(40)
+                    flex.addItem(titleTextField).marginTop(40)
+                }
             }
-        }
         
         actionButton.pin.height(56)
     }
