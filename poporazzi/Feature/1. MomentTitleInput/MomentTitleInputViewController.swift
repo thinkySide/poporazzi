@@ -9,11 +9,12 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class MomentTitleInputViewController: UIViewController {
+final class MomentTitleInputViewController: ViewController {
     
     private let screen = MomentTitleInputView()
     private let viewModel = MomentTitleInputViewModel()
-    private var disposeBag = DisposeBag()
+    
+    var disposeBag = DisposeBag()
     
     override func loadView() {
         view = screen
@@ -47,8 +48,8 @@ extension MomentTitleInputViewController {
             
         
         output.navigateToRecordView
-            .bind { _ in
-                print("액션 버튼 탭")
+            .bind { title in
+                print("앨범 제목: \(title)")
             }
             .disposed(by: disposeBag)
     }

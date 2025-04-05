@@ -10,7 +10,6 @@ import RxSwift
 import RxCocoa
 
 final class MomentTitleInputViewModel: ViewModel {
-    
     var disposeBag = DisposeBag()
 }
 
@@ -25,8 +24,8 @@ extension MomentTitleInputViewModel {
     
     struct Output {
         let titleTextFieldText = PublishRelay<String>()
-        let actionButtonIsEnabled = BehaviorRelay<Bool>(value: false)
-        let navigateToRecordView = PublishRelay<Void>()
+        let actionButtonIsEnabled = PublishRelay<Bool>()
+        let navigateToRecordView = PublishRelay<String>()
     }
     
     func transform(_ input: Input) -> Output {
@@ -42,6 +41,7 @@ extension MomentTitleInputViewModel {
             .disposed(by: disposeBag)
         
         input.actionButtonTapped
+            .withLatestFrom(output.titleTextFieldText)
             .bind(to: output.navigateToRecordView)
             .disposed(by: disposeBag)
         

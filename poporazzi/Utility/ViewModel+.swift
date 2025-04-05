@@ -8,7 +8,7 @@
 import RxSwift
 
 /// ViewModel을 추상화하는 인터페이스
-protocol ViewModel {
+protocol ViewModel: AnyObject {
     
     /// 이벤트 입력
     associatedtype Input
