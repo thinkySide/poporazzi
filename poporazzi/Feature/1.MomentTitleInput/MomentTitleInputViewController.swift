@@ -13,8 +13,7 @@ final class MomentTitleInputViewController: ViewController {
     
     private let screen = MomentTitleInputView()
     private let viewModel = MomentTitleInputViewModel()
-    
-    var disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     
     override func loadView() {
         view = screen
@@ -45,12 +44,14 @@ extension MomentTitleInputViewController {
                 owner.screen.actionButton.action(.toggleEnabled(isEnabled))
             })
             .disposed(by: disposeBag)
-            
         
         output.navigateToRecordView
-            .bind { title in
-                print("앨범 제목: \(title)")
-            }
+            .bind(with: self, onNext: { owner, title in
+                let momentRecordVC = MomentRecordViewController()
+                momentRecordVC.modalPresentationStyle = .fullScreen
+                momentRecordVC.modalTransitionStyle = .crossDissolve
+                owner.present(momentRecordVC, animated: true)
+            })
             .disposed(by: disposeBag)
     }
 }

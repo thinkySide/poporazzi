@@ -16,9 +16,6 @@ protocol ViewModel: AnyObject {
     /// 이벤트 출력
     associatedtype Output
     
-    /// 구독권을 저장하는 변수
-    var disposeBag: DisposeBag { get set }
-    
     /// 입력을 출력으로 전환하는 함수
     func transform(_ input: Input) -> Output
 }
