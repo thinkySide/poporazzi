@@ -11,6 +11,7 @@ import RxCocoa
 
 final class MomentRecordViewController: ViewController {
     
+    let uuid = UUID()
     private let viewModel = MomentRecordViewModel()
     private let disposeBag = DisposeBag()
     

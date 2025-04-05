@@ -43,6 +43,11 @@ extension MomentTitleInputViewModel {
         
         input.actionButtonTapped
             .withLatestFrom(output.titleTextFieldText)
+            .do {
+                UserDefaultsService.isTracking = true
+                UserDefaultsService.albumTitle = $0
+                UserDefaultsService.trackingStartDate = .now
+            }
             .bind(to: output.navigateToRecordView)
             .disposed(by: disposeBag)
         
