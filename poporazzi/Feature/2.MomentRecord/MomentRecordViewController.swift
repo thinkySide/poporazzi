@@ -11,12 +11,12 @@ import RxCocoa
 
 final class MomentRecordViewController: ViewController {
     
-    let uuid = UUID()
+    private let screen = MomentRecordView()
     private let viewModel = MomentRecordViewModel()
     private let disposeBag = DisposeBag()
     
     override func loadView() {
-        
+        view = screen
     }
     
     override func viewDidLoad() {
