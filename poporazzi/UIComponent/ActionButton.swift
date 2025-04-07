@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class ActionButton: CodeBaseUIView {
+final class ActionButton: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -26,6 +26,10 @@ final class ActionButton: CodeBaseUIView {
         super.init(frame: .zero)
         button.setTitle(title, for: .normal)
         setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {

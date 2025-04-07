@@ -11,12 +11,12 @@ import RxCocoa
 
 final class MomentRecordViewController: ViewController {
     
-    let uuid = UUID()
+    private let screen = MomentRecordView()
     private let viewModel = MomentRecordViewModel()
     private let disposeBag = DisposeBag()
     
     override func loadView() {
-        
+        view = screen
     }
     
     override func viewDidLoad() {
@@ -30,6 +30,19 @@ final class MomentRecordViewController: ViewController {
 extension MomentRecordViewController {
     
     func bind() {
+        let output = viewModel.transform(
+            MomentRecordViewModel.Input(
+                viewDidLoad: .just(())
+            )
+        )
         
+        output.photoListResponse
+            .bind(to: screen.albumCollectionView.rx.items(
+                cellIdentifier: MomentRecordCell.identifier,
+                cellType: MomentRecordCell.self
+            )) { index, photo, cell in
+                
+            }
+            .disposed(by: disposeBag)
     }
 }

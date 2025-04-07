@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentTitleInputView: CodeBaseUIView {
+final class MomentTitleInputView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -17,7 +17,7 @@ final class MomentTitleInputView: CodeBaseUIView {
     private let headerLabel: UILabel = {
         let label = UILabel()
         label.text = "어떤 순간을 기록하고 싶으신가요?"
-        label.textColor = .label
+        label.textColor = .mainLabel
         label.font = .setPretendard(.bold, 20)
         return label
     }()
@@ -35,6 +35,10 @@ final class MomentTitleInputView: CodeBaseUIView {
     init() {
         super.init(frame: .zero)
         setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {

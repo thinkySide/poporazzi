@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class LineTextField: CodeBaseUIView {
+final class LineTextField: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -17,7 +17,7 @@ final class LineTextField: CodeBaseUIView {
     let textField: UITextField = {
         let textField = UITextField()
         textField.font = .setPretendard(.semiBold, 24)
-        textField.textColor = .label
+        textField.textColor = .mainLabel
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
         return textField
@@ -34,6 +34,10 @@ final class LineTextField: CodeBaseUIView {
         super.init(frame: .zero)
         textField.placeholder = placeholder
         setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {
