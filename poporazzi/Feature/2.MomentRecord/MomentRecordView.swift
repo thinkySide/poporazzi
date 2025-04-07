@@ -46,19 +46,49 @@ final class MomentRecordView: CodeBaseUI {
     }()
     
     /// 앨범 컬렉션 뷰
-    let albumCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = 10
-        layout.minimumInteritemSpacing = 10
-        layout.scrollDirection = .vertical
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 20, height: 100) 
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+    lazy var albumCollectionView: UICollectionView = {
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: compositionalLayout
+        )
         collectionView.register(
             MomentRecordCell.self,
             forCellWithReuseIdentifier: MomentRecordCell.identifier
         )
         return collectionView
+    }()
+    
+    private let compositionalLayout: UICollectionViewCompositionalLayout = {
+        
+        // 1. 기본값 변수 저장
+        let numberOfRows: CGFloat = 3
+        let itemInset: CGFloat = 2
+        
+        // 2. 아이템(Cell) 설정
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalHeight(1),
+            heightDimension: .fractionalHeight(1)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: itemInset)
+        let lastItem = NSCollectionLayoutItem(layoutSize: itemSize)
+        lastItem.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: 0)
+        
+        // 3. 그룹 설정
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalWidth(1 / numberOfRows)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(
+            layoutSize: groupSize,
+            subitems: [item, item, lastItem]
+        )
+        
+        // 4. 섹션 설정
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        return UICollectionViewCompositionalLayout(section: section)
     }()
     
     init() {
@@ -78,7 +108,7 @@ final class MomentRecordView: CodeBaseUI {
         containerView.pin
             .top(pin.safeArea)
             .left().right().bottom()
-            
+        
         containerView.flex.layout()
     }
 }

@@ -41,7 +41,7 @@ extension MomentRecordViewController {
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { index, photo, cell in
-                print(index)
+                
             }
             .disposed(by: disposeBag)
     }
