@@ -17,13 +17,12 @@ final class MomentRecordCell: UICollectionViewCell {
     
     private let image: UIImageView = {
         let imageView = UIImageView()
-        imageView.backgroundColor = .lightGray
         return imageView
     }()
     
-    init() {
-        super.init(frame: .zero)
-        addSubview(image)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        contentView.addSubview(containerView)
         configLayout()
     }
     
@@ -43,9 +42,9 @@ final class MomentRecordCell: UICollectionViewCell {
 extension MomentRecordCell {
     
     func configLayout() {
-        containerView.flex
+        containerView.flex.backgroundColor(.green)
             .define { flex in
-                flex.addItem(image)
+                flex.addItem(image).grow(1).aspectRatio(1)
             }
     }
 }

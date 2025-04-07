@@ -30,6 +30,19 @@ final class MomentRecordViewController: ViewController {
 extension MomentRecordViewController {
     
     func bind() {
+        let output = viewModel.transform(
+            MomentRecordViewModel.Input(
+                viewDidLoad: .just(())
+            )
+        )
         
+        output.photoListResponse
+            .bind(to: screen.albumCollectionView.rx.items(
+                cellIdentifier: MomentRecordCell.identifier,
+                cellType: MomentRecordCell.self
+            )) { index, photo, cell in
+                print(index)
+            }
+            .disposed(by: disposeBag)
     }
 }

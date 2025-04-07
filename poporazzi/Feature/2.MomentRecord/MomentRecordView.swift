@@ -38,7 +38,7 @@ final class MomentRecordView: CodeBaseUI {
     }()
     
     /// 총 사진 개수 라벨
-    private let totalImageCountLabel: UILabel = {
+    private let totalPhotoCountLabel: UILabel = {
         let label = UILabel()
         label.font = .setPretendard(.semiBold, 15)
         label.textColor = .subLabel
@@ -48,10 +48,16 @@ final class MomentRecordView: CodeBaseUI {
     /// 앨범 컬렉션 뷰
     let albumCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = 0
+        layout.minimumLineSpacing = 10
+        layout.minimumInteritemSpacing = 10
         layout.scrollDirection = .vertical
-        layout.sectionInset = .zero
+        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 20, height: 100) 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.register(
+            MomentRecordCell.self,
+            forCellWithReuseIdentifier: MomentRecordCell.identifier
+        )
         return collectionView
     }()
     
@@ -69,7 +75,10 @@ final class MomentRecordView: CodeBaseUI {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        containerView.pin.all(pin.safeArea)
+        containerView.pin
+            .top(pin.safeArea)
+            .left().right().bottom()
+            
         containerView.flex.layout()
     }
 }
@@ -93,7 +102,7 @@ extension MomentRecordView {
             trackingStartDateLabel.text = text
             
         case let .setTotalImageCountLabel(count):
-            totalImageCountLabel.text = "총 \(count)장"
+            totalPhotoCountLabel.text = "총 \(count)장"
         }
     }
 }
@@ -114,11 +123,11 @@ extension MomentRecordView {
                         flex.addItem().direction(.row).marginTop(10).define { flex in
                             flex.addItem(trackingStartDateLabel)
                             flex.addItem().grow(1)
-                            flex.addItem(totalImageCountLabel)
+                            flex.addItem(totalPhotoCountLabel)
                         }
                     }
                 
-                flex.addItem(albumCollectionView)
+                flex.addItem(albumCollectionView).grow(1).marginTop(24)
             }
     }
 }
