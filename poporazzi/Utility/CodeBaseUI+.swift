@@ -1,5 +1,5 @@
 //
-//  CodeBaseUIView.swift
+//  CodeBaseUI+.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/4/25.
@@ -7,11 +7,11 @@
 
 import UIKit
 
-/// Code Base UIView 프로토콜을 편리하게 사용하기 위한 별칭
-typealias CodeBaseUIView = UIView & CodeBaseUIViewProtocol
+/// Code Base UI 프로토콜을 편리하게 사용하기 위한 별칭
+typealias CodeBaseUI = UIView & CodeBaseUIProtocol
 
-/// Code Base UIView 구현 시 필요한 필수 구현 프로토콜
-protocol CodeBaseUIViewProtocol: UIView {
+/// Code Base UI 구현 시 필요한 필수 구현 프로토콜
+protocol CodeBaseUIProtocol: UIView {
     
     associatedtype Action
     
@@ -30,22 +30,12 @@ protocol CodeBaseUIViewProtocol: UIView {
 
 // MARK: - CodeBaseUIViewProtocol 기본 구현
 
-extension CodeBaseUIViewProtocol {
+extension CodeBaseUIProtocol {
     
     func setup() {
         backgroundColor = .white
         containerView.backgroundColor = .white
         addSubview(containerView)
         configLayout()
-    }
-}
-
-// MARK: - UIView 기본 구현
-
-extension UIView {
-    
-    /// Code Base UIView 구현 시 필수 구현 생성자
-    convenience init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }

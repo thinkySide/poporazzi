@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentTitleInputView: CodeBaseUIView {
+final class MomentTitleInputView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -35,6 +35,10 @@ final class MomentTitleInputView: CodeBaseUIView {
     init() {
         super.init(frame: .zero)
         setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {

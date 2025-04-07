@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class NavigationButton: CodeBaseUIView {
+final class NavigationButton: CodeBaseUI {
     
     /// 버튼 타입
     enum ButtonType {
@@ -35,6 +35,10 @@ final class NavigationButton: CodeBaseUIView {
             self.button.setImage(UIImage(systemName: systemName), for: .normal)
         }
         setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {

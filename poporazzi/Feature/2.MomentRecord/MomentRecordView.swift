@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentRecordView: CodeBaseUIView {
+final class MomentRecordView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -45,12 +45,26 @@ final class MomentRecordView: CodeBaseUIView {
         return label
     }()
     
+    /// 앨범 컬렉션 뷰
+    let albumCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumLineSpacing = 0
+        layout.scrollDirection = .vertical
+        layout.sectionInset = .zero
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        return collectionView
+    }()
+    
     init() {
         super.init(frame: .zero)
         setup()
         action(.setAlbumTitleLabel("일본 추억 여행"))
         action(.setTrackingStartDateLabel("2025년 4월 3일 목요일 22:25 ~"))
         action(.setTotalImageCountLabel(56))
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {
@@ -103,6 +117,8 @@ extension MomentRecordView {
                             flex.addItem(totalImageCountLabel)
                         }
                     }
+                
+                flex.addItem(albumCollectionView)
             }
     }
 }

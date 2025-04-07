@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class NavigationBar: CodeBaseUIView {
+final class NavigationBar: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -27,6 +27,10 @@ final class NavigationBar: CodeBaseUIView {
         self.trailingView = trailing
         super.init(frame: .zero)
         setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {
