@@ -60,6 +60,7 @@ extension NavigationBar {
         containerView.flex.height(height)
             .direction(.row)
             .justifyContent(.center)
+            .alignItems(.center)
             .paddingHorizontal(20)
             .define { flex in
                 flex.addItem(leadingView)
