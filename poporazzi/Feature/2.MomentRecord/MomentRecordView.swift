@@ -13,29 +13,12 @@ final class MomentRecordView: CodeBaseUIView {
     
     var containerView = UIView()
     
+    /// NavigationBar
     private lazy var navigationBar = NavigationBar(
-        leading: leading,
-        center: centerView,
-        trailing: trailing
+        trailing: finishRecordButton
     )
     
-    private let leading: UILabel = {
-        let label = UILabel()
-        label.text = "leading"
-        return label
-    }()
-    
-    private let centerView: UILabel = {
-        let label = UILabel()
-        label.text = "center"
-        return label
-    }()
-    
-    private let trailing: UILabel = {
-        let label = UILabel()
-        label.text = "trailing"
-        return label
-    }()
+    let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"))
     
     init() {
         super.init(frame: .zero)
@@ -58,9 +41,7 @@ extension MomentRecordView {
     }
     
     func action(_ action: Action) {
-        switch action {
-            
-        }
+        
     }
 }
 

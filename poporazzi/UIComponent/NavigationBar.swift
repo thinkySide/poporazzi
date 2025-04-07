@@ -11,10 +11,6 @@ import FlexLayout
 
 final class NavigationBar: CodeBaseUIView {
     
-    enum BarType {
-        case none
-    }
-    
     var containerView = UIView()
     
     private let leadingView: UIView
