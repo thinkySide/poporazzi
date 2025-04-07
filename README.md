@@ -7,3 +7,4 @@
 |[#5 MomentTitleInput 화면 구현](https://github.com/thinkySide/poporazzi/pull/5)|CodeBaseUIView Protocol 구현, MomoentTitleInputView 구현|
 |[#7 디자인 리소스 추가](https://github.com/thinkySide/poporazzi/pull/7)|Pretendard 폰트 파일 추가, UIFont 확장 타입 메서드 구현, 컬러 에셋 추가|
 |[#9 MomentTitleInputViewController 기능 구현](https://github.com/thinkySide/poporazzi/pull/9)|Input&Output 패턴 적용, MomentTitleViewController 내 로직 구현, UserDefaults 로직 구현|
+|[#11 MomentRecord 화면 구현](https://github.com/thinkySide/poporazzi/pull/11)|MomentRecordView 구현, NavigationBar 및 NavigationButton UIComponent 구현, UICollectionViewCompositionalLayout를 이용한 CollectionView 구성|
