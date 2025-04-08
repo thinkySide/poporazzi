@@ -12,7 +12,7 @@ import RxCocoa
 final class MomentRecordViewController: ViewController {
     
     private let screen = MomentRecordView()
-    private let viewModel = MomentRecordViewModel(photoRepository: PhotoKitService())
+    private let viewModel = MomentRecordViewModel()
     private let disposeBag = DisposeBag()
     
     override func loadView() {

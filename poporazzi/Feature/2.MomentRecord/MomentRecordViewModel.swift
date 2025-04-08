@@ -8,15 +8,12 @@
 import Foundation
 import RxSwift
 import RxCocoa
+import Photos
 
 final class MomentRecordViewModel: ViewModel {
     
-    private let photoRepository: PhotoRepository
+    private let photoKitService = PhotoKitService()
     private let disposeBag = DisposeBag()
-    
-    init(photoRepository: PhotoRepository) {
-        self.photoRepository = photoRepository
-    }
 }
 
 // MARK: - Input & Output
@@ -37,7 +34,12 @@ extension MomentRecordViewModel {
         input.viewDidLoad
             .flatMap({ [weak self] _ in
                 let trackingStartDate = UserDefaultsService.trackingStartDate
-                return self?.photoRepository.fetchPhotos(from: trackingStartDate) ?? .empty()
+                let fetchResult = self?.photoKitService.fetchAssetResult(
+                    mediaFetchType: .all,
+                    date: trackingStartDate,
+                    ascending: true
+                )
+                return self?.photoKitService.fetchPhotos(fetchResult) ?? .empty()
             })
             .bind(to: output.photoListResponse)
             .disposed(by: disposeBag)
