@@ -5,8 +5,8 @@
 //  Created by 김민준 on 4/7/25.
 //
 
-import Foundation
+import UIKit
 
 struct Photo {
-    let imageURLString: String
+    let content: UIImage
 }

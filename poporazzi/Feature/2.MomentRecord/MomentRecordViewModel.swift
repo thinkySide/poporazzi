@@ -11,7 +11,12 @@ import RxCocoa
 
 final class MomentRecordViewModel: ViewModel {
     
+    private let photoRepository: PhotoRepository
     private let disposeBag = DisposeBag()
+    
+    init(photoRepository: PhotoRepository) {
+        self.photoRepository = photoRepository
+    }
 }
 
 // MARK: - Input & Output
@@ -30,14 +35,13 @@ extension MomentRecordViewModel {
         let output = Output()
         
         input.viewDidLoad
-            .map { self.dummy() }
+            .flatMap({ [weak self] _ in
+                let trackingStartDate = UserDefaultsService.trackingStartDate
+                return self?.photoRepository.fetchPhotos(from: trackingStartDate) ?? .empty()
+            })
             .bind(to: output.photoListResponse)
             .disposed(by: disposeBag)
         
         return output
-    }
-    
-    func dummy() -> [Photo] {
-        Array(repeating: Photo(imageURLString: "더미이미지"), count: 17)
     }
 }

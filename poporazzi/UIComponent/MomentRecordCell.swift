@@ -38,6 +38,22 @@ final class MomentRecordCell: UICollectionViewCell {
     }
 }
 
+// MARK: - Action
+
+extension MomentRecordCell {
+    
+    enum Action {
+        case setImage(UIImage)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .setImage(image):
+            self.image.image = image
+        }
+    }
+}
+
 // MARK: - Layout
 
 extension MomentRecordCell {

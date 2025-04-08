@@ -12,7 +12,7 @@ import RxCocoa
 final class MomentRecordViewController: ViewController {
     
     private let screen = MomentRecordView()
-    private let viewModel = MomentRecordViewModel()
+    private let viewModel = MomentRecordViewModel(photoRepository: PhotoKitService())
     private let disposeBag = DisposeBag()
     
     override func loadView() {
@@ -41,7 +41,7 @@ extension MomentRecordViewController {
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { index, photo, cell in
-                
+                cell.action(.setImage(photo.content))
             }
             .disposed(by: disposeBag)
     }

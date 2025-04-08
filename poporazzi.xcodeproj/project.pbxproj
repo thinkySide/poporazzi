@@ -168,6 +168,7 @@
 				DEVELOPMENT_TEAM = 9XG4S4XZWN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = poporazzi/Info.plist;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "사진 및 앨범 사용을 위한 권한을 허용해주세요";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -196,6 +197,7 @@
 				DEVELOPMENT_TEAM = 9XG4S4XZWN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = poporazzi/Info.plist;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "사진 및 앨범 사용을 위한 권한을 허용해주세요";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
