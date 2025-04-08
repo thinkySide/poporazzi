@@ -18,6 +18,8 @@ final class MomentRecordCell: UICollectionViewCell {
     private let image: UIImageView = {
         let imageView = UIImageView()
         imageView.backgroundColor = .lightGray
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -38,14 +40,30 @@ final class MomentRecordCell: UICollectionViewCell {
     }
 }
 
+// MARK: - Action
+
+extension MomentRecordCell {
+    
+    enum Action {
+        case setImage(UIImage)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .setImage(image):
+            self.image.image = image
+        }
+    }
+}
+
 // MARK: - Layout
 
 extension MomentRecordCell {
     
     func configLayout() {
-        containerView.flex.backgroundColor(.systemBlue)
+        containerView.flex
             .define { flex in
-                // flex.addItem(image).aspectRatio(1)
+                flex.addItem(image)
             }
     }
 }

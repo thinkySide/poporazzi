@@ -32,7 +32,8 @@ extension MomentRecordViewController {
     func bind() {
         let output = viewModel.transform(
             MomentRecordViewModel.Input(
-                viewDidLoad: .just(())
+                viewDidLoad: .just(()),
+                finishButtonTapped: screen.finishRecordButton.button.rx.tap.asObservable()
             )
         )
         
@@ -41,7 +42,14 @@ extension MomentRecordViewController {
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { index, photo, cell in
-                
+                cell.action(.setImage(photo.content))
+            }
+            .disposed(by: disposeBag)
+        
+        output.saveToAlbum
+            .bind(with: self) { owner, _ in
+                print("저장 완료")
+                UserDefaultsService.isTracking = false
             }
             .disposed(by: disposeBag)
     }
