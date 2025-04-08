@@ -23,6 +23,11 @@ final class MomentTitleInputViewController: ViewController {
         super.viewDidLoad()
         bind()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        screen.titleTextField.action(.presentKeyboard)
+    }
 }
 
 // MARK: - Binding

@@ -48,8 +48,8 @@ extension MomentRecordViewController {
         
         output.saveToAlbum
             .bind(with: self) { owner, _ in
-                print("저장 완료")
                 UserDefaultsService.isTracking = false
+                owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
     }

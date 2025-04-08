@@ -6,8 +6,9 @@
 //
 
 import Foundation
+import RxSwift
 
-/// UserDefaults 싱글톤
+/// UserDefaults 관리 객체
 struct UserDefaultsService {
     
     @UserDefault(key: "isTracking", defaultValue: false)

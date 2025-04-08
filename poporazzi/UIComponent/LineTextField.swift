@@ -53,12 +53,15 @@ extension LineTextField {
     
     enum Action {
         case setupInputAccessoryView(UIView)
+        case presentKeyboard
     }
     
     func action(_ action: Action) {
         switch action {
         case let .setupInputAccessoryView(view):
             textField.inputAccessoryView = view
+            
+        case .presentKeyboard:
             textField.becomeFirstResponder()
         }
     }
