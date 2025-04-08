@@ -11,10 +11,17 @@ import Photos
 
 struct PhotoKitService {
     
+    /// 미디어 검색 타입
     enum MediaFetchType {
         case all
         case image
         case video
+    }
+    
+    /// PhotoKit에서 발생할 수 있는 에러
+    enum PhotoKitError: Error {
+        case emptyAssets
+        case cannotFindAlbum
     }
 }
 
@@ -65,6 +72,27 @@ extension PhotoKitService {
         
         return .just(newImages.map { Photo(content: $0) })
     }
+    
+    /// 앨범에 기록을 저장합니다.
+    func saveAlbum(title: String, assets: PHFetchResult<PHAsset>?) throws {
+        
+        guard let assets = assets else { throw PhotoKitError.emptyAssets }
+        
+        // 기존 앨범에 추가
+        if let album = fetchAlbum(title: title) {
+            appendToAlbum(assets: assets, to: album)
+        }
+        
+        // 앨범 새로 생성
+        else {
+            PHPhotoLibrary.shared().performChanges {
+                PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
+            } completionHandler: { isSuccess, error in
+                guard let album = fetchAlbum(title: title) else { return }
+                appendToAlbum(assets: assets, to: album)
+            }
+        }
+    }
 }
 
 // MARK: - Helper
@@ -95,6 +123,25 @@ extension PhotoKitService {
                 PHAssetMediaType.video.rawValue,
                 date as NSDate
             )
+        }
+    }
+    
+    /// 앨범을 반환합니다.
+    private func fetchAlbum(title: String) -> PHAssetCollection? {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.predicate = NSPredicate(format: "title = %@", title)
+        return PHAssetCollection.fetchAssetCollections(
+            with: .album,
+            subtype: .any,
+            options: fetchOptions
+        ).firstObject
+    }
+    
+    /// 앨범에 추가합니다.
+    private func appendToAlbum(assets: PHFetchResult<PHAsset>, to album: PHAssetCollection) {
+        PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCollectionChangeRequest(for: album)
+            request?.addAssets(assets)
         }
     }
 }
