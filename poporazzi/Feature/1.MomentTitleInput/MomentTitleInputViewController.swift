@@ -23,6 +23,11 @@ final class MomentTitleInputViewController: ViewController {
         super.viewDidLoad()
         bind()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        screen.titleTextField.action(.presentKeyboard)
+    }
 }
 
 // MARK: - Binding
@@ -47,6 +52,7 @@ extension MomentTitleInputViewController {
         
         output.navigateToRecordView
             .bind(with: self, onNext: { owner, title in
+                owner.screen.titleTextField.textField.text?.removeAll()
                 let momentRecordVC = MomentRecordViewController()
                 momentRecordVC.modalPresentationStyle = .fullScreen
                 momentRecordVC.modalTransitionStyle = .crossDissolve

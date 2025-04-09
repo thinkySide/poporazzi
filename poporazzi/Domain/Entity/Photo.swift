@@ -8,5 +8,5 @@
 import UIKit
 
 struct Photo {
-    let content: UIImage
+    var content: UIImage
 }

@@ -32,7 +32,7 @@ final class MomentRecordView: CodeBaseUI {
     /// 트래킹 시작 날짜 라벨
     private let trackingStartDateLabel: UILabel = {
         let label = UILabel()
-        label.font = .setPretendard(.semiBold, 15)
+        label.font = .setPretendard(.medium, 14)
         label.textColor = .subLabel
         return label
     }()
@@ -45,12 +45,26 @@ final class MomentRecordView: CodeBaseUI {
         return label
     }()
     
+    /// 촬영된 사진이 없을 때 라벨
+    private let emptyLabel: UILabel = {
+        let label = UILabel()
+        label.text = "📸\n지금부터 촬영한 모든 사진과\n영상이 기록될 거에요!"
+        label.numberOfLines = 3
+        label.setLine(alignment: .center, spacing: 8)
+        label.font = .setPretendard(.semiBold, 14)
+        label.textColor = .subLabel
+        return label
+    }()
+    
     /// 앨범 컬렉션 뷰
     lazy var albumCollectionView: UICollectionView = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.endRefreshing()
         let collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: compositionalLayout
         )
+        collectionView.refreshControl = refreshControl
         collectionView.register(
             MomentRecordCell.self,
             forCellWithReuseIdentifier: MomentRecordCell.identifier
@@ -94,9 +108,6 @@ final class MomentRecordView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
-        action(.setAlbumTitleLabel("일본 추억 여행"))
-        action(.setTrackingStartDateLabel("2025년 4월 3일 목요일 22:25 ~"))
-        action(.setTotalImageCountLabel(56))
     }
     
     required init?(coder: NSCoder) {
@@ -105,10 +116,7 @@ final class MomentRecordView: CodeBaseUI {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        containerView.pin
-            .top(pin.safeArea)
-            .left().right().bottom()
-        
+        containerView.pin.top(pin.safeArea).left().right().bottom()
         containerView.flex.layout()
     }
 }
@@ -124,15 +132,20 @@ extension MomentRecordView {
     }
     
     func action(_ action: Action) {
+        defer { containerView.flex.layout() }
         switch action {
         case let .setAlbumTitleLabel(title):
             albumTitleLabel.text = title
+            albumTitleLabel.flex.markDirty()
             
         case let .setTrackingStartDateLabel(text):
             trackingStartDateLabel.text = text
+            trackingStartDateLabel.flex.markDirty()
             
         case let .setTotalImageCountLabel(count):
-            totalPhotoCountLabel.text = "총 \(count)장"
+            totalPhotoCountLabel.text = "총 \(count)개"
+            totalPhotoCountLabel.flex.markDirty()
+            emptyLabel.flex.display(count > 0 ? .none : .flex)
         }
     }
 }
@@ -157,7 +170,10 @@ extension MomentRecordView {
                         }
                     }
                 
-                flex.addItem(albumCollectionView).grow(1).marginTop(24)
+                flex.addItem().grow(1).marginTop(24).define { flex in
+                    flex.addItem(albumCollectionView).position(.absolute).all(0)
+                    flex.addItem(emptyLabel).position(.absolute).alignSelf(.center).top(35%)
+                }
             }
     }
 }

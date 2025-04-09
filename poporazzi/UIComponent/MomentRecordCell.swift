@@ -17,7 +17,6 @@ final class MomentRecordCell: UICollectionViewCell {
     
     private let image: UIImageView = {
         let imageView = UIImageView()
-        imageView.backgroundColor = .lightGray
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView

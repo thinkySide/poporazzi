@@ -50,27 +50,31 @@ extension PhotoKitService {
     
     /// 기록을 반환합니다.
     func fetchPhotos(_ fetchResult: PHFetchResult<PHAsset>?) -> Observable<[Photo]> {
-        var newImages = [UIImage]()
-        let imageManager = PHImageManager.default()
-        let requestOptions = PHImageRequestOptions()
-        requestOptions.isSynchronous = true
-        requestOptions.deliveryMode = .highQualityFormat
-        
-        fetchResult?.enumerateObjects { asset, _, _ in
-            imageManager.requestImage(
-                for: asset,
-                targetSize: .zero,
-                contentMode: .aspectFit,
-                options: requestOptions,
-                resultHandler: { image, _ in
-                    if let image = image {
-                        newImages.append(image)
+        return Observable.create { observer in
+            var newImages = [UIImage]()
+            let imageManager = PHImageManager.default()
+            let requestOptions = PHImageRequestOptions()
+            requestOptions.isSynchronous = true
+            requestOptions.deliveryMode = .highQualityFormat
+            
+            fetchResult?.enumerateObjects { asset, _, _ in
+                imageManager.requestImage(
+                    for: asset,
+                    targetSize: .init(width: 360, height: 360),
+                    contentMode: .aspectFill,
+                    options: requestOptions,
+                    resultHandler: { image, _ in
+                        if let image = image {
+                            newImages.append(image)
+                        }
                     }
-                }
-            )
+                )
+            }
+            
+            observer.onNext(newImages.map { Photo(content: $0) })
+            observer.onCompleted()
+            return Disposables.create()
         }
-        
-        return .just(newImages.map { Photo(content: $0) })
     }
     
     /// 앨범에 기록을 저장합니다.
