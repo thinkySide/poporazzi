@@ -45,6 +45,17 @@ final class MomentRecordView: CodeBaseUI {
         return label
     }()
     
+    /// 촬영된 사진이 없을 때 라벨
+    private let emptyLabel: UILabel = {
+        let label = UILabel()
+        label.text = "📸\n지금부터 촬영한 모든 사진과\n영상이 기록될 거에요!"
+        label.numberOfLines = 3
+        label.textAlignment = .center
+        label.font = .setPretendard(.semiBold, 14)
+        label.textColor = .subLabel
+        return label
+    }()
+    
     /// 앨범 컬렉션 뷰
     lazy var albumCollectionView: UICollectionView = {
         let refreshControl = UIRefreshControl()
@@ -132,8 +143,9 @@ extension MomentRecordView {
             trackingStartDateLabel.flex.markDirty()
             
         case let .setTotalImageCountLabel(count):
-            totalPhotoCountLabel.text = "총 \(count)장"
+            totalPhotoCountLabel.text = "총 \(count)개"
             totalPhotoCountLabel.flex.markDirty()
+            emptyLabel.flex.display(count > 0 ? .none : .flex)
         }
     }
 }
@@ -158,7 +170,10 @@ extension MomentRecordView {
                         }
                     }
                 
-                flex.addItem(albumCollectionView).grow(1).marginTop(24)
+                flex.addItem().grow(1).marginTop(24).define { flex in
+                    flex.addItem(albumCollectionView).position(.absolute).all(0)
+                    flex.addItem(emptyLabel).position(.absolute).alignSelf(.center).top(35%)
+                }
             }
     }
 }
