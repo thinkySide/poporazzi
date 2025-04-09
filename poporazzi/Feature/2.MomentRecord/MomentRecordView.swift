@@ -32,7 +32,7 @@ final class MomentRecordView: CodeBaseUI {
     /// 트래킹 시작 날짜 라벨
     private let trackingStartDateLabel: UILabel = {
         let label = UILabel()
-        label.font = .setPretendard(.semiBold, 15)
+        label.font = .setPretendard(.medium, 14)
         label.textColor = .subLabel
         return label
     }()
@@ -47,10 +47,13 @@ final class MomentRecordView: CodeBaseUI {
     
     /// 앨범 컬렉션 뷰
     lazy var albumCollectionView: UICollectionView = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.endRefreshing()
         let collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: compositionalLayout
         )
+        collectionView.refreshControl = refreshControl
         collectionView.register(
             MomentRecordCell.self,
             forCellWithReuseIdentifier: MomentRecordCell.identifier
@@ -94,9 +97,6 @@ final class MomentRecordView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
-        action(.setAlbumTitleLabel("일본 추억 여행"))
-        action(.setTrackingStartDateLabel("2025년 4월 3일 목요일 22:25 ~"))
-        action(.setTotalImageCountLabel(56))
     }
     
     required init?(coder: NSCoder) {
