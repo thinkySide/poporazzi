@@ -105,10 +105,7 @@ final class MomentRecordView: CodeBaseUI {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        containerView.pin
-            .top(pin.safeArea)
-            .left().right().bottom()
-        
+        containerView.pin.top(pin.safeArea).left().right().bottom()
         containerView.flex.layout()
     }
 }
@@ -124,15 +121,19 @@ extension MomentRecordView {
     }
     
     func action(_ action: Action) {
+        defer { containerView.flex.layout() }
         switch action {
         case let .setAlbumTitleLabel(title):
             albumTitleLabel.text = title
+            albumTitleLabel.flex.markDirty()
             
         case let .setTrackingStartDateLabel(text):
             trackingStartDateLabel.text = text
+            trackingStartDateLabel.flex.markDirty()
             
         case let .setTotalImageCountLabel(count):
             totalPhotoCountLabel.text = "총 \(count)장"
+            totalPhotoCountLabel.flex.markDirty()
         }
     }
 }

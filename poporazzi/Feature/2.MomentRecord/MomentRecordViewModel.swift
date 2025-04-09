@@ -65,6 +65,7 @@ extension MomentRecordViewModel {
             .disposed(by: disposeBag)
         
         input.refresh
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .default))
             .withUnretained(self)
             .flatMap { _ in
                 let trackingStartDate = UserDefaultsService.trackingStartDate

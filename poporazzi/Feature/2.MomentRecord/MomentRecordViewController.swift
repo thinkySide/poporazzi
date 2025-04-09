@@ -48,6 +48,7 @@ extension MomentRecordViewController {
             .disposed(by: disposeBag)
         
         output.photoList
+            .observe(on: MainScheduler.instance)
             .bind(to: screen.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
@@ -58,8 +59,10 @@ extension MomentRecordViewController {
             .disposed(by: disposeBag)
         
         output.photoList
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, photos in
                 owner.screen.action(.setTotalImageCountLabel(photos.count))
+                owner.screen.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         
