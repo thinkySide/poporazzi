@@ -16,6 +16,8 @@ final class MomentRecordViewController: ViewController {
     private let disposeBag = DisposeBag()
     private lazy var input = MomentRecordViewModel.Input(
         viewDidLoad: .just(()),
+        viewBecomeActive: NotificationCenter.default
+            .rx.notification(UIApplication.didBecomeActiveNotification).asObservable(),
         refresh: screen.albumCollectionView.refreshControl?
             .rx.controlEvent(.valueChanged).asObservable() ?? .empty(),
         finishButtonTapped: screen.finishRecordButton.button

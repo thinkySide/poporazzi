@@ -25,6 +25,7 @@ extension MomentRecordViewModel {
     
     struct Input {
         let viewDidLoad: Observable<Void>
+        let viewBecomeActive: Observable<Notification>
         let refresh: Observable<Void>
         let finishButtonTapped: Observable<Void>
         let saveToAlbumButtonTapped: PublishRelay<Void>
@@ -40,44 +41,22 @@ extension MomentRecordViewModel {
     }
     
     func transform(_ input: Input) -> Output {
-        input.viewDidLoad
+        let updateRecord = Observable.merge(
+            input.viewDidLoad,
+            input.refresh,
+            input.viewBecomeActive.map { _ in }
+        )
+        
+        updateRecord
             .withUnretained(self)
-            .map { _ in self.currentRecord() }
+            .map { owner, _ in owner.currentRecord() }
             .bind(to: output.currentRecord)
             .disposed(by: disposeBag)
         
-        input.viewDidLoad
-            .withUnretained(self)
-            .flatMap { _ in
-                let trackingStartDate = UserDefaultsService.trackingStartDate
-                self.fetchResult = self.photoKitService.fetchAssetResult(
-                    mediaFetchType: .all,
-                    date: trackingStartDate,
-                    ascending: true
-                )
-                return self.photoKitService.fetchPhotos(self.fetchResult)
-            }
-            .bind(to: output.photoList)
-            .disposed(by: disposeBag)
-        
-        input.refresh
-            .withUnretained(self)
-            .map { _ in self.currentRecord() }
-            .bind(to: output.currentRecord)
-            .disposed(by: disposeBag)
-        
-        input.refresh
+        updateRecord
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .default))
             .withUnretained(self)
-            .flatMap { _ in
-                let trackingStartDate = UserDefaultsService.trackingStartDate
-                self.fetchResult = self.photoKitService.fetchAssetResult(
-                    mediaFetchType: .all,
-                    date: trackingStartDate,
-                    ascending: true
-                )
-                return self.photoKitService.fetchPhotos(self.fetchResult)
-            }
+            .flatMap { owner, _ in owner.fetchCurrentPhotos() }
             .bind(to: output.photoList)
             .disposed(by: disposeBag)
         
@@ -110,5 +89,16 @@ extension MomentRecordViewModel {
         let albumTitle = UserDefaultsService.albumTitle
         let trackingStartDate = UserDefaultsService.trackingStartDate
         return Record(title: albumTitle, trackingStartDate: trackingStartDate)
+    }
+    
+    /// 현재 사진 리스트를 반환합니다.
+    private func fetchCurrentPhotos() -> Observable<[Photo]> {
+        let trackingStartDate = UserDefaultsService.trackingStartDate
+        fetchResult = photoKitService.fetchAssetResult(
+            mediaFetchType: .all,
+            date: trackingStartDate,
+            ascending: true
+        )
+        return photoKitService.fetchPhotos(fetchResult)
     }
 }

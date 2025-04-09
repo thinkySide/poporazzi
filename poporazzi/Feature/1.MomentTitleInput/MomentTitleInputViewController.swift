@@ -52,6 +52,7 @@ extension MomentTitleInputViewController {
         
         output.navigateToRecordView
             .bind(with: self, onNext: { owner, title in
+                owner.screen.titleTextField.textField.text?.removeAll()
                 let momentRecordVC = MomentRecordViewController()
                 momentRecordVC.modalPresentationStyle = .fullScreen
                 momentRecordVC.modalTransitionStyle = .crossDissolve
