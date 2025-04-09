@@ -20,7 +20,7 @@ extension Date {
     
     /// 시작 날짜 포맷을 반환합니다.
     var startDateFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy년 m월 d일 E요일 H시 m분 ~"
+        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 E요일 H시 m분 ~"
         return Date.dateFormatter.string(from: self)
     }
 }
