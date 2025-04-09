@@ -50,7 +50,7 @@ final class MomentRecordView: CodeBaseUI {
         let label = UILabel()
         label.text = "📸\n지금부터 촬영한 모든 사진과\n영상이 기록될 거에요!"
         label.numberOfLines = 3
-        label.textAlignment = .center
+        label.setLine(alignment: .center, spacing: 8)
         label.font = .setPretendard(.semiBold, 14)
         label.textColor = .subLabel
         return label
