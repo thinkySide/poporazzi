@@ -28,6 +28,7 @@ extension MomentRecordViewModel {
         let refresh: Observable<Void>
         let finishButtonTapped: Observable<Void>
         let saveToAlbumButtonTapped: PublishRelay<Void>
+        let backToHomeButtonTapped: PublishRelay<Void>
     }
     
     struct Output {
@@ -35,6 +36,7 @@ extension MomentRecordViewModel {
         let photoList: BehaviorRelay<[Photo]> = .init(value: [])
         let finishAlertPresented: PublishRelay<Void> = .init()
         let saveToAlbum: PublishRelay<Void> = .init()
+        let backToHome: PublishRelay<Void> = .init()
     }
     
     func transform(_ input: Input) -> Output {
@@ -89,6 +91,10 @@ extension MomentRecordViewModel {
                 try self?.photoKitService.saveAlbum(title: title, assets: self?.fetchResult)
             })
             .bind(to: output.saveToAlbum)
+            .disposed(by: disposeBag)
+        
+        input.backToHomeButtonTapped
+            .bind(to: output.backToHome)
             .disposed(by: disposeBag)
         
         return output

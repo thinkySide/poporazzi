@@ -47,6 +47,7 @@ extension MomentTitleInputViewModel {
                 UserDefaultsService.isTracking = true
                 UserDefaultsService.albumTitle = $0
                 UserDefaultsService.trackingStartDate = .now
+                output.titleTextFieldText.accept("")
             }
             .bind(to: output.navigateToRecordView)
             .disposed(by: disposeBag)

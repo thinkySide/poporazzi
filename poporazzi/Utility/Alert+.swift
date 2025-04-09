@@ -20,7 +20,8 @@ extension UIViewController {
     func showAlert(
         title: String,
         message: String?,
-        confirmTitle: String
+        confirmTitle: String,
+        isContainCancel: Bool = true
     ) -> Observable<AlertActionType> {
         return Observable.create { [weak self] observer in
             let alert = UIAlertController(
@@ -35,11 +36,13 @@ extension UIViewController {
             }
             alert.addAction(action)
             
-            let cancelAction = UIAlertAction(title: "취소", style: .cancel) { _ in
-                observer.onNext(.cancel)
-                observer.onCompleted()
+            if isContainCancel {
+                let cancelAction = UIAlertAction(title: "취소", style: .cancel) { _ in
+                    observer.onNext(.cancel)
+                    observer.onCompleted()
+                }
+                alert.addAction(cancelAction)
             }
-            alert.addAction(cancelAction)
             
             self?.present(alert, animated: true)
             

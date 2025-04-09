@@ -20,7 +20,8 @@ final class MomentRecordViewController: ViewController {
             .rx.controlEvent(.valueChanged).asObservable() ?? .empty(),
         finishButtonTapped: screen.finishRecordButton.button
             .rx.tap.asObservable(),
-        saveToAlbumButtonTapped: .init()
+        saveToAlbumButtonTapped: .init(),
+        backToHomeButtonTapped: .init()
     )
     
     override func loadView() {
@@ -74,6 +75,12 @@ extension MomentRecordViewController {
         
         output.saveToAlbum
             .bind(with: self) { owner, _ in
+                owner.showConfirmAlert()
+            }
+            .disposed(by: disposeBag)
+        
+        output.backToHome
+            .bind(with: self) { owner, _ in
                 UserDefaultsService.isTracking = false
                 owner.dismiss(animated: true)
             }
@@ -99,6 +106,24 @@ extension MomentRecordViewController {
                 break
             case .confirm:
                 self.input.saveToAlbumButtonTapped.accept(())
+            }
+        }
+        .disposed(by: disposeBag)
+    }
+    
+    private func showConfirmAlert() {
+        showAlert(
+            title: "기록이 앨범에 저장되었습니다.",
+            message: "앨범 앱을 확인해주세요!",
+            confirmTitle: "홈으로 돌아가기",
+            isContainCancel: false
+        )
+        .subscribe { actionType in
+            switch actionType {
+            case .cancel:
+                break
+            case .confirm:
+                self.input.backToHomeButtonTapped.accept(())
             }
         }
         .disposed(by: disposeBag)
