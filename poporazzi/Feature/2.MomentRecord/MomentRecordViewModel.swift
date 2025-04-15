@@ -13,8 +13,8 @@ import Photos
 final class MomentRecordViewModel: ViewModel {
     
     private let photoKitService = PhotoKitService()
-    private let disposeBag = DisposeBag()
     private var fetchResult: PHFetchResult<PHAsset>?
+    private let disposeBag = DisposeBag()
     
     let output = Output()
 }
