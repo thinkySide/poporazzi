@@ -25,3 +25,4 @@
 |[#13 PhotoKit을 이용한 사진 반환 객체 구현](https://github.com/thinkySide/poporazzi/pull/13)|PhotoKitService 구현, 사진 불러오기 및 앨범 저장 함수 구현|
 |[#15 전체 Flow 연결](https://github.com/thinkySide/poporazzi/pull/15)|전체 Flow 연결, 기록 종료 Alert 추가, 화면 진입 시(SceneDelegate) 앨범 리스트 업데이트|
 |[#17 1.0.0 심사 제출](https://github.com/thinkySide/poporazzi/pull/17)|지원 OS iOS로 한정, 앱 로고 및 스크린샷 설정, 앱스토어 심사 설정|
+|[#24 Input & Output 패턴 리팩토링](https://github.com/thinkySide/poporazzi/pull/24)|Input & Output 패턴 리팩토링 및 컨벤션 확립, AlertAction 패턴 구현|
