@@ -12,75 +12,97 @@ import Photos
 
 final class MomentRecordViewModel: ViewModel {
     
-    private let photoKitService = PhotoKitService()
     private let disposeBag = DisposeBag()
+    private let photoKitService = PhotoKitService()
     private var fetchResult: PHFetchResult<PHAsset>?
     
-    let output = Output()
+    struct Input {
+        let viewDidLoad: Signal<Void>
+        let viewBecomeActive: Signal<Notification>
+        let viewDidRefresh: Signal<Void>
+        let finishButtonTapped: Signal<Void>
+    }
+    
+    struct Output {
+        let record: Driver<Record>
+        let photoList: Driver<[Photo]>
+        let finishAlertPresented: Signal<Alert>
+        let saveCompleteAlertPresented: Signal<Alert>
+        let navigateToHome: Signal<Void>
+    }
+    
+    struct AlertAction {
+        let save = PublishRelay<Void>()
+        let navigateToHome = PublishRelay<Void>()
+    }
+    
+    private let alert = AlertAction()
+    private let record = BehaviorRelay<Record>(value: .initialValue)
+    private let photoList = BehaviorRelay<[Photo]>(value: [])
+    private let finishAlertPresented = PublishRelay<Alert>()
+    private let saveCompleteAlertPresented = PublishRelay<Alert>()
+    private let navigateToHome = PublishRelay<Void>()
 }
 
 // MARK: - Input & Output
 
 extension MomentRecordViewModel {
     
-    struct Input {
-        let viewDidLoad: Observable<Void>
-        let viewBecomeActive: Observable<Notification>
-        let refresh: Observable<Void>
-        let finishButtonTapped: Observable<Void>
-        let saveToAlbumButtonTapped: PublishRelay<Void>
-        let backToHomeButtonTapped: PublishRelay<Void>
-    }
-    
-    struct Output {
-        let currentRecord: BehaviorRelay<Record> = .init(value: .initialValue)
-        let photoList: BehaviorRelay<[Photo]> = .init(value: [])
-        let finishAlertPresented: PublishRelay<Void> = .init()
-        let saveToAlbum: PublishRelay<Void> = .init()
-        let backToHome: PublishRelay<Void> = .init()
-    }
-    
     func transform(_ input: Input) -> Output {
-        let updateRecord = Observable.merge(
+        let updateRecord = Signal.merge(
             input.viewDidLoad,
-            input.refresh,
+            input.viewDidRefresh,
             input.viewBecomeActive.map { _ in }
         )
         
         updateRecord
             .withUnretained(self)
             .map { owner, _ in owner.currentRecord() }
-            .bind(to: output.currentRecord)
+            .emit(to: record)
             .disposed(by: disposeBag)
         
         updateRecord
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .default))
+            .asObservable()
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .bind(to: output.photoList)
+            .bind(to: photoList)
             .disposed(by: disposeBag)
         
         input.finishButtonTapped
-            .bind(to: output.finishAlertPresented)
+            .emit(with: self) { owner, _ in
+                owner.finishAlertPresented.accept(owner.finishAlert)
+            }
             .disposed(by: disposeBag)
         
-        input.saveToAlbumButtonTapped
-            .do(onNext: { [weak self] _ in
-                let title = UserDefaultsService.albumTitle
-                try self?.photoKitService.saveAlbum(title: title, assets: self?.fetchResult)
-            })
-            .bind(to: output.saveToAlbum)
+        alert.save
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, _ in
+                do {
+                    try owner.saveToAlbums()
+                    owner.saveCompleteAlertPresented.accept(owner.saveAlert)
+                } catch {
+                    print(error)
+                }
+            }
             .disposed(by: disposeBag)
         
-        input.backToHomeButtonTapped
-            .bind(to: output.backToHome)
+        alert.navigateToHome
+            .do { _ in UserDefaultsService.isTracking = false }
+            .bind(to: navigateToHome)
             .disposed(by: disposeBag)
         
-        return output
+        return Output(
+            record: record.asDriver(),
+            photoList: photoList.asDriver(),
+            finishAlertPresented: finishAlertPresented.asSignal(),
+            saveCompleteAlertPresented: saveCompleteAlertPresented.asSignal(),
+            navigateToHome: navigateToHome.asSignal()
+        )
     }
 }
 
-// MARK: - Helper
+// MARK: - Logic
 
 extension MomentRecordViewModel {
     
@@ -100,5 +122,37 @@ extension MomentRecordViewModel {
             ascending: true
         )
         return photoKitService.fetchPhotos(fetchResult)
+    }
+    
+    /// 앨범에 저장합니다.
+    private func saveToAlbums() throws {
+        let title = UserDefaultsService.albumTitle
+        try photoKitService.saveAlbum(title: title, assets: fetchResult)
+    }
+}
+
+// MARK: - Alert
+
+extension MomentRecordViewModel {
+    
+    /// 기록 종료 Alert
+    private var finishAlert: Alert {
+        let title = UserDefaultsService.albumTitle
+        let totalCount = photoList.value.count
+        return Alert(
+            title: "기록을 종료합니다.",
+            message: "총 \(totalCount)장의 '\(title)' 기록이 종료돼요",
+            eventButton: .init(title: "종료", action: alert.save),
+            cancelButton: .init(title: "취소")
+        )
+    }
+    
+    /// 앨범 저장 Alert
+    private var saveAlert: Alert {
+        Alert(
+            title: "기록이 앨범에 저장되었습니다.",
+            message: "앨범 앱을 확인해주세요!",
+            eventButton: .init(title: "홈으로 돌아가기", action: alert.navigateToHome)
+        )
     }
 }

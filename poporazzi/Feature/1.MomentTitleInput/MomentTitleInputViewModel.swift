@@ -12,45 +12,50 @@ import RxCocoa
 final class MomentTitleInputViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
-}
-
-// MARK: - Input & Output
-
-extension MomentTitleInputViewModel {
     
     struct Input {
-        let titleTextFieldDidChange: Observable<String>
-        let actionButtonTapped: Observable<Void>
+        let titleTextChanged: Signal<String>
+        let startButtonTapped: Signal<Void>
     }
     
     struct Output {
-        let titleTextFieldText: PublishRelay<String> = .init()
-        let actionButtonIsEnabled: PublishRelay<Bool> = .init()
-        let navigateToRecordView: PublishRelay<String> = .init()
+        let titleText: Signal<String>
+        let isStartButtonEnabled: Signal<Bool>
+        let didNavigateToRecord: Signal<Void>
     }
     
+    private let titleText = BehaviorRelay<String>(value: "")
+    private let isStartButtonEnabled = PublishRelay<Bool>()
+    private let navigateToRecord = PublishRelay<Void>()
+}
+
+// MARK: - Transform
+
+extension MomentTitleInputViewModel {
+    
     func transform(_ input: Input) -> Output {
-        let output = Output()
-        
-        input.titleTextFieldDidChange
-            .bind(to: output.titleTextFieldText)
+        input.titleTextChanged
+            .emit(to: titleText)
             .disposed(by: disposeBag)
         
-        input.titleTextFieldDidChange
+        input.titleTextChanged
             .map { !$0.isEmpty }
-            .bind(to: output.actionButtonIsEnabled)
+            .emit(to: isStartButtonEnabled)
             .disposed(by: disposeBag)
         
-        input.actionButtonTapped
-            .withLatestFrom(output.titleTextFieldText)
-            .do {
+        input.startButtonTapped
+            .emit(with: self) { owner, _ in
                 UserDefaultsService.isTracking = true
-                UserDefaultsService.albumTitle = $0
+                UserDefaultsService.albumTitle = owner.titleText.value
                 UserDefaultsService.trackingStartDate = .now
+                owner.navigateToRecord.accept(())
             }
-            .bind(to: output.navigateToRecordView)
             .disposed(by: disposeBag)
         
-        return output
+        return Output(
+            titleText: titleText.asSignal(onErrorJustReturn: ""),
+            isStartButtonEnabled: isStartButtonEnabled.asSignal(),
+            didNavigateToRecord: navigateToRecord.asSignal()
+        )
     }
 }

@@ -14,17 +14,6 @@ final class MomentRecordViewController: ViewController {
     private let screen = MomentRecordView()
     private let viewModel = MomentRecordViewModel()
     private let disposeBag = DisposeBag()
-    private lazy var input = MomentRecordViewModel.Input(
-        viewDidLoad: .just(()),
-        viewBecomeActive: NotificationCenter.default
-            .rx.notification(UIApplication.didBecomeActiveNotification).asObservable(),
-        refresh: screen.albumCollectionView.refreshControl?
-            .rx.controlEvent(.valueChanged).asObservable() ?? .empty(),
-        finishButtonTapped: screen.finishRecordButton.button
-            .rx.tap.asObservable(),
-        saveToAlbumButtonTapped: .init(),
-        backToHomeButtonTapped: .init()
-    )
     
     override func loadView() {
         view = screen
@@ -41,18 +30,23 @@ final class MomentRecordViewController: ViewController {
 extension MomentRecordViewController {
     
     func bind() {
+        let input = MomentRecordViewModel.Input(
+            viewDidLoad: .just(()),
+            viewBecomeActive: Notification.didBecomeActive,
+            viewDidRefresh: screen.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
+            finishButtonTapped: screen.finishRecordButton.button.rx.tap.asSignal()
+        )
         let output = viewModel.transform(input)
         
-        output.currentRecord
-            .bind(with: self) { owner, record in
+        output.record
+            .drive(with: self) { owner, record in
                 owner.screen.action(.setAlbumTitleLabel(record.title))
                 owner.screen.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
         output.photoList
-            .observe(on: MainScheduler.instance)
-            .bind(to: screen.albumCollectionView.rx.items(
+            .drive(screen.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { [weak self] index, photo, cell in
@@ -62,72 +56,28 @@ extension MomentRecordViewController {
             .disposed(by: disposeBag)
         
         output.photoList
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, photos in
+            .drive(with: self) { owner, photos in
                 owner.screen.action(.setTotalImageCountLabel(photos.count))
                 owner.screen.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         
         output.finishAlertPresented
-            .bind(with: self) { owner, _ in
-                owner.showFinishAlert()
+            .emit(with: self) { owner, alert in
+                owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
         
-        output.saveToAlbum
-            .bind(with: self) { owner, _ in
-                owner.showConfirmAlert()
+        output.saveCompleteAlertPresented
+            .emit(with: self) { owner, alert in
+                owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
         
-        output.backToHome
-            .bind(with: self) { owner, _ in
-                UserDefaultsService.isTracking = false
+        output.navigateToHome
+            .emit(with: self) { owner, _ in
                 owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
-    }
-}
-
-// MARK: - Alert
-
-extension MomentRecordViewController {
-    
-    private func showFinishAlert() {
-        let title = UserDefaultsService.albumTitle
-        let totalCount = viewModel.output.photoList.value.count
-        showAlert(
-            title: "기록을 종료합니다",
-            message: "총 \(totalCount)장의 '\(title)' 기록이 종료돼요",
-            confirmTitle: "종료"
-        )
-        .subscribe { actionType in
-            switch actionType {
-            case .cancel:
-                break
-            case .confirm:
-                self.input.saveToAlbumButtonTapped.accept(())
-            }
-        }
-        .disposed(by: disposeBag)
-    }
-    
-    private func showConfirmAlert() {
-        showAlert(
-            title: "기록이 앨범에 저장되었습니다.",
-            message: "앨범 앱을 확인해주세요!",
-            confirmTitle: "홈으로 돌아가기",
-            isContainCancel: false
-        )
-        .subscribe { actionType in
-            switch actionType {
-            case .cancel:
-                break
-            case .confirm:
-                self.input.backToHomeButtonTapped.accept(())
-            }
-        }
-        .disposed(by: disposeBag)
     }
 }

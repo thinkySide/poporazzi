@@ -11,12 +11,12 @@ import RxCocoa
 
 final class MomentTitleInputViewController: ViewController {
     
-    private let screen = MomentTitleInputView()
+    private let scene = MomentTitleInputView()
     private let viewModel = MomentTitleInputViewModel()
     private let disposeBag = DisposeBag()
     
     override func loadView() {
-        view = screen
+        view = scene
     }
     
     override func viewDidLoad() {
@@ -26,7 +26,7 @@ final class MomentTitleInputViewController: ViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        screen.titleTextField.action(.presentKeyboard)
+        scene.titleTextField.action(.presentKeyboard)
     }
 }
 
@@ -35,29 +35,36 @@ final class MomentTitleInputViewController: ViewController {
 extension MomentTitleInputViewController {
     
     func bind() {
-        let output = viewModel.transform(
-            MomentTitleInputViewModel.Input(
-                titleTextFieldDidChange: screen.titleTextField.textField
-                    .rx.text.orEmpty.asObservable(),
-                actionButtonTapped: screen.actionButton.button
-                    .rx.tap.asObservable()
-            )
+        let input = MomentTitleInputViewModel.Input(
+            titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
+            startButtonTapped:scene.actionButton.button.rx.tap.asSignal()
         )
+        let output = viewModel.transform(input)
         
-        output.actionButtonIsEnabled
-            .bind(with: self, onNext: { owner, isEnabled in
-                owner.screen.actionButton.action(.toggleEnabled(isEnabled))
-            })
+        output.isStartButtonEnabled
+            .emit(with: self) { owner, isEnabled in
+                owner.scene.actionButton.action(.toggleEnabled(isEnabled))
+            }
             .disposed(by: disposeBag)
         
-        output.navigateToRecordView
-            .bind(with: self, onNext: { owner, title in
-                owner.screen.titleTextField.textField.text?.removeAll()
-                let momentRecordVC = MomentRecordViewController()
-                momentRecordVC.modalPresentationStyle = .fullScreen
-                momentRecordVC.modalTransitionStyle = .crossDissolve
-                owner.present(momentRecordVC, animated: true)
-            })
+        output.didNavigateToRecord
+            .emit(with: self) { owner, _ in
+                owner.scene.titleTextField.textField.text = ""
+                owner.presentMomentRecord()
+            }
             .disposed(by: disposeBag)
+    }
+}
+
+// MARK: - Navigation
+
+extension MomentTitleInputViewController {
+    
+    /// 기록 화면을 출력합니다.
+    private func presentMomentRecord() {
+        let momentRecordVC = MomentRecordViewController()
+        momentRecordVC.modalPresentationStyle = .fullScreen
+        momentRecordVC.modalTransitionStyle = .crossDissolve
+        self.present(momentRecordVC, animated: true)
     }
 }
