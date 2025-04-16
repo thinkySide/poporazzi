@@ -31,12 +31,12 @@ final class MomentRecordViewModel: ViewModel {
         let navigateToHome: Signal<Void>
     }
     
-    struct AlertState {
+    struct AlertAction {
         let save = PublishRelay<Void>()
         let navigateToHome = PublishRelay<Void>()
     }
     
-    private let alert = AlertState()
+    private let alert = AlertAction()
     private let record = BehaviorRelay<Record>(value: .initialValue)
     private let photoList = BehaviorRelay<[Photo]>(value: [])
     private let finishAlertPresented = PublishRelay<Alert>()
