@@ -36,10 +36,8 @@ extension MomentTitleInputViewController {
     
     func bind() {
         let input = MomentTitleInputViewModel.Input(
-            titleTextChanged:
-                scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
-            startButtonTapped:
-                scene.actionButton.button.rx.tap.asSignal()
+            titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
+            startButtonTapped:scene.actionButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         

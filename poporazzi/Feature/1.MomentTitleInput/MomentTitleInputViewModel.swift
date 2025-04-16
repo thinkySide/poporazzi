@@ -26,7 +26,7 @@ final class MomentTitleInputViewModel: ViewModel {
     
     private let titleText = BehaviorRelay<String>(value: "")
     private let isStartButtonEnabled = PublishRelay<Bool>()
-    private let didNavigateToRecord = PublishRelay<Void>()
+    private let navigateToRecord = PublishRelay<Void>()
 }
 
 // MARK: - Transform
@@ -48,14 +48,14 @@ extension MomentTitleInputViewModel {
                 UserDefaultsService.isTracking = true
                 UserDefaultsService.albumTitle = owner.titleText.value
                 UserDefaultsService.trackingStartDate = .now
-                owner.didNavigateToRecord.accept(())
+                owner.navigateToRecord.accept(())
             }
             .disposed(by: disposeBag)
         
         return Output(
             titleText: titleText.asSignal(onErrorJustReturn: ""),
             isStartButtonEnabled: isStartButtonEnabled.asSignal(),
-            didNavigateToRecord: didNavigateToRecord.asSignal()
+            didNavigateToRecord: navigateToRecord.asSignal()
         )
     }
 }
