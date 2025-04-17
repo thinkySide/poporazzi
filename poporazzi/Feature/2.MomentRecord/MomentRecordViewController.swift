@@ -11,12 +11,12 @@ import RxCocoa
 
 final class MomentRecordViewController: ViewController {
     
-    private let screen = MomentRecordView()
+    private let scene = MomentRecordView()
     private let viewModel = MomentRecordViewModel()
     private let disposeBag = DisposeBag()
     
     override func loadView() {
-        view = screen
+        view = scene
     }
     
     override func viewDidLoad() {
@@ -33,34 +33,40 @@ extension MomentRecordViewController {
         let input = MomentRecordViewModel.Input(
             viewDidLoad: .just(()),
             viewBecomeActive: Notification.didBecomeActive,
-            viewDidRefresh: screen.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
-            seemoreButtonTapped: screen.seemoreButton.button.rx.tap.asSignal(),
-            finishButtonTapped: screen.finishRecordButton.button.rx.tap.asSignal(),
-            cameraFloatingButtonTapped: screen.cameraFloatingButton.button.rx.tap.asSignal()
+            viewDidRefresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
+            seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal(),
+            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal(),
+            cameraFloatingButtonTapped: scene.cameraFloatingButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
         output.record
             .drive(with: self) { owner, record in
-                owner.screen.action(.setAlbumTitleLabel(record.title))
-                owner.screen.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
+                owner.scene.action(.setAlbumTitleLabel(record.title))
+                owner.scene.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
         output.photoList
-            .drive(screen.albumCollectionView.rx.items(
+            .drive(scene.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { [weak self] index, photo, cell in
                 cell.action(.setImage(photo.content))
-                self?.screen.albumCollectionView.refreshControl?.endRefreshing()
+                self?.scene.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         
         output.photoList
             .drive(with: self) { owner, photos in
-                owner.screen.action(.setTotalImageCountLabel(photos.count))
-                owner.screen.albumCollectionView.refreshControl?.endRefreshing()
+                owner.scene.action(.setTotalImageCountLabel(photos.count))
+                owner.scene.albumCollectionView.refreshControl?.endRefreshing()
+            }
+            .disposed(by: disposeBag)
+        
+        output.seemoreMenuPresented
+            .emit(with: self) { owner, menu in
+                owner.scene.seemoreButton.button.menu = menu
             }
             .disposed(by: disposeBag)
         
@@ -81,5 +87,23 @@ extension MomentRecordViewController {
                 owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
+        
+        output.navigateToEdit
+            .emit(with: self) { owner, _ in
+                owner.presentMomentEdit()
+            }
+            .disposed(by: disposeBag)
+    }
+}
+
+// MARK: - Navigation
+
+extension MomentRecordViewController {
+    
+    /// 기록 화면을 출력합니다.
+    private func presentMomentEdit() {
+        let momentEditVC = MomentEditViewController()
+        momentEditVC.modalPresentationStyle = .automatic
+        self.present(momentEditVC, animated: true)
     }
 }

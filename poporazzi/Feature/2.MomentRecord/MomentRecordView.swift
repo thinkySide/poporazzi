@@ -22,7 +22,11 @@ final class MomentRecordView: CodeBaseUI {
     private let navigationTrailingButtons = UIView()
     
     /// 더보기 버튼
-    let seemoreButton = NavigationButton(buttonType: .systemIcon(.ellipsis), colorType: .secondary)
+    let seemoreButton: NavigationButton = {
+        let button = NavigationButton(buttonType: .systemIcon(.ellipsis), colorType: .secondary)
+        button.button.showsMenuAsPrimaryAction = true
+        return button
+    }()
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), colorType: .primary)
