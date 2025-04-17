@@ -29,9 +29,9 @@ final class MomentRecordCell: UICollectionViewCell {
     /// 영상 전용 그라디언트 레이어
     private let videoGradientLayer: CAGradientLayer = {
         let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [UIColor.clear.cgColor, UIColor.subLabel.withAlphaComponent(0.3).cgColor]
+        gradientLayer.colors = [UIColor.clear.cgColor, UIColor.brandPrimary.withAlphaComponent(0.4).cgColor]
         gradientLayer.locations = [0.0, 1.0]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
         return gradientLayer
     }()
@@ -39,7 +39,6 @@ final class MomentRecordCell: UICollectionViewCell {
     /// 영상 길이 라벨
     private let videoDurationLabel: UILabel = {
         let label = UILabel()
-        label.text = "00:00"
         label.textColor = .white
         label.font = .setDovemayo(14)
         return label
@@ -55,8 +54,8 @@ final class MomentRecordCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        containerView.pin.all(pin.safeArea)
-        videoOverlay.pin.all(pin.safeArea)
+        containerView.pin.all()
+        videoOverlay.pin.all()
         videoGradientLayer.frame = videoOverlay.bounds
         containerView.flex.layout()
         videoOverlay.flex.layout()
@@ -83,9 +82,15 @@ extension MomentRecordCell {
             
         case let .setMediaType(mediaType):
             switch mediaType {
-            case .photo: break
+            case .photo:
+                videoDurationLabel.text = ""
+                videoOverlay.isHidden = true
+                videoDurationLabel.flex.markDirty()
+                
             case let .video(duration):
-                print(duration)
+                videoDurationLabel.text = duration.videoDurationFormat
+                videoOverlay.isHidden = false
+                videoDurationLabel.flex.markDirty()
             }
         }
     }

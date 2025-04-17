@@ -24,3 +24,16 @@ extension Date {
         return Date.dateFormatter.string(from: self)
     }
 }
+
+// MARK: - TimeInterval
+
+extension TimeInterval {
+    
+    /// 영상 길이 포맷을 반환합니다.
+    var videoDurationFormat: String {
+        let time = Int(self)
+        let minutes = time / 60
+        let seconds = time % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+}
