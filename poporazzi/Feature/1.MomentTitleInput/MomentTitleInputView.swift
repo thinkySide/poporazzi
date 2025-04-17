@@ -54,9 +54,7 @@ extension MomentTitleInputView {
     }
     
     func action(_ action: Action) {
-        switch action {
-            
-        }
+        
     }
 }
 

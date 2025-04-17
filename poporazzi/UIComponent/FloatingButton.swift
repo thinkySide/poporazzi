@@ -25,7 +25,7 @@ final class FloatingButton: CodeBaseUI {
         return button
     }()
     
-    init(systemIcon: String) {
+    init(symbol: SFSymbol) {
         super.init(frame: .zero)
         
         defer {
@@ -34,7 +34,7 @@ final class FloatingButton: CodeBaseUI {
         }
         
         let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .bold)
-        let symbol = UIImage(systemName: systemIcon, withConfiguration: config)
+        let symbol = UIImage(systemName: symbol.rawValue, withConfiguration: config)
         self.button.setImage(symbol, for: .normal)
         self.button.backgroundColor = .brandSecondary
         self.button.tintColor = .brandPrimary.withAlphaComponent(0.5)

@@ -14,7 +14,7 @@ final class NavigationButton: CodeBaseUI {
     /// 버튼 타입
     enum ButtonType {
         case text(String)
-        case systemIcon(String)
+        case systemIcon(SFSymbol)
     }
     
     enum ColorType {
@@ -50,8 +50,8 @@ final class NavigationButton: CodeBaseUI {
             self.button.setTitle(title, for: .normal)
             self.button.setTitleColor(colorType.title, for: .normal)
             self.button.titleLabel?.font = .setDovemayo(15)
-        case let .systemIcon(systemName):
-            let symbol = UIImage(systemName: systemName)
+        case let .systemIcon(symbol):
+            let symbol = UIImage(systemName: symbol.rawValue)
             self.button.setImage(symbol, for: .normal)
             self.button.tintColor = colorType.title
         }

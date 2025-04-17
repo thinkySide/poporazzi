@@ -20,7 +20,9 @@ final class MomentRecordViewModel: ViewModel {
         let viewDidLoad: Signal<Void>
         let viewBecomeActive: Signal<Notification>
         let viewDidRefresh: Signal<Void>
+        let seemoreButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
+        let cameraFloatingButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -67,6 +69,18 @@ extension MomentRecordViewModel {
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
             .bind(to: photoList)
+            .disposed(by: disposeBag)
+        
+        input.seemoreButtonTapped
+            .emit(with: self) { owner, _ in
+                print("seemoreButtonTapped")
+            }
+            .disposed(by: disposeBag)
+        
+        input.cameraFloatingButtonTapped
+            .emit(with: self) { owner, _ in
+                print("cameraFloatingButtonTapped")
+            }
             .disposed(by: disposeBag)
         
         input.finishButtonTapped
