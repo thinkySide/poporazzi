@@ -16,6 +16,14 @@ extension UIFont {
             size: size
         )
     }
+    
+    /// 런드리고딕 폰트를 설정합니다.
+    static func setLaundryGothic(_ weight: LaundryGothic, _ size: CGFloat) -> UIFont? {
+        UIFont(
+            name: weight.fileName(),
+            size: size
+        )
+    }
 }
 
 extension UIFont {
@@ -50,6 +58,19 @@ extension UIFont {
             case .bold: "Pretendard-Bold"
             case .extraBold: "Pretendard-ExtraBold"
             case .black: "Pretendard-Black"
+            }
+        }
+    }
+    
+    /// 런드리 고딕
+    enum LaundryGothic: CustomFont {
+        case regular
+        case bold
+        
+        func fileName() -> String {
+            switch self {
+            case .regular: "OTLaundryGothicR"
+            case .bold: "OTLaundryGothicB"
             }
         }
     }
