@@ -23,7 +23,7 @@ final class MomentTitleInputView: CodeBaseUI {
     }()
     
     /// 제목 텍스트필드
-    let titleTextField = LineTextField(placeholder: "제주도 우정 여행, 성수동 데이트")
+    let titleTextField = LineTextField(size: 24, placeholder: "제주도 우정 여행, 성수동 데이트")
     
     /// 액션 버튼
     let actionButton = ActionButton(title: "기록 시작하기")
@@ -69,8 +69,8 @@ extension MomentTitleInputView {
             .direction(.column)
             .define { flex in
                 flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                    flex.addItem(headerLabel).marginTop(40)
-                    flex.addItem(titleTextField).marginTop(40)
+                    flex.addItem(headerLabel).marginTop(64)
+                    flex.addItem(titleTextField).marginTop(32)
                 }
             }
         

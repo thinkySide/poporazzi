@@ -16,7 +16,6 @@ final class LineTextField: CodeBaseUI {
     /// 텍스트필드
     let textField: UITextField = {
         let textField = UITextField()
-        textField.font = .setDovemayo(24)
         textField.textColor = .mainLabel
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
@@ -30,8 +29,9 @@ final class LineTextField: CodeBaseUI {
         return line
     }()
     
-    init(placeholder: String) {
+    init(size: CGFloat, placeholder: String) {
         super.init(frame: .zero)
+        textField.font = .setDovemayo(size)
         textField.placeholder = placeholder
         setup()
     }
@@ -54,6 +54,7 @@ extension LineTextField {
     enum Action {
         case setupInputAccessoryView(UIView)
         case presentKeyboard
+        case toggleLine
     }
     
     func action(_ action: Action) {
@@ -63,6 +64,13 @@ extension LineTextField {
             
         case .presentKeyboard:
             textField.becomeFirstResponder()
+            
+        case .toggleLine:
+            if let text = textField.text, text.isEmpty {
+                bottomLine.backgroundColor = .line
+            } else {
+                bottomLine.backgroundColor = .brandPrimary
+            }
         }
     }
 }
