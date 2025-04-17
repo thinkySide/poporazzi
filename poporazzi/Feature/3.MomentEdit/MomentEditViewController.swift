@@ -12,6 +12,7 @@ import RxCocoa
 final class MomentEditViewController: ViewController {
     
     private let scene = MomentEditView()
+    private let viewModel = MomentEditViewModel()
     private let disposeBag = DisposeBag()
     
     override func loadView() {
