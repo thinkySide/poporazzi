@@ -22,7 +22,6 @@ final class MomentRecordViewModel: ViewModel {
         let viewDidRefresh: Signal<Void>
         let seemoreButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
-        let cameraFloatingButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -87,12 +86,6 @@ extension MomentRecordViewModel {
             .emit(to: seemoreMenuPresented)
             .disposed(by: disposeBag)
         
-        input.cameraFloatingButtonTapped
-            .emit(with: self) { owner, _ in
-                print("cameraFloatingButtonTapped")
-            }
-            .disposed(by: disposeBag)
-        
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
                 owner.finishAlertPresented.accept(owner.finishAlert)
@@ -132,7 +125,7 @@ extension MomentRecordViewModel {
     }
 }
 
-// MARK: - Logic
+// MARK: - Album Logic
 
 extension MomentRecordViewModel {
     
@@ -161,20 +154,6 @@ extension MomentRecordViewModel {
     }
 }
 
-// MARK: - UIAction
-
-extension MomentRecordViewModel {
-    
-    /// 더보기 메뉴를 반환합니다.
-    private var seemoreMenu: UIMenu {
-        let editImage = UIImage(systemName: SFSymbol.edit.rawValue)
-        let editAction = UIAction(title: "기록 수정", image: editImage) { [weak self] _ in
-            self?.menuAction.edit.accept(())
-        }
-        return UIMenu(children: [editAction])
-    }
-}
-
 // MARK: - Alert
 
 extension MomentRecordViewModel {
@@ -199,5 +178,19 @@ extension MomentRecordViewModel {
             message: "'\(title)' 앨범을 확인해보세요!",
             eventButton: .init(title: "홈으로 돌아가기", action: alertAction.navigateToHome)
         )
+    }
+}
+
+// MARK: - UIAction
+
+extension MomentRecordViewModel {
+    
+    /// 더보기 메뉴를 반환합니다.
+    private var seemoreMenu: UIMenu {
+        let editImage = UIImage(systemName: SFSymbol.edit.rawValue)
+        let editAction = UIAction(title: "기록 수정", image: editImage) { [weak self] _ in
+            self?.menuAction.edit.accept(())
+        }
+        return UIMenu(children: [editAction])
     }
 }

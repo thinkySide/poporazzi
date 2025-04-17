@@ -35,8 +35,7 @@ extension MomentRecordViewController {
             viewBecomeActive: Notification.didBecomeActive,
             viewDidRefresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
             seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal(),
-            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal(),
-            cameraFloatingButtonTapped: scene.cameraFloatingButton.button.rx.tap.asSignal()
+            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
