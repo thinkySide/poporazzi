@@ -23,7 +23,10 @@ final class MomentRecordView: CodeBaseUI {
     
     /// 더보기 버튼
     let seemoreButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .systemIcon(.ellipsis), colorType: .secondary)
+        let button = NavigationButton(
+            buttonType: .systemIcon(.ellipsis, size: 14, weight: .black),
+            colorType: .secondary
+        )
         button.button.showsMenuAsPrimaryAction = true
         return button
     }()

@@ -11,4 +11,5 @@ enum SFSymbol: String {
     case ellipsis
     case camera = "camera.fill"
     case edit = "square.and.pencil"
+    case dismiss = "xmark"
 }

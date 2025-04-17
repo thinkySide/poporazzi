@@ -103,7 +103,7 @@ extension MomentRecordViewController {
     /// 기록 화면을 출력합니다.
     private func presentMomentEdit() {
         let momentEditVC = MomentEditViewController()
-        momentEditVC.modalPresentationStyle = .automatic
+        momentEditVC.modalPresentationStyle = .overFullScreen
         self.present(momentEditVC, animated: true)
     }
 }

@@ -14,7 +14,7 @@ final class NavigationButton: CodeBaseUI {
     /// 버튼 타입
     enum ButtonType {
         case text(String)
-        case systemIcon(SFSymbol)
+        case systemIcon(SFSymbol, size: CGFloat, weight: UIImage.SymbolWeight)
     }
     
     enum ColorType {
@@ -45,16 +45,20 @@ final class NavigationButton: CodeBaseUI {
     init(buttonType: ButtonType, colorType: ColorType) {
         self.buttonType = buttonType
         super.init(frame: .zero)
+        
         switch buttonType {
         case let .text(title):
             self.button.setTitle(title, for: .normal)
             self.button.setTitleColor(colorType.title, for: .normal)
             self.button.titleLabel?.font = .setDovemayo(15)
-        case let .systemIcon(symbol):
-            let symbol = UIImage(systemName: symbol.rawValue)
+            
+        case let .systemIcon(symbol, size, weight):
+            let config = UIImage.SymbolConfiguration(pointSize: size, weight: weight)
+            let symbol = UIImage(systemName: symbol.rawValue, withConfiguration: config)
             self.button.setImage(symbol, for: .normal)
             self.button.tintColor = colorType.title
         }
+        
         self.button.backgroundColor = colorType.background
         setup()
     }
@@ -88,7 +92,7 @@ extension NavigationButton {
 extension NavigationButton {
     
     func configLayout() {
-        containerView.flex.height(40).define { flex in
+        containerView.flex.define { flex in
             flex.addItem(button).paddingHorizontal(10).height(28).cornerRadius(14)
         }
     }

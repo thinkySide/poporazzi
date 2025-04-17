@@ -13,17 +13,24 @@ final class NavigationBar: CodeBaseUI {
     
     var containerView = UIView()
     
+    /// 네비게이션 제목 라벨
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .setDovemayo(16)
+        label.textColor = .mainLabel
+        return label
+    }()
+    
     private let leadingView: UIView
-    private let centerView: UIView
     private let trailingView: UIView
     
     init(
+        title: String = "",
         leading: UIView = UIView(),
-        center: UIView = UIView(),
         trailing: UIView = UIView()
     ) {
+        self.titleLabel.text = title
         self.leadingView = leading
-        self.centerView = center
         self.trailingView = trailing
         super.init(frame: .zero)
         setup()
@@ -67,9 +74,8 @@ extension NavigationBar {
             .alignItems(.center)
             .paddingHorizontal(20)
             .define { flex in
+                flex.addItem(titleLabel).position(.absolute).alignSelf(.center)
                 flex.addItem(leadingView)
-                flex.addItem().grow(1)
-                flex.addItem(centerView)
                 flex.addItem().grow(1)
                 flex.addItem(trailingView)
             }
