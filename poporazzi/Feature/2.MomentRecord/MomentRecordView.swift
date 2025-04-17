@@ -22,7 +22,11 @@ final class MomentRecordView: CodeBaseUI {
     private let navigationTrailingButtons = UIView()
     
     /// 더보기 버튼
-    let seemoreButton = NavigationButton(buttonType: .systemIcon(.ellipsis), colorType: .secondary)
+    let seemoreButton: NavigationButton = {
+        let button = NavigationButton(buttonType: .systemIcon(.ellipsis), colorType: .secondary)
+        button.button.showsMenuAsPrimaryAction = true
+        return button
+    }()
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), colorType: .primary)
@@ -57,8 +61,6 @@ final class MomentRecordView: CodeBaseUI {
         imageView.contentMode = .scaleAspectFill
         return imageView
     }()
-    
-    let cameraFloatingButton = FloatingButton(symbol: .camera)
     
     /// 촬영된 사진이 없을 때 라벨
     private let emptyLabel: UILabel = {
@@ -193,8 +195,6 @@ extension MomentRecordView {
                     flex.addItem(emptyLabel).marginTop(16)
                 }
             }
-            
-            flex.addItem(cameraFloatingButton).position(.absolute).bottom(40).right(24)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
