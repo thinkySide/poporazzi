@@ -17,10 +17,10 @@ extension UIFont {
         )
     }
     
-    /// 런드리고딕 폰트를 설정합니다.
-    static func setLaundryGothic(_ weight: LaundryGothic, _ size: CGFloat) -> UIFont? {
+    /// 둘기마요 고딕 폰트를 설정합니다.
+    static func setDovemayo(_ size: CGFloat) -> UIFont? {
         UIFont(
-            name: weight.fileName(),
+            name: DovemayoGothic.regular.fileName(),
             size: size
         )
     }
@@ -62,15 +62,13 @@ extension UIFont {
         }
     }
     
-    /// 런드리 고딕
-    enum LaundryGothic: CustomFont {
+    /// 둘기마요
+    enum DovemayoGothic: CustomFont {
         case regular
-        case bold
         
         func fileName() -> String {
             switch self {
-            case .regular: "OTLaundryGothicR"
-            case .bold: "OTLaundryGothicB"
+            case .regular: "Dovemayo_gothic"
             }
         }
     }

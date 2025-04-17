@@ -16,7 +16,7 @@ final class LineTextField: CodeBaseUI {
     /// 텍스트필드
     let textField: UITextField = {
         let textField = UITextField()
-        textField.font = .setPretendard(.semiBold, 24)
+        textField.font = .setDovemayo(24)
         textField.textColor = .mainLabel
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
