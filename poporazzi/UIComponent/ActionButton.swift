@@ -17,7 +17,7 @@ final class ActionButton: CodeBaseUI {
     let button: UIButton = {
         let button = UIButton()
         button.backgroundColor = .brandPrimary
-        button.titleLabel?.font = .setPretendard(.bold, 16)
+        button.titleLabel?.font = .setDovemayo(16)
         button.setTitleColor(.white, for: .normal)
         return button
     }()

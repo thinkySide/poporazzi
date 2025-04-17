@@ -41,6 +41,12 @@ extension MomentTitleInputViewController {
         )
         let output = viewModel.transform(input)
         
+        scene.titleTextField.textField.rx.text
+            .subscribe(with: self) { owner, _ in
+                owner.scene.titleTextField.action(.toggleLine)
+            }
+            .disposed(by: disposeBag)
+        
         output.isStartButtonEnabled
             .emit(with: self) { owner, isEnabled in
                 owner.scene.actionButton.action(.toggleEnabled(isEnabled))

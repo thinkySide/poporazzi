@@ -18,19 +18,15 @@ final class MomentTitleInputView: CodeBaseUI {
         let label = UILabel()
         label.text = "어떤 순간을 기록하고 싶으신가요?"
         label.textColor = .mainLabel
-        label.font = .setPretendard(.bold, 20)
+        label.font = .setDovemayo(22)
         return label
     }()
     
     /// 제목 텍스트필드
-    let titleTextField = LineTextField(
-        placeholder: "제주도 우정 여행, 성수동 데이트"
-    )
+    let titleTextField = LineTextField(size: 24, placeholder: "제주도 우정 여행, 성수동 데이트")
     
     /// 액션 버튼
-    let actionButton = ActionButton(
-        title: "기록 시작하기"
-    )
+    let actionButton = ActionButton(title: "기록 시작하기")
     
     init() {
         super.init(frame: .zero)
@@ -58,9 +54,7 @@ extension MomentTitleInputView {
     }
     
     func action(_ action: Action) {
-        switch action {
-            
-        }
+        
     }
 }
 
@@ -73,8 +67,8 @@ extension MomentTitleInputView {
             .direction(.column)
             .define { flex in
                 flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                    flex.addItem(headerLabel).marginTop(40)
-                    flex.addItem(titleTextField).marginTop(40)
+                    flex.addItem(headerLabel).marginTop(64)
+                    flex.addItem(titleTextField).marginTop(32)
                 }
             }
         

@@ -16,6 +16,14 @@ extension UIFont {
             size: size
         )
     }
+    
+    /// 둘기마요 고딕 폰트를 설정합니다.
+    static func setDovemayo(_ size: CGFloat) -> UIFont? {
+        UIFont(
+            name: DovemayoGothic.regular.fileName(),
+            size: size
+        )
+    }
 }
 
 extension UIFont {
@@ -50,6 +58,17 @@ extension UIFont {
             case .bold: "Pretendard-Bold"
             case .extraBold: "Pretendard-ExtraBold"
             case .black: "Pretendard-Black"
+            }
+        }
+    }
+    
+    /// 둘기마요
+    enum DovemayoGothic: CustomFont {
+        case regular
+        
+        func fileName() -> String {
+            switch self {
+            case .regular: "Dovemayo_gothic"
             }
         }
     }
