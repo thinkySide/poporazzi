@@ -30,6 +30,10 @@ final class MomentEditViewController: ViewController {
 extension MomentEditViewController {
     
     func bind() {
-        
+        scene.backButton.button.rx.tap
+            .subscribe(with: self) { owner, _ in
+                self.dismiss(animated: true)
+            }
+            .disposed(by: disposeBag)
     }
 }
