@@ -1,16 +1,16 @@
 # poporazzi 포포라치
-> 여행과 함께 사진을 정리하는 것에는 너무 많은 것이 나입니다! (개발자 이야기입니다.) 그냥 괜히 쉽게 사진 정리하자,,,!
+> 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
 |상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.0.0)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit|
-|앱스토어|정보 업데이트 예정|
+|앱스토어|[소중한 순간을 조용히 기록해두는 나만의 포포라치](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068)|
 |이메일 문의|eunlyuing@gmail.com|
 
 ### 완전 쉬운 포포라치 3️⃣단계 이용법
-1. 여행 전 기록 시작하기 버튼을 누르세요. 🎬
-2. 내 맘대로 여행을 즐기며 사진을 찍으세요. 📸
-3. 여행 다녀온 후 종료 버튼 마지막 앨범으로 쏙 저장하기! 🌃
+1. 여행 전 기록 시작하기 버튼 꾹 눌러놓기.
+2. 내맘대로 여행 즐기며 마음껏 사진 찍기.
+3. 여행 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기!
 
 ![Frame 2](https://github.com/user-attachments/assets/0e70e01e-e351-4205-9925-00ac5f57a2fa)
 
@@ -26,3 +26,5 @@
 |[#15 전체 Flow 연결](https://github.com/thinkySide/poporazzi/pull/15)|전체 Flow 연결, 기록 종료 Alert 추가, 화면 진입 시(SceneDelegate) 앨범 리스트 업데이트|
 |[#17 1.0.0 심사 제출](https://github.com/thinkySide/poporazzi/pull/17)|지원 OS iOS로 한정, 앱 로고 및 스크린샷 설정, 앱스토어 심사 설정|
 |[#24 Input & Output 패턴 리팩토링](https://github.com/thinkySide/poporazzi/pull/24)|Input & Output 패턴 리팩토링 및 컨벤션 확립, AlertAction 패턴 구현|
+|[#26 전체 UI 업데이트](https://github.com/thinkySide/poporazzi/pull/26)|둘기마요 폰트 적용, 디자인 일괄 업데이트, SFSymbol 관리 열거형 구현|
+|[#28 Input & Output 패턴 리팩토링](https://github.com/thinkySide/poporazzi/pull/28)|더보기 Menu 구현, Media 엔티티 업데이트, 기록 Cell MediaType 별 UI 구현|
