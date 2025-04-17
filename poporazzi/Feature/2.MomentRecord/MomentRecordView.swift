@@ -58,6 +58,8 @@ final class MomentRecordView: CodeBaseUI {
         return imageView
     }()
     
+    let cameraFloatingButton = FloatingButton(systemIcon: "camera.fill")
+    
     /// 촬영된 사진이 없을 때 라벨
     private let emptyLabel: UILabel = {
         let label = UILabel()
@@ -156,7 +158,7 @@ extension MomentRecordView {
             trackingStartDateLabel.flex.markDirty()
             
         case let .setTotalImageCountLabel(count):
-            totalPhotoCountLabel.text = "총 \(count)개"
+            totalPhotoCountLabel.text = count > 0 ? "총 \(count)개" : ""
             totalPhotoCountLabel.flex.markDirty()
             let display: Flex.Display = count > 0 ? .none : .flex
             appIconImageView.flex.display(display)
@@ -191,6 +193,8 @@ extension MomentRecordView {
                     flex.addItem(emptyLabel).marginTop(16)
                 }
             }
+            
+            flex.addItem(cameraFloatingButton).position(.absolute).bottom(40).right(24)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
