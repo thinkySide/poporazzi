@@ -49,9 +49,9 @@ extension PhotoKitService {
     }
     
     /// 기록을 반환합니다.
-    func fetchPhotos(_ fetchResult: PHFetchResult<PHAsset>?) -> Observable<[Photo]> {
+    func fetchPhotos(_ fetchResult: PHFetchResult<PHAsset>?) -> Observable<[Media]> {
         return Observable.create { observer in
-            var newImages = [UIImage]()
+            var newMedias = [Media]()
             let imageManager = PHImageManager.default()
             let requestOptions = PHImageRequestOptions()
             requestOptions.isSynchronous = true
@@ -65,13 +65,18 @@ extension PhotoKitService {
                     options: requestOptions,
                     resultHandler: { image, _ in
                         if let image = image {
-                            newImages.append(image)
+                            let media = Media(
+                                id: asset.localIdentifier,
+                                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+                                thumbnail: image
+                            )
+                            newMedias.append(media)
                         }
                     }
                 )
             }
             
-            observer.onNext(newImages.map { Photo(content: $0) })
+            observer.onNext(newMedias)
             observer.onCompleted()
             return Disposables.create()
         }

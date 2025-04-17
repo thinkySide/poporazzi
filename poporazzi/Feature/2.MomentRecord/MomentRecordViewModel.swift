@@ -26,7 +26,7 @@ final class MomentRecordViewModel: ViewModel {
     
     struct Output {
         let record: Driver<Record>
-        let photoList: Driver<[Photo]>
+        let mediaList: Driver<[Media]>
         let seemoreMenuPresented: Signal<UIMenu>
         let finishAlertPresented: Signal<Alert>
         let saveCompleteAlertPresented: Signal<Alert>
@@ -47,7 +47,7 @@ final class MomentRecordViewModel: ViewModel {
     private let menuAction = MenuAction()
     
     private let record = BehaviorRelay<Record>(value: .initialValue)
-    private let photoList = BehaviorRelay<[Photo]>(value: [])
+    private let mediaList = BehaviorRelay<[Media]>(value: [])
     private let seemoreMenuPresented = PublishRelay<UIMenu>()
     private let finishAlertPresented = PublishRelay<Alert>()
     private let saveCompleteAlertPresented = PublishRelay<Alert>()
@@ -77,7 +77,7 @@ extension MomentRecordViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .bind(to: photoList)
+            .bind(to: mediaList)
             .disposed(by: disposeBag)
         
         input.seemoreButtonTapped
@@ -115,7 +115,7 @@ extension MomentRecordViewModel {
         
         return Output(
             record: record.asDriver(),
-            photoList: photoList.asDriver(),
+            mediaList: mediaList.asDriver(),
             seemoreMenuPresented: seemoreMenuPresented.asSignal(),
             finishAlertPresented: finishAlertPresented.asSignal(),
             saveCompleteAlertPresented: saveCompleteAlertPresented.asSignal(),
@@ -137,7 +137,7 @@ extension MomentRecordViewModel {
     }
     
     /// 현재 사진 리스트를 반환합니다.
-    private func fetchCurrentPhotos() -> Observable<[Photo]> {
+    private func fetchCurrentPhotos() -> Observable<[Media]> {
         let trackingStartDate = UserDefaultsService.trackingStartDate
         fetchResult = photoKitService.fetchAssetResult(
             mediaFetchType: .all,
@@ -161,7 +161,7 @@ extension MomentRecordViewModel {
     /// 기록 종료 Alert
     private var finishAlert: Alert {
         let title = UserDefaultsService.albumTitle
-        let totalCount = photoList.value.count
+        let totalCount = mediaList.value.count
         return Alert(
             title: "기록을 종료할까요?",
             message: "총 \(totalCount)장의 '\(title)' 기록 종료 후 앨범에 저장돼요",

@@ -46,19 +46,20 @@ extension MomentRecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.photoList
+        output.mediaList
             .drive(scene.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
-            )) { [weak self] index, photo, cell in
-                cell.action(.setImage(photo.content))
+            )) { [weak self] index, media, cell in
+                cell.action(.setImage(media.thumbnail))
+                cell.action(.setMediaType(media.mediaType))
                 self?.scene.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         
-        output.photoList
-            .drive(with: self) { owner, photos in
-                owner.scene.action(.setTotalImageCountLabel(photos.count))
+        output.mediaList
+            .drive(with: self) { owner, medias in
+                owner.scene.action(.setTotalImageCountLabel(medias.count))
                 owner.scene.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
