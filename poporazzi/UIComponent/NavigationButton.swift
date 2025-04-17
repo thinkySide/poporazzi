@@ -17,23 +17,45 @@ final class NavigationButton: CodeBaseUI {
         case systemIcon(String)
     }
     
+    enum ColorType {
+        case primary
+        case secondary
+        
+        var background: UIColor {
+            switch self {
+            case .primary: .brandPrimary
+            case .secondary: .brandSecondary
+            }
+        }
+        
+        var title: UIColor {
+            switch self {
+            case .primary: .white
+            case .secondary: .subLabel
+            }
+        }
+    }
+    
     var containerView = UIView()
     
     private let buttonType: ButtonType
     
     var button = UIButton()
     
-    init(buttonType: ButtonType) {
+    init(buttonType: ButtonType, colorType: ColorType) {
         self.buttonType = buttonType
         super.init(frame: .zero)
         switch buttonType {
         case let .text(title):
             self.button.setTitle(title, for: .normal)
-            self.button.setTitleColor(.brandPrimary, for: .normal)
-            self.button.titleLabel?.font = .setPretendard(.semiBold, 15)
+            self.button.setTitleColor(colorType.title, for: .normal)
+            self.button.titleLabel?.font = .setDovemayo(15)
         case let .systemIcon(systemName):
-            self.button.setImage(UIImage(systemName: systemName), for: .normal)
+            let symbol = UIImage(systemName: systemName)
+            self.button.setImage(symbol, for: .normal)
+            self.button.tintColor = colorType.title
         }
+        self.button.backgroundColor = colorType.background
         setup()
     }
     
@@ -67,8 +89,7 @@ extension NavigationButton {
     
     func configLayout() {
         containerView.flex.height(40).define { flex in
-            flex.addItem(button)
+            flex.addItem(button).paddingHorizontal(10).height(28).cornerRadius(14)
         }
     }
 }
-

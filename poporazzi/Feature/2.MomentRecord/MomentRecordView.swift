@@ -15,16 +15,22 @@ final class MomentRecordView: CodeBaseUI {
     
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
-        trailing: finishRecordButton
+        trailing: navigationTrailingButtons
     )
     
+    /// 오른쪽 버튼들
+    private let navigationTrailingButtons = UIView()
+    
+    /// 더보기 버튼
+    let seemoreButton = NavigationButton(buttonType: .systemIcon("ellipsis"), colorType: .secondary)
+    
     /// 기록 종료 버튼
-    let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"))
+    let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), colorType: .primary)
     
     /// 앨범 제목 라벨
     private let albumTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = .setPretendard(.bold, 22)
+        label.font = .setDovemayo(24)
         label.textColor = .mainLabel
         return label
     }()
@@ -32,7 +38,7 @@ final class MomentRecordView: CodeBaseUI {
     /// 트래킹 시작 날짜 라벨
     private let trackingStartDateLabel: UILabel = {
         let label = UILabel()
-        label.font = .setPretendard(.medium, 14)
+        label.font = .setDovemayo(16)
         label.textColor = .subLabel
         return label
     }()
@@ -40,18 +46,25 @@ final class MomentRecordView: CodeBaseUI {
     /// 총 사진 개수 라벨
     private let totalPhotoCountLabel: UILabel = {
         let label = UILabel()
-        label.font = .setPretendard(.semiBold, 15)
+        label.font = .setDovemayo(16)
         label.textColor = .subLabel
         return label
+    }()
+    
+    /// 앱 아이콘
+    private let appIconImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(resource: .appIcon))
+        imageView.contentMode = .scaleAspectFill
+        return imageView
     }()
     
     /// 촬영된 사진이 없을 때 라벨
     private let emptyLabel: UILabel = {
         let label = UILabel()
-        label.text = "📸\n지금부터 촬영한 모든 사진과\n영상이 기록될 거에요!"
+        label.text = "지금부터 촬영한 모든 사진과\n영상이 기록될 거에요!"
         label.numberOfLines = 3
         label.setLine(alignment: .center, spacing: 8)
-        label.font = .setPretendard(.semiBold, 14)
+        label.font = .setDovemayo(16)
         label.textColor = .subLabel
         return label
     }()
@@ -145,7 +158,9 @@ extension MomentRecordView {
         case let .setTotalImageCountLabel(count):
             totalPhotoCountLabel.text = "총 \(count)개"
             totalPhotoCountLabel.flex.markDirty()
-            emptyLabel.flex.display(count > 0 ? .none : .flex)
+            let display: Flex.Display = count > 0 ? .none : .flex
+            appIconImageView.flex.display(display)
+            emptyLabel.flex.display(display)
         }
     }
 }
@@ -155,25 +170,32 @@ extension MomentRecordView {
 extension MomentRecordView {
     
     func configLayout() {
-        containerView.flex.direction(.column)
-            .define { flex in
-                flex.addItem(navigationBar)
+        containerView.flex.direction(.column).define { flex in
+            flex.addItem(navigationBar)
+            
+            flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
+                flex.addItem(albumTitleLabel)
                 
-                flex.addItem().direction(.column).paddingHorizontal(20)
-                    .define { flex in
-                        flex.addItem(albumTitleLabel)
-                        
-                        flex.addItem().direction(.row).marginTop(10).define { flex in
-                            flex.addItem(trackingStartDateLabel)
-                            flex.addItem().grow(1)
-                            flex.addItem(totalPhotoCountLabel)
-                        }
-                    }
-                
-                flex.addItem().grow(1).marginTop(24).define { flex in
-                    flex.addItem(albumCollectionView).position(.absolute).all(0)
-                    flex.addItem(emptyLabel).position(.absolute).alignSelf(.center).top(35%)
+                flex.addItem().direction(.row).marginTop(10).define { flex in
+                    flex.addItem(trackingStartDateLabel)
+                    flex.addItem().grow(1)
+                    flex.addItem(totalPhotoCountLabel)
                 }
             }
+            
+            flex.addItem().grow(1).marginTop(24).define { flex in
+                flex.addItem(albumCollectionView).position(.absolute).all(0)
+                
+                flex.addItem().direction(.column).position(.absolute).alignSelf(.center).alignItems(.center).top(30%).define { flex in
+                    flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
+                    flex.addItem(emptyLabel).marginTop(16)
+                }
+            }
+        }
+        
+        navigationTrailingButtons.flex.direction(.row).define { flex in
+            flex.addItem(seemoreButton)
+            flex.addItem(finishRecordButton).marginLeft(8)
+        }
     }
 }
