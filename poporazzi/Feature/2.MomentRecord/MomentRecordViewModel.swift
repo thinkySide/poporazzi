@@ -154,8 +154,8 @@ extension MomentRecordViewModel {
         let title = UserDefaultsService.albumTitle
         let totalCount = photoList.value.count
         return Alert(
-            title: "기록을 종료합니다.",
-            message: "총 \(totalCount)장의 '\(title)' 기록이 종료돼요",
+            title: "기록을 종료할까요?",
+            message: "총 \(totalCount)장의 '\(title)' 기록 종료 후 앨범에 저장돼요",
             eventButton: .init(title: "종료", action: alert.save),
             cancelButton: .init(title: "취소")
         )
@@ -163,9 +163,10 @@ extension MomentRecordViewModel {
     
     /// 앨범 저장 Alert
     private var saveAlert: Alert {
-        Alert(
-            title: "기록이 앨범에 저장되었습니다.",
-            message: "앨범 앱을 확인해주세요!",
+        let title = UserDefaultsService.albumTitle
+        return Alert(
+            title: "기록이 종료되었습니다!",
+            message: "'\(title)' 앨범을 확인해보세요!",
             eventButton: .init(title: "홈으로 돌아가기", action: alert.navigateToHome)
         )
     }
