@@ -32,6 +32,18 @@ final class MomentEditView: CodeBaseUI {
         colorType: .secondary
     )
     
+    /// 제목 양식 라벨
+    let titleFormLabel = FormLabel(title: "앨범 이름")
+    
+    /// 제목 텍스트필드
+    let titleTextField = LineTextField(size: 20, placeholder: "플레이스홀더")
+    
+    /// 시작날짜 양식 라벨
+    let startDateFormLabel = FormLabel(title: "시작 날짜")
+    
+    /// 시작날짜 피커
+    let startDatePicker = DatePicker()
+    
     init() {
         super.init(frame: .zero)
         setup()
@@ -68,6 +80,18 @@ extension MomentEditView {
     func configLayout() {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
+            
+            flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
+                flex.addItem().marginTop(24).define { flex in
+                    flex.addItem(titleFormLabel)
+                    flex.addItem(titleTextField).marginTop(12)
+                }
+                
+                flex.addItem().marginTop(32).define { flex in
+                    flex.addItem(startDateFormLabel)
+                    flex.addItem(startDatePicker).marginTop(12)
+                }
+            }
         }
     }
 }

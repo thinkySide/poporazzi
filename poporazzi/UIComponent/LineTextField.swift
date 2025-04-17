@@ -82,7 +82,7 @@ extension LineTextField {
     func configLayout() {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(textField)
-            flex.addItem(bottomLine).marginTop(14).height(2)
+            flex.addItem(bottomLine).marginTop(10).height(2)
         }
     }
 }

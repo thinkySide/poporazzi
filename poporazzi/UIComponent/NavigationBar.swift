@@ -47,21 +47,6 @@ final class NavigationBar: CodeBaseUI {
     }
 }
 
-// MARK: - Action
-
-extension NavigationBar {
-    
-    enum Action {
-        
-    }
-    
-    func action(_ action: Action) {
-        switch action {
-            
-        }
-    }
-}
-
 // MARK: - Layout
 
 extension NavigationBar {

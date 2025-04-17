@@ -52,19 +52,6 @@ final class FloatingButton: CodeBaseUI {
     }
 }
 
-// MARK: - Action
-
-extension FloatingButton {
-    
-    enum Action {
-        
-    }
-    
-    func action(_ action: Action) {
-        
-    }
-}
-
 // MARK: - Layout
 
 extension FloatingButton {

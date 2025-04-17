@@ -53,8 +53,7 @@ final class NavigationButton: CodeBaseUI {
             self.button.titleLabel?.font = .setDovemayo(15)
             
         case let .systemIcon(symbol, size, weight):
-            let config = UIImage.SymbolConfiguration(pointSize: size, weight: weight)
-            let symbol = UIImage(systemName: symbol.rawValue, withConfiguration: config)
+            let symbol = UIImage(symbol: symbol, size: size, weight: weight)
             self.button.setImage(symbol, for: .normal)
             self.button.tintColor = colorType.title
         }
@@ -71,19 +70,6 @@ final class NavigationButton: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
-    }
-}
-
-// MARK: - Action
-
-extension NavigationButton {
-    
-    enum Action {
-        
-    }
-    
-    func action(_ action: Action) {
-        
     }
 }
 

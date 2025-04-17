@@ -13,8 +13,6 @@ typealias CodeBaseUI = UIView & CodeBaseUIProtocol
 /// Code Base UI 구현 시 필요한 필수 구현 프로토콜
 protocol CodeBaseUIProtocol: UIView {
     
-    associatedtype Action
-    
     /// FlexLayout을 위한 Container View
     var containerView: UIView { get }
     
@@ -23,9 +21,6 @@ protocol CodeBaseUIProtocol: UIView {
     
     /// 레이아웃 구성
     func configLayout()
-    
-    /// 화면에서 실행 가능한 액션
-    func action(_ action: Action)
 }
 
 // MARK: - CodeBaseUIViewProtocol 기본 구현
