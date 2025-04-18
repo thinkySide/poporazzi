@@ -21,6 +21,7 @@ final class MomentEditViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupGesture()
         bind()
     }
 }
@@ -47,6 +48,13 @@ extension MomentEditViewController {
             .drive(with: self) { owner, record in
                 owner.scene.titleTextField.action(.updateText(record.title))
                 owner.scene.titleTextField.action(.updatePlaceholder(record.title))
+                owner.scene.startDatePicker.action(.updateDate(record.trackingStartDate))
+            }
+            .disposed(by: disposeBag)
+        
+        scene.startDatePicker.tapGesture.rx.event
+            .subscribe(with: self) { owner, _ in
+                owner.presentDatePickerModal()
             }
             .disposed(by: disposeBag)
         
@@ -61,5 +69,26 @@ extension MomentEditViewController {
                 owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
+    }
+}
+
+// MARK: - Gesture
+
+extension MomentEditViewController {
+    
+    private func setupGesture() {
+        scene.startDatePicker.addGestureRecognizer(scene.startDatePicker.tapGesture)
+    }
+}
+
+// MARK: - Navigation
+
+extension MomentEditViewController {
+    
+    /// 날짜 선택 모달을 출력합니다.
+    private func presentDatePickerModal() {
+        let datePickerVC = DatePickerModalViewController()
+        datePickerVC.sheetPresentationController?.detents = [.medium()]
+        self.present(datePickerVC, animated: true)
     }
 }

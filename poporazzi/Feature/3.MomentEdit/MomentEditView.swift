@@ -42,7 +42,7 @@ final class MomentEditView: CodeBaseUI {
     let startDateFormLabel = FormLabel(title: "시작 날짜")
     
     /// 시작날짜 피커
-    let startDatePicker = DatePicker()
+    let startDatePicker = FormDatePicker()
     
     init() {
         super.init(frame: .zero)
