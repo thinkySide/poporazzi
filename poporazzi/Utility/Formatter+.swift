@@ -23,6 +23,12 @@ extension Date {
         Date.dateFormatter.dateFormat = "yyyy년 M월 d일 E요일 ~"
         return Date.dateFormatter.string(from: self)
     }
+    
+    /// 시작 날짜 전체 포맷을 반환합니다.
+    var startDateFullFormat: String {
+        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 E요일 HH시 mm분~"
+        return Date.dateFormatter.string(from: self)
+    }
 }
 
 // MARK: - TimeInterval

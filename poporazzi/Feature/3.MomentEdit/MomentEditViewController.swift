@@ -52,6 +52,12 @@ extension MomentEditViewController {
             }
             .disposed(by: disposeBag)
         
+        ouput.isSaveButtonEnabled
+            .drive(with: self) { owner, isEnabled in
+                owner.scene.saveButton.action(.toggleDisabled(!isEnabled))
+            }
+            .disposed(by: disposeBag)
+        
         scene.startDatePicker.tapGesture.rx.event
             .subscribe(with: self) { owner, _ in
                 owner.presentDatePickerModal()

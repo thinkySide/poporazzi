@@ -22,11 +22,13 @@ final class MomentEditViewModel: ViewModel {
     struct Output {
         let record: Driver<Record>
         let titleText: Signal<String>
+        let isSaveButtonEnabled: Driver<Bool>
         let dismiss: Signal<Void>
     }
     
     private let record = BehaviorRelay<Record>(value: .initialValue)
     private let titleText = BehaviorRelay<String>(value: "")
+    private let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     private let dismiss = PublishRelay<Void>()
 }
 
@@ -45,10 +47,17 @@ extension MomentEditViewModel {
             .emit(to: titleText)
             .disposed(by: disposeBag)
         
+        input.titleTextChanged
+            .map { !$0.isEmpty }
+            .emit(to: isSaveButtonEnabled)
+            .disposed(by: disposeBag)
+        
         input.saveButtonTapped
             .withUnretained(self)
             .emit { owner, _ in
-                UserDefaultsService.albumTitle = owner.titleText.value
+                let currentTitle = owner.titleText.value
+                let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
+                UserDefaultsService.albumTitle = albumTitle
                 owner.dismiss.accept(())
             }
             .disposed(by: disposeBag)
@@ -56,6 +65,7 @@ extension MomentEditViewModel {
         return Output(
             record: record.asDriver(),
             titleText: titleText.asSignal(onErrorJustReturn: ""),
+            isSaveButtonEnabled: isSaveButtonEnabled.asDriver(),
             dismiss: dismiss.asSignal()
         )
     }

@@ -60,7 +60,7 @@ extension FormDatePicker {
     func action(_ action: Action) {
         switch action {
         case let .updateDate(date):
-            dateLabel.text = date.startDateFormat
+            dateLabel.text = date.startDateFullFormat
             dateLabel.flex.markDirty()
         }
     }

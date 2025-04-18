@@ -17,18 +17,18 @@ final class NavigationButton: CodeBaseUI {
         case systemIcon(SFSymbol, size: CGFloat, weight: UIImage.SymbolWeight)
     }
     
-    enum ColorType {
+    enum Variation {
         case primary
         case secondary
         
-        var background: UIColor {
+        var backgroundColor: UIColor {
             switch self {
             case .primary: .brandPrimary
             case .secondary: .brandSecondary
             }
         }
         
-        var title: UIColor {
+        var titleColor: UIColor {
             switch self {
             case .primary: .white
             case .secondary: .subLabel
@@ -42,23 +42,23 @@ final class NavigationButton: CodeBaseUI {
     
     var button = UIButton()
     
-    init(buttonType: ButtonType, colorType: ColorType) {
+    init(buttonType: ButtonType, variation: Variation) {
         self.buttonType = buttonType
         super.init(frame: .zero)
         
         switch buttonType {
         case let .text(title):
             self.button.setTitle(title, for: .normal)
-            self.button.setTitleColor(colorType.title, for: .normal)
+            self.button.setTitleColor(variation.titleColor, for: .normal)
             self.button.titleLabel?.font = .setDovemayo(15)
             
         case let .systemIcon(symbol, size, weight):
             let symbol = UIImage(symbol: symbol, size: size, weight: weight)
             self.button.setImage(symbol, for: .normal)
-            self.button.tintColor = colorType.title
+            self.button.tintColor = variation.titleColor
         }
         
-        self.button.backgroundColor = colorType.background
+        self.button.backgroundColor = variation.backgroundColor
         setup()
     }
     
@@ -70,6 +70,23 @@ final class NavigationButton: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
+    }
+}
+
+// MARK: - Action
+
+extension NavigationButton {
+    
+    enum Action {
+        case toggleDisabled(Bool)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .toggleDisabled(bool):
+            self.alpha = bool ? 0.4 : 1
+            self.isUserInteractionEnabled = !bool
+        }
     }
 }
 
