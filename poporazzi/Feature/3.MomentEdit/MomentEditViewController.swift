@@ -30,9 +30,35 @@ final class MomentEditViewController: ViewController {
 extension MomentEditViewController {
     
     func bind() {
+        let input = MomentEditViewModel.Input(
+            viewDidLoad: .just(()),
+            titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
+            saveButtonTapped: scene.saveButton.button.rx.tap.asSignal()
+        )
+        let ouput = viewModel.transform(input)
+        
+        scene.titleTextField.textField.rx.text
+            .subscribe(with: self) { owner, title in
+                owner.scene.titleTextField.action(.toggleLine)
+            }
+            .disposed(by: disposeBag)
+        
+        ouput.record
+            .drive(with: self) { owner, record in
+                owner.scene.titleTextField.action(.updateText(record.title))
+                owner.scene.titleTextField.action(.updatePlaceholder(record.title))
+            }
+            .disposed(by: disposeBag)
+        
+        ouput.dismiss
+            .emit(with: self) { owner, _ in
+                owner.dismiss(animated: true)
+            }
+            .disposed(by: disposeBag)
+        
         scene.backButton.button.rx.tap
             .subscribe(with: self) { owner, _ in
-                self.dismiss(animated: true)
+                owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
     }
