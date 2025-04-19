@@ -12,6 +12,12 @@ import Photos
 
 final class MomentRecordViewModel: ViewModel {
     
+    private let sharedState: SharedState
+    
+    init(sharedState: SharedState) {
+        self.sharedState = sharedState
+    }
+    
     private let disposeBag = DisposeBag()
     private let photoKitService = PhotoKitService()
     private var fetchResult: PHFetchResult<PHAsset>?
@@ -68,7 +74,7 @@ extension MomentRecordViewModel {
         
         updateRecord
             .withUnretained(self)
-            .map { owner, _ in owner.currentRecord() }
+            .map { owner, _ in owner.sharedState.record.value }
             .emit(to: record)
             .disposed(by: disposeBag)
         
@@ -129,16 +135,9 @@ extension MomentRecordViewModel {
 
 extension MomentRecordViewModel {
     
-    /// UserDefault 값을 기반으로 Record를 반환합니다.
-    private func currentRecord() -> Record {
-        let albumTitle = UserDefaultsService.albumTitle
-        let trackingStartDate = UserDefaultsService.trackingStartDate
-        return Record(title: albumTitle, trackingStartDate: trackingStartDate)
-    }
-    
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
-        let trackingStartDate = UserDefaultsService.trackingStartDate
+        let trackingStartDate = sharedState.record.value.trackingStartDate
         fetchResult = photoKitService.fetchAssetResult(
             mediaFetchType: .all,
             date: trackingStartDate,
@@ -149,7 +148,7 @@ extension MomentRecordViewModel {
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        let title = UserDefaultsService.albumTitle
+        let title = sharedState.record.value.title
         try photoKitService.saveAlbum(title: title, assets: fetchResult)
     }
 }
@@ -160,7 +159,7 @@ extension MomentRecordViewModel {
     
     /// 기록 종료 Alert
     private var finishAlert: Alert {
-        let title = UserDefaultsService.albumTitle
+        let title = sharedState.record.value.title
         let totalCount = mediaList.value.count
         return Alert(
             title: "기록을 종료할까요?",
@@ -172,7 +171,7 @@ extension MomentRecordViewModel {
     
     /// 앨범 저장 Alert
     private var saveAlert: Alert {
-        let title = UserDefaultsService.albumTitle
+        let title = sharedState.record.value.title
         return Alert(
             title: "기록이 종료되었습니다!",
             message: "'\(title)' 앨범을 확인해보세요!",

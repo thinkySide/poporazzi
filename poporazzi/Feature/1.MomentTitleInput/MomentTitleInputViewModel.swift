@@ -11,6 +11,12 @@ import RxCocoa
 
 final class MomentTitleInputViewModel: ViewModel {
     
+    private let sharedState: SharedState
+    
+    init(sharedState: SharedState) {
+        self.sharedState = sharedState
+    }
+    
     private let disposeBag = DisposeBag()
     
     struct Input {
@@ -46,8 +52,11 @@ extension MomentTitleInputViewModel {
         input.startButtonTapped
             .emit(with: self) { owner, _ in
                 UserDefaultsService.isTracking = true
-                UserDefaultsService.albumTitle = owner.titleText.value
-                UserDefaultsService.trackingStartDate = .now
+                let record = Record(
+                    title: owner.titleText.value,
+                    trackingStartDate: .now
+                )
+                owner.sharedState.record.accept(record)
                 owner.navigateToRecord.accept(())
             }
             .disposed(by: disposeBag)
