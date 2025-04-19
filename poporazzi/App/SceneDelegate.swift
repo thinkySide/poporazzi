@@ -9,31 +9,23 @@ import UIKit
 import RxSwift
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
+    
     var window: UIWindow?
+    var coordinator: AppCoordinator?
     
     private let disposeBag = DisposeBag()
-
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = MomentTitleInputViewController()
+        let navigationController = UINavigationController()
+        coordinator = AppCoordinator(navigationController: navigationController)
+        coordinator?.start()
+        window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
         
         if UserDefaultsService.isTracking {
-            presentMomentRecortViewController()
+            coordinator?.presentMomentRecortViewController()
         }
-    }
-}
-
-// MARK: - Helper
-
-extension SceneDelegate {
-    
-    private func presentMomentRecortViewController() {
-        let momentRecordVC = MomentRecordViewController()
-        momentRecordVC.modalPresentationStyle = .fullScreen
-        momentRecordVC.modalTransitionStyle = .crossDissolve
-        window?.rootViewController?.present(momentRecordVC, animated: true)
     }
 }

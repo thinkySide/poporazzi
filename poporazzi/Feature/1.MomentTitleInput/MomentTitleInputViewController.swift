@@ -11,9 +11,17 @@ import RxCocoa
 
 final class MomentTitleInputViewController: ViewController {
     
+    private weak var coordinator: AppCoordinator?
+    private let viewModel: MomentTitleInputViewModel
+    
     private let scene = MomentTitleInputView()
-    private let viewModel = MomentTitleInputViewModel()
     private let disposeBag = DisposeBag()
+    
+    init(coordinator: AppCoordinator, viewModel: MomentTitleInputViewModel) {
+        self.coordinator = coordinator
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene
@@ -56,21 +64,8 @@ extension MomentTitleInputViewController {
         output.didNavigateToRecord
             .emit(with: self) { owner, _ in
                 owner.scene.titleTextField.textField.text = ""
-                owner.presentMomentRecord()
+                owner.coordinator?.presentMomentRecortViewController()
             }
             .disposed(by: disposeBag)
-    }
-}
-
-// MARK: - Navigation
-
-extension MomentTitleInputViewController {
-    
-    /// 기록 화면을 출력합니다.
-    private func presentMomentRecord() {
-        let momentRecordVC = MomentRecordViewController()
-        momentRecordVC.modalPresentationStyle = .fullScreen
-        momentRecordVC.modalTransitionStyle = .crossDissolve
-        self.present(momentRecordVC, animated: true)
     }
 }
