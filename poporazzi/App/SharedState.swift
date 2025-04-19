@@ -17,11 +17,14 @@ final class SharedState {
     /// 기록 정보
     let record: BehaviorRelay<Record>
     
+    /// 기록 중인지 여부
+    let isTracking: BehaviorRelay<Bool>
+    
     init() {
-        let title = UserDefaultsService.albumTitle
-        let trackingStartDate = UserDefaultsService.trackingStartDate
-        let lastRecord = Record(title: title, trackingStartDate: trackingStartDate)
-        record = .init(value: lastRecord)
+        let lastTitle = UserDefaultsService.albumTitle
+        let lastTrackingStartDate = UserDefaultsService.trackingStartDate
+        record = .init(value: .init(title: lastTitle, trackingStartDate: lastTrackingStartDate))
+        isTracking = .init(value: UserDefaultsService.isTracking)
         bind()
     }
 }
@@ -31,11 +34,6 @@ final class SharedState {
 extension SharedState {
     
     private func bind() {
-        record
-            .bind(with: self) { owner, record in
-                UserDefaultsService.albumTitle = record.title
-                UserDefaultsService.trackingStartDate = record.trackingStartDate
-            }
-            .disposed(by: disposeBag)
+        
     }
 }

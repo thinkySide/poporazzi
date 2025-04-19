@@ -13,14 +13,13 @@ import Photos
 final class MomentRecordViewModel: ViewModel {
     
     private let sharedState: SharedState
+    private let disposeBag = DisposeBag()
+    private let photoKitService = PhotoKitService()
+    private var fetchResult: PHFetchResult<PHAsset>?
     
     init(sharedState: SharedState) {
         self.sharedState = sharedState
     }
-    
-    private let disposeBag = DisposeBag()
-    private let photoKitService = PhotoKitService()
-    private var fetchResult: PHFetchResult<PHAsset>?
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -111,7 +110,7 @@ extension MomentRecordViewModel {
             .disposed(by: disposeBag)
         
         alertAction.navigateToHome
-            .do { _ in UserDefaultsService.isTracking = false }
+            .do { [weak self] _ in self?.sharedState.isTracking.accept(false) }
             .bind(to: navigateToHome)
             .disposed(by: disposeBag)
         

@@ -11,7 +11,12 @@ import RxCocoa
 
 final class DatePickerModalViewModel: ViewModel {
     
+    private let sharedState: SharedState
     private let disposeBag = DisposeBag()
+    
+    init(sharedState: SharedState) {
+        self.sharedState = sharedState
+    }
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -32,7 +37,7 @@ extension DatePickerModalViewModel {
     func transform(_ input: Input) -> Output {
         input.viewDidLoad
             .emit(with: self) { owner, _ in
-                let startDate = UserDefaultsService.trackingStartDate
+                let startDate = owner.sharedState.record.value.trackingStartDate
                 owner.selectedDate.accept(startDate)
             }
             .disposed(by: disposeBag)

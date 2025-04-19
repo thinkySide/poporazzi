@@ -11,7 +11,12 @@ import RxCocoa
 
 final class MomentEditViewModel: ViewModel {
     
+    private let sharedState: SharedState
     private let disposeBag = DisposeBag()
+    
+    init(sharedState: SharedState) {
+        self.sharedState = sharedState
+    }
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -39,7 +44,7 @@ extension MomentEditViewModel {
     func transform(_ input: Input) -> Output {
         input.viewDidLoad
             .withUnretained(self)
-            .map { owner, _ in owner.currentRecord() }
+            .map { owner, _ in owner.sharedState.record.value }
             .emit(to: record)
             .disposed(by: disposeBag)
         
@@ -56,8 +61,8 @@ extension MomentEditViewModel {
             .withUnretained(self)
             .emit { owner, _ in
                 let currentTitle = owner.titleText.value
-                let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
-                UserDefaultsService.albumTitle = albumTitle
+                let albumTitle = currentTitle.isEmpty ? owner.sharedState.record.value.title : currentTitle
+                // owner.sharedState.record.value.title.accept(albumTitle)
                 owner.dismiss.accept(())
             }
             .disposed(by: disposeBag)
@@ -68,17 +73,5 @@ extension MomentEditViewModel {
             isSaveButtonEnabled: isSaveButtonEnabled.asDriver(),
             dismiss: dismiss.asSignal()
         )
-    }
-}
-
-// MARK: - Logic
-
-extension MomentEditViewModel {
-    
-    /// UserDefault 값을 기반으로 Record를 반환합니다.
-    private func currentRecord() -> Record {
-        let albumTitle = UserDefaultsService.albumTitle
-        let trackingStartDate = UserDefaultsService.trackingStartDate
-        return Record(title: albumTitle, trackingStartDate: trackingStartDate)
     }
 }

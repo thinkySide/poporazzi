@@ -17,10 +17,11 @@ final class AppCoordinator {
     private var viewStack: [UIViewController] = []
     
     /// 공유 상태
-    private var sharedState = SharedState()
+    private var sharedState: SharedState
     
-    init(navigationController: UINavigationController) {
+    init(navigationController: UINavigationController, sharedState: SharedState) {
         self.navigationController = navigationController
+        self.sharedState = sharedState
         navigationController.setNavigationBarHidden(true, animated: false)
     }
     
@@ -28,7 +29,12 @@ final class AppCoordinator {
     func start() {
         let viewModel = MomentTitleInputViewModel(sharedState: sharedState)
         let viewController = MomentTitleInputViewController(coordinator: self, viewModel: viewModel)
-        push(viewController)
+        navigationController.pushViewController(viewController, animated: false)
+        viewStack.append(viewController)
+        
+        if sharedState.isTracking.value {
+            pushMomentRecord()
+        }
     }
 }
 
@@ -62,17 +68,17 @@ extension AppCoordinator {
 extension AppCoordinator {
     
     /// 기록 트래킹 화면을 출력합니다.
-    func presentMomentRecord() {
+    func pushMomentRecord() {
         let viewModel = MomentRecordViewModel(sharedState: sharedState)
         let momentRecordVC = MomentRecordViewController(coordinator: self, viewModel: viewModel)
         momentRecordVC.modalPresentationStyle = .fullScreen
         momentRecordVC.modalTransitionStyle = .crossDissolve
-        present(momentRecordVC)
+        push(momentRecordVC)
     }
     
     /// 기록 수정 화면을 출력합니다.
     func presentMomentEdit() {
-        let viewModel = MomentEditViewModel()
+        let viewModel = MomentEditViewModel(sharedState: sharedState)
         let momentEditVC = MomentEditViewController(coordinator: self, viewModel: viewModel)
         momentEditVC.modalPresentationStyle = .overFullScreen
         present(momentEditVC)
@@ -80,7 +86,7 @@ extension AppCoordinator {
     
     /// 날짜 선택 모달을 출력합니다.
     func presentDatePickerModal() {
-        let viewModel = DatePickerModalViewModel()
+        let viewModel = DatePickerModalViewModel(sharedState: sharedState)
         let datePickerVC = DatePickerModalViewController(coordinator: self, viewModel: viewModel)
         datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
         datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
