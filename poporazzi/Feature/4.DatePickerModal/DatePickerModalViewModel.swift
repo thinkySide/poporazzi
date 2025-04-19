@@ -14,12 +14,15 @@ final class DatePickerModalViewModel: ViewModel {
     private let disposeBag = DisposeBag()
     
     struct Input {
-        
+        let viewDidLoad: Signal<Void>
+        let datePickerChanged: Signal<Date>
     }
     
     struct Output {
-        
+        let selectedDate: Driver<Date>
     }
+    
+    private let selectedDate = BehaviorRelay<Date>(value: .now)
 }
 
 // MARK: - Transform
@@ -27,6 +30,21 @@ final class DatePickerModalViewModel: ViewModel {
 extension DatePickerModalViewModel {
     
     func transform(_ input: Input) -> Output {
-        return Output()
+        input.viewDidLoad
+            .emit(with: self) { owner, _ in
+                let startDate = UserDefaultsService.trackingStartDate
+                owner.selectedDate.accept(startDate)
+            }
+            .disposed(by: disposeBag)
+        
+        input.datePickerChanged
+            .emit(with: self) { owner, date in
+                owner.selectedDate.accept(date)
+            }
+            .disposed(by: disposeBag)
+        
+        return Output(
+            selectedDate: selectedDate.asDriver()
+        )
     }
 }

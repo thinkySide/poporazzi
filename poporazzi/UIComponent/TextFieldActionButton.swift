@@ -1,43 +1,31 @@
 //
-//  ActionButton.swift
+//  TextFieldActionButton.swift
 //  poporazzi
 //
-//  Created by 김민준 on 4/19/25.
+//  Created by 김민준 on 4/4/25.
 //
 
 import UIKit
 import PinLayout
 import FlexLayout
 
-final class ActionButton: CodeBaseUI {
-    
-    enum Variation {
-        case primary
-        case secondary
-    }
+final class TextFieldActionButton: CodeBaseUI {
     
     var containerView = UIView()
     
     /// 버튼
     let button: UIButton = {
         let button = UIButton()
+        button.backgroundColor = .brandPrimary
         button.titleLabel?.font = .setDovemayo(16)
-        button.clipsToBounds = true
+        button.setTitleColor(.white, for: .normal)
         return button
     }()
     
-    init(title: String, variataion: Variation) {
+    init(title: String) {
         super.init(frame: .zero)
-        setup()
         button.setTitle(title, for: .normal)
-        switch variataion {
-        case .primary:
-            button.backgroundColor = .brandPrimary
-            button.setTitleColor(.white, for: .normal)
-        case .secondary:
-            button.backgroundColor = .brandSecondary
-            button.setTitleColor(.subLabel, for: .normal)
-        }
+        setup()
     }
     
     required init?(coder: NSCoder) {
@@ -53,7 +41,7 @@ final class ActionButton: CodeBaseUI {
 
 // MARK: - Action
 
-extension ActionButton {
+extension TextFieldActionButton {
     
     enum Action {
         case toggleEnabled(Bool)
@@ -70,12 +58,13 @@ extension ActionButton {
 
 // MARK: - Layout
 
-extension ActionButton {
+extension TextFieldActionButton {
     
     func configLayout() {
-        containerView.flex.direction(.column).define { flex in
-            flex.addItem(button).height(48).cornerRadius(24)
+        containerView.flex
+            .direction(.column)
+            .define { flex in
+            flex.addItem(button).height(56)
         }
     }
 }
-

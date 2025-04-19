@@ -94,7 +94,9 @@ extension MomentEditViewController {
     /// 날짜 선택 모달을 출력합니다.
     private func presentDatePickerModal() {
         let datePickerVC = DatePickerModalViewController()
-        datePickerVC.sheetPresentationController?.detents = [.medium()]
+        datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
+        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
+        datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
         self.present(datePickerVC, animated: true)
     }
 }

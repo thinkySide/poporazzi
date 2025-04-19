@@ -13,6 +13,16 @@ final class DatePickerModalView: CodeBaseUI {
     
     var containerView = UIView()
     
+    let datePicker: UIDatePicker = {
+        let datePicker = UIDatePicker()
+        datePicker.datePickerMode = .dateAndTime
+        datePicker.preferredDatePickerStyle = .wheels
+        datePicker.locale = Locale(identifier: "ko-KR")
+        return datePicker
+    }()
+    
+    let confirmButton = ActionButton(title: "확인", variataion: .secondary)
+    
     init() {
         super.init(frame: .zero)
         setup()
@@ -34,8 +44,10 @@ final class DatePickerModalView: CodeBaseUI {
 extension DatePickerModalView {
     
     func configLayout() {
-        containerView.flex.direction(.column).define { flex in
-            
+        containerView.flex.direction(.column).paddingHorizontal(20).define { flex in
+            flex.addItem(datePicker).alignSelf(.center).marginTop(24)
+            flex.addItem().grow(1)
+            flex.addItem(confirmButton).marginBottom(8)
         }
     }
 }
