@@ -41,5 +41,11 @@ extension DatePickerModalViewController {
                 owner.scene.datePicker.date = date
             }
             .disposed(by: disposeBag)
+        
+        scene.confirmButton.button.rx.tap
+            .subscribe(with: self) { owner, _ in
+                owner.dismiss(animated: true)
+            }
+            .disposed(by: disposeBag)
     }
 }
