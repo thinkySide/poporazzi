@@ -55,6 +55,8 @@ extension LineTextField {
         case setupInputAccessoryView(UIView)
         case presentKeyboard
         case toggleLine
+        case updateText(String)
+        case updatePlaceholder(String)
     }
     
     func action(_ action: Action) {
@@ -71,6 +73,12 @@ extension LineTextField {
             } else {
                 bottomLine.backgroundColor = .brandPrimary
             }
+            
+        case let .updateText(text):
+            textField.text = text
+            
+        case let .updatePlaceholder(text):
+            textField.placeholder = text
         }
     }
 }

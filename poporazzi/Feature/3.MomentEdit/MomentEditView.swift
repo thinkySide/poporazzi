@@ -23,13 +23,13 @@ final class MomentEditView: CodeBaseUI {
     /// 뒤로 가기 버튼
     let backButton = NavigationButton(
         buttonType: .systemIcon(.dismiss, size: 12, weight: .bold),
-        colorType: .secondary
+        variation: .secondary
     )
     
     /// 저장 버튼
     let saveButton = NavigationButton(
         buttonType: .text("저장"),
-        colorType: .secondary
+        variation: .secondary
     )
     
     /// 제목 양식 라벨
@@ -42,7 +42,7 @@ final class MomentEditView: CodeBaseUI {
     let startDateFormLabel = FormLabel(title: "시작 날짜")
     
     /// 시작날짜 피커
-    let startDatePicker = DatePicker()
+    let startDatePicker = FormDatePicker()
     
     init() {
         super.init(frame: .zero)

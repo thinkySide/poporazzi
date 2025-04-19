@@ -26,7 +26,7 @@ final class MomentTitleInputView: CodeBaseUI {
     let titleTextField = LineTextField(size: 24, placeholder: "제주도 우정 여행, 성수동 데이트")
     
     /// 액션 버튼
-    let actionButton = ActionButton(title: "기록 시작하기")
+    let actionButton = TextFieldActionButton(title: "기록 시작하기")
     
     init() {
         super.init(frame: .zero)

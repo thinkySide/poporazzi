@@ -25,14 +25,14 @@ final class MomentRecordView: CodeBaseUI {
     let seemoreButton: NavigationButton = {
         let button = NavigationButton(
             buttonType: .systemIcon(.ellipsis, size: 14, weight: .black),
-            colorType: .secondary
+            variation: .secondary
         )
         button.button.showsMenuAsPrimaryAction = true
         return button
     }()
     
     /// 기록 종료 버튼
-    let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), colorType: .primary)
+    let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
     
     /// 앨범 제목 라벨
     private let albumTitleLabel: UILabel = {

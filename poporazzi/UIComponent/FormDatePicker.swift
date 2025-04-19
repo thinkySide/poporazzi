@@ -1,5 +1,5 @@
 //
-//  DatePicker.swift
+//  FormDatePicker.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/17/25.
@@ -9,9 +9,12 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class DatePicker: CodeBaseUI {
+final class FormDatePicker: CodeBaseUI {
     
     var containerView = UIView()
+    
+    /// 탭 제스쳐
+    let tapGesture = UITapGestureRecognizer()
     
     /// 날짜 라벨
     private let dateLabel: UILabel = {
@@ -48,7 +51,7 @@ final class DatePicker: CodeBaseUI {
 
 // MARK: - Action
 
-extension DatePicker {
+extension FormDatePicker {
     
     enum Action {
         case updateDate(Date)
@@ -57,7 +60,7 @@ extension DatePicker {
     func action(_ action: Action) {
         switch action {
         case let .updateDate(date):
-            dateLabel.text = date.startDateFormat
+            dateLabel.text = date.startDateFullFormat
             dateLabel.flex.markDirty()
         }
     }
@@ -65,7 +68,7 @@ extension DatePicker {
 
 // MARK: - Layout
 
-extension DatePicker {
+extension FormDatePicker {
     
     func configLayout() {
         containerView.flex.direction(.row).define { flex in
