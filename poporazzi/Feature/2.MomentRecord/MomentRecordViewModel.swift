@@ -99,7 +99,7 @@ extension MomentRecordViewModel {
                     try owner.saveToAlbums()
                     owner.saveCompleteAlertPresented.accept(owner.saveAlert)
                 } catch {
-                    print(error)
+                    owner.navigateToHome.accept(())
                 }
             }
             .disposed(by: disposeBag)

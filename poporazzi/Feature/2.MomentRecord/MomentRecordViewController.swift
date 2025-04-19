@@ -92,26 +92,14 @@ extension MomentRecordViewController {
         
         output.navigateToHome
             .emit(with: self) { owner, _ in
-                owner.dismiss(animated: true)
+                owner.coordinator?.dismiss()
             }
             .disposed(by: disposeBag)
         
         output.navigateToEdit
             .emit(with: self) { owner, _ in
-                owner.presentMomentEdit()
+                owner.coordinator?.presentMomentEdit()
             }
             .disposed(by: disposeBag)
-    }
-}
-
-// MARK: - Navigation
-
-extension MomentRecordViewController {
-    
-    /// 기록 화면을 출력합니다.
-    private func presentMomentEdit() {
-        let momentEditVC = MomentEditViewController()
-        momentEditVC.modalPresentationStyle = .overFullScreen
-        self.present(momentEditVC, animated: true)
     }
 }

@@ -11,9 +11,17 @@ import RxCocoa
 
 final class MomentEditViewController: ViewController {
     
+    private weak var coordinator: AppCoordinator?
+    private let viewModel: MomentEditViewModel
+    
     private let scene = MomentEditView()
-    private let viewModel = MomentEditViewModel()
     private let disposeBag = DisposeBag()
+    
+    init(coordinator: AppCoordinator? = nil, viewModel: MomentEditViewModel) {
+        self.coordinator = coordinator
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene
@@ -60,19 +68,19 @@ extension MomentEditViewController {
         
         scene.startDatePicker.tapGesture.rx.event
             .subscribe(with: self) { owner, _ in
-                owner.presentDatePickerModal()
+                owner.coordinator?.presentDatePickerModal()
             }
             .disposed(by: disposeBag)
         
         ouput.dismiss
             .emit(with: self) { owner, _ in
-                owner.dismiss(animated: true)
+                owner.coordinator?.dismiss()
             }
             .disposed(by: disposeBag)
         
         scene.backButton.button.rx.tap
             .subscribe(with: self) { owner, _ in
-                owner.dismiss(animated: true)
+                owner.coordinator?.dismiss()
             }
             .disposed(by: disposeBag)
     }
@@ -84,19 +92,5 @@ extension MomentEditViewController {
     
     private func setupGesture() {
         scene.startDatePicker.addGestureRecognizer(scene.startDatePicker.tapGesture)
-    }
-}
-
-// MARK: - Navigation
-
-extension MomentEditViewController {
-    
-    /// 날짜 선택 모달을 출력합니다.
-    private func presentDatePickerModal() {
-        let datePickerVC = DatePickerModalViewController()
-        datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
-        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
-        datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
-        self.present(datePickerVC, animated: true)
     }
 }

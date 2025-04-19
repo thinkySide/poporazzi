@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         if UserDefaultsService.isTracking {
-            coordinator?.presentMomentRecortViewController()
+            coordinator?.presentMomentRecord()
         }
     }
 }

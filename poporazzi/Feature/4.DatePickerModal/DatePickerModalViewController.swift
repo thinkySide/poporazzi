@@ -11,9 +11,17 @@ import RxCocoa
 
 final class DatePickerModalViewController: ViewController {
     
+    private weak var coordinator: AppCoordinator?
+    private let viewModel: DatePickerModalViewModel
+    
     private let scene = DatePickerModalView()
-    private let viewModel = DatePickerModalViewModel()
     private let disposeBag = DisposeBag()
+    
+    init(coordinator: AppCoordinator? = nil, viewModel: DatePickerModalViewModel) {
+        self.coordinator = coordinator
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene
@@ -44,7 +52,7 @@ extension DatePickerModalViewController {
         
         scene.confirmButton.button.rx.tap
             .subscribe(with: self) { owner, _ in
-                owner.dismiss(animated: true)
+                owner.coordinator?.dismiss()
             }
             .disposed(by: disposeBag)
     }
