@@ -11,12 +11,7 @@ import RxCocoa
 
 final class MomentTitleInputViewModel: ViewModel {
     
-    private let sharedState: SharedState
     private let disposeBag = DisposeBag()
-    
-    init(sharedState: SharedState) {
-        self.sharedState = sharedState
-    }
     
     struct Input {
         let titleTextChanged: Signal<String>
@@ -26,12 +21,12 @@ final class MomentTitleInputViewModel: ViewModel {
     struct Output {
         let titleText: Signal<String>
         let isStartButtonEnabled: Signal<Bool>
-        let didNavigateToRecord: Signal<Void>
+        let didNavigateToRecord: Signal<Record>
     }
     
-    private let titleText = BehaviorRelay<String>(value: "")
-    private let isStartButtonEnabled = PublishRelay<Bool>()
-    private let navigateToRecord = PublishRelay<Void>()
+    let titleText = BehaviorRelay<String>(value: "")
+    let isStartButtonEnabled = PublishRelay<Bool>()
+    let navigateToRecord = PublishRelay<Record>()
 }
 
 // MARK: - Transform
@@ -49,14 +44,14 @@ extension MomentTitleInputViewModel {
             .disposed(by: disposeBag)
         
         input.startButtonTapped
-            .emit(with: self) { owner, _ in
-                let record = Record(
-                    title: owner.titleText.value,
-                    trackingStartDate: .now
-                )
-                owner.sharedState.record.accept(record)
-                owner.sharedState.isTracking.accept(true)
-                owner.navigateToRecord.accept(())
+            .withUnretained(self)
+            .map { owner, _ in Record(title: owner.titleText.value, trackingStartDate: .now) }
+            .emit(with: self) { owner, record in
+                // TODO: MomentRecordViewModel의 상태를 업데이트시켜야함!!!
+                // owner.sharedState.albumTitle.accept(owner.titleText.value)
+                // owner.sharedState.trackingStartDate.accept(.now)
+                // owner.sharedState.isTracking.accept(true)
+                owner.navigateToRecord.accept((record))
             }
             .disposed(by: disposeBag)
         

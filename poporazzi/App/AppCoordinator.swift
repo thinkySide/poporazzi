@@ -16,31 +16,31 @@ final class AppCoordinator {
     /// 화면 스택
     private var viewStack: [UIViewController] = []
     
-    /// 공유 상태
-    private var sharedState: SharedState
-    
-    init(navigationController: UINavigationController, sharedState: SharedState) {
+    init(navigationController: UINavigationController) {
         self.navigationController = navigationController
-        self.sharedState = sharedState
         navigationController.setNavigationBarHidden(true, animated: false)
     }
     
-    /// RootView 설정 및 시작
-    func start() {
-        let viewModel = MomentTitleInputViewModel(sharedState: sharedState)
-        let viewController = MomentTitleInputViewController(coordinator: self, viewModel: viewModel)
-        navigationController.pushViewController(viewController, animated: false)
-        viewStack.append(viewController)
-        
-        if sharedState.isTracking.value {
-            pushMomentRecord()
-        }
-    }
+    let momentTitleInputViewModel = MomentTitleInputViewModel()
+    let momentRecordViewModel = MomentRecordViewModel()
+    let momentEditViewModel = MomentEditViewModel()
+    let datePickerModalViewModel = DatePickerModalViewModel()
 }
 
 // MARK: - Helper
 
 extension AppCoordinator {
+    
+    /// RootView 설정 및 시작
+    func start() {
+        let viewController = MomentTitleInputViewController(coordinator: self, viewModel: momentTitleInputViewModel)
+        navigationController.pushViewController(viewController, animated: false)
+        viewStack.append(viewController)
+        
+        //        if sharedState.isTracking.value {
+        //            pushMomentRecord()
+        //        }
+    }
     
     private func push(_ viewController: UIViewController) {
         navigationController.pushViewController(viewController, animated: true)
@@ -68,26 +68,26 @@ extension AppCoordinator {
 extension AppCoordinator {
     
     /// 기록 트래킹 화면을 출력합니다.
-    func pushMomentRecord() {
-        let viewModel = MomentRecordViewModel(sharedState: sharedState)
-        let momentRecordVC = MomentRecordViewController(coordinator: self, viewModel: viewModel)
-        momentRecordVC.modalPresentationStyle = .fullScreen
-        momentRecordVC.modalTransitionStyle = .crossDissolve
-        push(momentRecordVC)
+    func pushMomentRecord(record: Record) {
+        let viewController = MomentRecordViewController(coordinator: self, viewModel: momentRecordViewModel)
+        momentRecordViewModel.record.accept(record)
+        viewController.modalPresentationStyle = .fullScreen
+        viewController.modalTransitionStyle = .crossDissolve
+        push(viewController)
     }
     
     /// 기록 수정 화면을 출력합니다.
-    func presentMomentEdit() {
-        let viewModel = MomentEditViewModel(sharedState: sharedState)
-        let momentEditVC = MomentEditViewController(coordinator: self, viewModel: viewModel)
+    func presentMomentEdit(record: Record) {
+        let momentEditVC = MomentEditViewController(coordinator: self, viewModel: momentEditViewModel)
+        momentEditViewModel.record.accept(record)
         momentEditVC.modalPresentationStyle = .overFullScreen
         present(momentEditVC)
     }
     
     /// 날짜 선택 모달을 출력합니다.
-    func presentDatePickerModal() {
-        let viewModel = DatePickerModalViewModel(sharedState: sharedState)
-        let datePickerVC = DatePickerModalViewController(coordinator: self, viewModel: viewModel)
+    func presentDatePickerModal(selectedDate: Date) {
+        let datePickerVC = DatePickerModalViewController(coordinator: self, viewModel: datePickerModalViewModel)
+        datePickerModalViewModel.selectedDate.accept(selectedDate)
         datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
         datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
         datePickerVC.sheetPresentationController?.prefersGrabberVisible = true

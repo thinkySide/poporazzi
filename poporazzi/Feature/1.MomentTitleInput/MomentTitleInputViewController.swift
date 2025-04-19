@@ -62,9 +62,9 @@ extension MomentTitleInputViewController {
             .disposed(by: disposeBag)
         
         output.didNavigateToRecord
-            .emit(with: self) { owner, _ in
+            .emit(with: self) { owner, record in
                 owner.scene.titleTextField.textField.text = ""
-                owner.coordinator?.pushMomentRecord()
+                owner.coordinator?.pushMomentRecord(record: record)
             }
             .disposed(by: disposeBag)
     }

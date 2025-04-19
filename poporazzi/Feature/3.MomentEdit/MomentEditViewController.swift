@@ -42,6 +42,7 @@ extension MomentEditViewController {
         let input = MomentEditViewModel.Input(
             viewDidLoad: .just(()),
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
+            datePickerTapped: scene.startDatePicker.tapGesture.rx.event.map { _ in }.asSignal(onErrorSignalWith: .never()),
             saveButtonTapped: scene.saveButton.button.rx.tap.asSignal()
         )
         let ouput = viewModel.transform(input)
@@ -60,20 +61,27 @@ extension MomentEditViewController {
             }
             .disposed(by: disposeBag)
         
+        ouput.startDate
+            .emit(with: self) { owner, date in
+                owner.scene.startDatePicker.action(.updateDate(date))
+            }
+            .disposed(by: disposeBag)
+        
         ouput.isSaveButtonEnabled
             .drive(with: self) { owner, isEnabled in
                 owner.scene.saveButton.action(.toggleDisabled(!isEnabled))
             }
             .disposed(by: disposeBag)
         
-        scene.startDatePicker.tapGesture.rx.event
-            .subscribe(with: self) { owner, _ in
-                owner.coordinator?.presentDatePickerModal()
+        ouput.datePickerPresented
+            .emit(with: self) { owner, date in
+                owner.coordinator?.presentDatePickerModal(selectedDate: date)
             }
             .disposed(by: disposeBag)
         
         ouput.dismiss
-            .emit(with: self) { owner, _ in
+            .emit(with: self) { owner, record in
+                owner.coordinator?.momentRecordViewModel.record.accept(record)
                 owner.coordinator?.dismiss()
             }
             .disposed(by: disposeBag)

@@ -39,6 +39,22 @@ final class DatePickerModalView: CodeBaseUI {
     }
 }
 
+// MARK: - Action
+
+extension DatePickerModalView {
+    
+    enum Action {
+        case updateSelecteDate(Date)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .updateSelecteDate(date):
+            datePicker.date = date
+        }
+    }
+}
+
 // MARK: - Layout
 
 extension DatePickerModalView {

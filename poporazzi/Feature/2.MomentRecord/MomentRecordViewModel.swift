@@ -12,14 +12,9 @@ import Photos
 
 final class MomentRecordViewModel: ViewModel {
     
-    private let sharedState: SharedState
     private let disposeBag = DisposeBag()
     private let photoKitService = PhotoKitService()
     private var fetchResult: PHFetchResult<PHAsset>?
-    
-    init(sharedState: SharedState) {
-        self.sharedState = sharedState
-    }
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -36,7 +31,7 @@ final class MomentRecordViewModel: ViewModel {
         let finishAlertPresented: Signal<Alert>
         let saveCompleteAlertPresented: Signal<Alert>
         let navigateToHome: Signal<Void>
-        let navigateToEdit: Signal<Void>
+        let navigateToEdit: Signal<Record>
     }
     
     struct AlertAction {
@@ -51,13 +46,13 @@ final class MomentRecordViewModel: ViewModel {
     private let alertAction = AlertAction()
     private let menuAction = MenuAction()
     
-    private let record = BehaviorRelay<Record>(value: .initialValue)
-    private let mediaList = BehaviorRelay<[Media]>(value: [])
-    private let seemoreMenuPresented = PublishRelay<UIMenu>()
-    private let finishAlertPresented = PublishRelay<Alert>()
-    private let saveCompleteAlertPresented = PublishRelay<Alert>()
-    private let navigateToHome = PublishRelay<Void>()
-    private let navigateToEdit = PublishRelay<Void>()
+    let record = BehaviorRelay<Record>(value: .initialValue)
+    let mediaList = BehaviorRelay<[Media]>(value: [])
+    let seemoreMenuPresented = PublishRelay<UIMenu>()
+    let finishAlertPresented = PublishRelay<Alert>()
+    let saveCompleteAlertPresented = PublishRelay<Alert>()
+    let navigateToHome = PublishRelay<Void>()
+    let navigateToEdit = PublishRelay<Record>()
 }
 
 // MARK: - Input & Output
@@ -71,11 +66,17 @@ extension MomentRecordViewModel {
             input.viewBecomeActive.map { _ in }
         )
         
-        updateRecord
-            .withUnretained(self)
-            .map { owner, _ in owner.sharedState.record.value }
-            .emit(to: record)
-            .disposed(by: disposeBag)
+        //        updateRecord
+        //            .withUnretained(self)
+        //            .map { owner, _ in
+        //                Record(title: "", trackingStartDate: .now)
+        ////                Record(
+        ////                    title: owner.sharedState.albumTitle.value,
+        ////                    trackingStartDate: owner.sharedState.trackingStartDate.value
+        ////                )
+        //            }
+        //            .emit(to: record)
+        //            .disposed(by: disposeBag)
         
         updateRecord
             .asObservable()
@@ -110,11 +111,12 @@ extension MomentRecordViewModel {
             .disposed(by: disposeBag)
         
         alertAction.navigateToHome
-            .do { [weak self] _ in self?.sharedState.isTracking.accept(false) }
+        // .do { [weak self] _ in self?.sharedState.isTracking.accept(false) }
             .bind(to: navigateToHome)
             .disposed(by: disposeBag)
         
         menuAction.edit
+            .map { self.record.value }
             .bind(to: navigateToEdit)
             .disposed(by: disposeBag)
         
@@ -136,10 +138,10 @@ extension MomentRecordViewModel {
     
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
-        let trackingStartDate = sharedState.record.value.trackingStartDate
+        // let trackingStartDate = sharedState.trackingStartDate.value
         fetchResult = photoKitService.fetchAssetResult(
             mediaFetchType: .all,
-            date: trackingStartDate,
+            date: .now, // trackingStartDate,
             ascending: true
         )
         return photoKitService.fetchPhotos(fetchResult)
@@ -147,8 +149,8 @@ extension MomentRecordViewModel {
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        let title = sharedState.record.value.title
-        try photoKitService.saveAlbum(title: title, assets: fetchResult)
+        // let title = sharedState.albumTitle.value
+        try photoKitService.saveAlbum(title: "", assets: fetchResult)
     }
 }
 
@@ -158,11 +160,11 @@ extension MomentRecordViewModel {
     
     /// 기록 종료 Alert
     private var finishAlert: Alert {
-        let title = sharedState.record.value.title
+        // let title = sharedState.albumTitle.value
         let totalCount = mediaList.value.count
         return Alert(
             title: "기록을 종료할까요?",
-            message: "총 \(totalCount)장의 '\(title)' 기록 종료 후 앨범에 저장돼요",
+            message: "총 \(totalCount)장의 '' 기록 종료 후 앨범에 저장돼요",
             eventButton: .init(title: "종료", action: alertAction.save),
             cancelButton: .init(title: "취소")
         )
@@ -170,10 +172,10 @@ extension MomentRecordViewModel {
     
     /// 앨범 저장 Alert
     private var saveAlert: Alert {
-        let title = sharedState.record.value.title
+        // let title = sharedState.albumTitle.value
         return Alert(
             title: "기록이 종료되었습니다!",
-            message: "'\(title)' 앨범을 확인해보세요!",
+            message: "'' 앨범을 확인해보세요!",
             eventButton: .init(title: "홈으로 돌아가기", action: alertAction.navigateToHome)
         )
     }

@@ -92,13 +92,13 @@ extension MomentRecordViewController {
         
         output.navigateToHome
             .emit(with: self) { owner, _ in
-                owner.coordinator?.dismiss()
+                owner.coordinator?.pop()
             }
             .disposed(by: disposeBag)
         
         output.navigateToEdit
-            .emit(with: self) { owner, _ in
-                owner.coordinator?.presentMomentEdit()
+            .emit(with: self) { owner, record in
+                owner.coordinator?.presentMomentEdit(record: record)
             }
             .disposed(by: disposeBag)
     }

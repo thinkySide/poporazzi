@@ -39,19 +39,20 @@ extension DatePickerModalViewController {
     
     func bind() {
         let input = DatePickerModalViewModel.Input(
-            viewDidLoad: .just(()),
-            datePickerChanged: scene.datePicker.rx.value.changed.asSignal()
+            datePickerChanged: scene.datePicker.rx.value.changed.asSignal(),
+            confirmButtonTapped: scene.confirmButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
         output.selectedDate
             .drive(with: self) { owner, date in
-                owner.scene.datePicker.date = date
+                owner.scene.action(.updateSelecteDate(date))
             }
             .disposed(by: disposeBag)
         
-        scene.confirmButton.button.rx.tap
-            .subscribe(with: self) { owner, _ in
+        output.confirm
+            .emit(with: self) { owner, date in
+                owner.coordinator?.momentEditViewModel.startDate.accept(date)
                 owner.coordinator?.dismiss()
             }
             .disposed(by: disposeBag)
