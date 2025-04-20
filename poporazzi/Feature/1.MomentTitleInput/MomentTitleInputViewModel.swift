@@ -47,10 +47,9 @@ extension MomentTitleInputViewModel {
             .withUnretained(self)
             .map { owner, _ in Record(title: owner.titleText.value, trackingStartDate: .now) }
             .emit(with: self) { owner, record in
-                // TODO: MomentRecordViewModel의 상태를 업데이트시켜야함!!!
-                // owner.sharedState.albumTitle.accept(owner.titleText.value)
-                // owner.sharedState.trackingStartDate.accept(.now)
-                // owner.sharedState.isTracking.accept(true)
+                UserDefaultsService.albumTitle = record.title
+                UserDefaultsService.trackingStartDate = record.trackingStartDate
+                UserDefaultsService.isTracking = true
                 owner.navigateToRecord.accept((record))
             }
             .disposed(by: disposeBag)

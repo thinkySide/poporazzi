@@ -19,6 +19,15 @@ struct UserDefaultsService {
     
     @UserDefault(key: "trackingStartDate", defaultValue: .now)
     static var trackingStartDate: Date
+//    
+//    static var record: Record {
+//        get {
+//            Record(title: albumTitle, trackingStartDate: trackingStartDate)
+//        } set {
+//            UserDefaultsService.albumTitle = newValue.title
+//            UserDefaultsService.trackingStartDate = newValue.trackingStartDate
+//        }
+//    }
 }
 
 // MARK: - propertyWrapper

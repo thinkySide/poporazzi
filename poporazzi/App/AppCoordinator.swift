@@ -15,7 +15,6 @@ final class AppCoordinator {
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
-        navigationController.setNavigationBarHidden(true, animated: false)
     }
     
     let momentTitleInputViewModel = MomentTitleInputViewModel()
@@ -30,12 +29,18 @@ extension AppCoordinator {
     
     /// RootView 설정 및 시작
     func start() {
-        let viewController = MomentTitleInputViewController(coordinator: self, viewModel: momentTitleInputViewModel)
+        let viewController = MomentTitleInputViewController(
+            coordinator: self,
+            viewModel: momentTitleInputViewModel
+        )
+        navigationController.setNavigationBarHidden(true, animated: false)
         navigationController.pushViewController(viewController, animated: false)
         
-        //        if sharedState.isTracking.value {
-        //            pushMomentRecord()
-        //        }
+        if UserDefaultsService.isTracking {
+            let title = UserDefaultsService.albumTitle
+            let trackingStartDate = UserDefaultsService.trackingStartDate
+            pushMomentRecord(record: Record(title: title, trackingStartDate: trackingStartDate))
+        }
     }
     
     private func push(_ viewController: UIViewController) {
@@ -67,6 +72,7 @@ extension AppCoordinator {
     func pushMomentRecord(record: Record) {
         let viewController = MomentRecordViewController(coordinator: self, viewModel: momentRecordViewModel)
         momentRecordViewModel.record.accept(record)
+        
         viewController.modalPresentationStyle = .fullScreen
         viewController.modalTransitionStyle = .crossDissolve
         push(viewController)

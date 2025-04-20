@@ -59,7 +59,7 @@ extension MomentEditViewController {
             }
             .disposed(by: disposeBag)
         
-        ouput.startDate
+        ouput.editDate
             .emit(with: self) { owner, date in
                 owner.scene.startDatePicker.action(.updateDate(date))
             }

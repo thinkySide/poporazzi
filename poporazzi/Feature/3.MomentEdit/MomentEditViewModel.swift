@@ -23,7 +23,7 @@ final class MomentEditViewModel: ViewModel {
     struct Output {
         let record: Driver<Record>
         let titleText: Signal<String>
-        let startDate: Signal<Date>
+        let editDate: Signal<Date>
         let datePickerPresented: Signal<Date>
         let isSaveButtonEnabled: Driver<Bool>
         let dismiss: Signal<Record>
@@ -31,7 +31,7 @@ final class MomentEditViewModel: ViewModel {
     
     let record = BehaviorRelay<Record>(value: .initialValue)
     let titleText = BehaviorRelay<String>(value: "")
-    let startDate = BehaviorRelay<Date>(value: .now)
+    let editDate = BehaviorRelay<Date>(value: .now)
     let datePickerPresented = PublishRelay<Date>()
     let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     let dismiss = PublishRelay<Record>()
@@ -42,6 +42,12 @@ final class MomentEditViewModel: ViewModel {
 extension MomentEditViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.viewDidLoad
+            .withUnretained(self)
+            .map { owner, _ in owner.record.value.trackingStartDate }
+            .emit(to: editDate)
+            .disposed(by: disposeBag)
+        
         input.titleTextChanged
             .emit(to: titleText)
             .disposed(by: disposeBag)
@@ -53,7 +59,7 @@ extension MomentEditViewModel {
         
         input.datePickerTapped
             .withUnretained(self)
-            .map { owner, _ in owner.startDate.value }
+            .map { owner, _ in owner.editDate.value }
             .emit(to: datePickerPresented)
             .disposed(by: disposeBag)
         
@@ -61,14 +67,17 @@ extension MomentEditViewModel {
             .withUnretained(self)
             .emit { owner, _ in
                 let title = owner.titleText.value.isEmpty ? owner.record.value.title : owner.titleText.value
-                owner.dismiss.accept(Record(title: title, trackingStartDate: owner.startDate.value))
+                let record = Record(title: title, trackingStartDate: owner.editDate.value)
+                owner.dismiss.accept(record)
+                UserDefaultsService.albumTitle = record.title
+                UserDefaultsService.trackingStartDate = record.trackingStartDate
             }
             .disposed(by: disposeBag)
         
         return Output(
             record: record.asDriver(),
             titleText: titleText.asSignal(onErrorJustReturn: ""),
-            startDate: startDate.asSignal(onErrorSignalWith: .never()),
+            editDate: editDate.asSignal(onErrorSignalWith: .never()),
             datePickerPresented: datePickerPresented.asSignal(onErrorSignalWith: .never()),
             isSaveButtonEnabled: isSaveButtonEnabled.asDriver(),
             dismiss: dismiss.asSignal()

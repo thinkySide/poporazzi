@@ -50,7 +50,7 @@ extension DatePickerModalViewController {
         
         output.confirm
             .emit(with: self) { owner, date in
-                owner.coordinator?.momentEditViewModel.startDate.accept(date)
+                owner.coordinator?.momentEditViewModel.editDate.accept(date)
                 owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)

@@ -24,11 +24,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
     }
-    
-    /// 백그라운드 진입 시 UserDefaults 업데이트
-    func sceneDidEnterBackground(_ scene: UIScene) {
-        //        UserDefaultsService.albumTitle = sharedState.albumTitle.value
-        //        UserDefaultsService.trackingStartDate = sharedState.trackingStartDate.value
-        //        UserDefaultsService.isTracking = sharedState.isTracking.value
-    }
 }

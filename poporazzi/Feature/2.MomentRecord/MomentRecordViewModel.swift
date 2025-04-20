@@ -66,18 +66,6 @@ extension MomentRecordViewModel {
             input.viewBecomeActive.map { _ in }
         )
         
-        //        updateRecord
-        //            .withUnretained(self)
-        //            .map { owner, _ in
-        //                Record(title: "", trackingStartDate: .now)
-        ////                Record(
-        ////                    title: owner.sharedState.albumTitle.value,
-        ////                    trackingStartDate: owner.sharedState.trackingStartDate.value
-        ////                )
-        //            }
-        //            .emit(to: record)
-        //            .disposed(by: disposeBag)
-        
         updateRecord
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
@@ -104,19 +92,21 @@ extension MomentRecordViewModel {
                 do {
                     try owner.saveToAlbums()
                     owner.saveCompleteAlertPresented.accept(owner.saveAlert)
+                    UserDefaultsService.isTracking = false
                 } catch {
+                    // TODO: 에셋 아무것도 없을 때 처리
                     owner.navigateToHome.accept(())
                 }
             }
             .disposed(by: disposeBag)
         
         alertAction.navigateToHome
-        // .do { [weak self] _ in self?.sharedState.isTracking.accept(false) }
             .bind(to: navigateToHome)
             .disposed(by: disposeBag)
         
         menuAction.edit
-            .map { self.record.value }
+            .withUnretained(self)
+            .map { owner, _ in owner.record.value }
             .bind(to: navigateToEdit)
             .disposed(by: disposeBag)
         
@@ -138,10 +128,10 @@ extension MomentRecordViewModel {
     
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
-        // let trackingStartDate = sharedState.trackingStartDate.value
+        let trackingStartDate = record.value.trackingStartDate
         fetchResult = photoKitService.fetchAssetResult(
             mediaFetchType: .all,
-            date: .now, // trackingStartDate,
+            date: trackingStartDate,
             ascending: true
         )
         return photoKitService.fetchPhotos(fetchResult)
@@ -149,8 +139,8 @@ extension MomentRecordViewModel {
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        // let title = sharedState.albumTitle.value
-        try photoKitService.saveAlbum(title: "", assets: fetchResult)
+        let title = record.value.title
+        try photoKitService.saveAlbum(title: title, assets: fetchResult)
     }
 }
 
@@ -160,11 +150,11 @@ extension MomentRecordViewModel {
     
     /// 기록 종료 Alert
     private var finishAlert: Alert {
-        // let title = sharedState.albumTitle.value
+        let title = record.value.title
         let totalCount = mediaList.value.count
         return Alert(
             title: "기록을 종료할까요?",
-            message: "총 \(totalCount)장의 '' 기록 종료 후 앨범에 저장돼요",
+            message: "총 \(totalCount)장의 '\(title)' 기록 종료 후 앨범에 저장돼요",
             eventButton: .init(title: "종료", action: alertAction.save),
             cancelButton: .init(title: "취소")
         )
@@ -172,10 +162,10 @@ extension MomentRecordViewModel {
     
     /// 앨범 저장 Alert
     private var saveAlert: Alert {
-        // let title = sharedState.albumTitle.value
+        let title = record.value.title
         return Alert(
             title: "기록이 종료되었습니다!",
-            message: "'' 앨범을 확인해보세요!",
+            message: "'\(title)' 앨범을 확인해보세요!",
             eventButton: .init(title: "홈으로 돌아가기", action: alertAction.navigateToHome)
         )
     }
