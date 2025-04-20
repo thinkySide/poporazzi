@@ -9,18 +9,16 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class MomentRecordViewController: ViewController {
+final class MomentRecordViewController: BaseViewController {
     
-    private weak var coordinator: AppCoordinator?
     private let viewModel: MomentRecordViewModel
     
     private let scene = MomentRecordView()
     private let disposeBag = DisposeBag()
     
     init(coordinator: AppCoordinator, viewModel: MomentRecordViewModel) {
-        self.coordinator = coordinator
         self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
+        super.init(coordinator: coordinator)
     }
     
     override func loadView() {

@@ -18,6 +18,16 @@ protocol ViewControllerProtocol: UIViewController {
     func bind()
 }
 
+class BaseViewController: UIViewController {
+    
+    weak var coordinator: AppCoordinator?
+    
+    init(coordinator: AppCoordinator?) {
+        self.coordinator = coordinator
+        super.init(nibName: nil, bundle: nil)
+    }
+}
+
 // MARK: - UIViewController 기본 구현
 
 extension UIViewController {

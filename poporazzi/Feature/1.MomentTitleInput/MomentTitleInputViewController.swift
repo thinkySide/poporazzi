@@ -9,18 +9,16 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class MomentTitleInputViewController: ViewController {
+final class MomentTitleInputViewController: BaseViewController {
     
-    private weak var coordinator: AppCoordinator?
     private let viewModel: MomentTitleInputViewModel
     
     private let scene = MomentTitleInputView()
     private let disposeBag = DisposeBag()
     
     init(coordinator: AppCoordinator, viewModel: MomentTitleInputViewModel) {
-        self.coordinator = coordinator
         self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
+        super.init(coordinator: coordinator)
     }
     
     override func loadView() {

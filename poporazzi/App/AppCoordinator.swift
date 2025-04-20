@@ -13,9 +13,6 @@ final class AppCoordinator {
     /// 기본 네비게이션
     private let navigationController: UINavigationController
     
-    /// 화면 스택
-    private var viewStack: [UIViewController] = []
-    
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
         navigationController.setNavigationBarHidden(true, animated: false)
@@ -35,7 +32,6 @@ extension AppCoordinator {
     func start() {
         let viewController = MomentTitleInputViewController(coordinator: self, viewModel: momentTitleInputViewModel)
         navigationController.pushViewController(viewController, animated: false)
-        viewStack.append(viewController)
         
         //        if sharedState.isTracking.value {
         //            pushMomentRecord()
@@ -44,22 +40,22 @@ extension AppCoordinator {
     
     private func push(_ viewController: UIViewController) {
         navigationController.pushViewController(viewController, animated: true)
-        viewStack.append(viewController)
     }
     
     private func present(_ viewController: UIViewController) {
-        viewStack.last?.present(viewController, animated: true)
-        viewStack.append(viewController)
+        while let presented = navigationController.presentedViewController {
+            presented.present(viewController, animated: true)
+            return
+        }
+        navigationController.present(viewController, animated: true)
     }
     
     func pop() {
         navigationController.popViewController(animated: true)
-        viewStack.removeLast()
     }
     
     func dismiss() {
-        viewStack.last?.dismiss(animated: true)
-        viewStack.removeLast()
+        navigationController.viewControllers.last?.dismiss(animated: true)
     }
 }
 

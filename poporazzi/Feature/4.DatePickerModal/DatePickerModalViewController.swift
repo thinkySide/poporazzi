@@ -9,18 +9,16 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class DatePickerModalViewController: ViewController {
+final class DatePickerModalViewController: BaseViewController {
     
-    private weak var coordinator: AppCoordinator?
     private let viewModel: DatePickerModalViewModel
     
     private let scene = DatePickerModalView()
     private let disposeBag = DisposeBag()
     
-    init(coordinator: AppCoordinator? = nil, viewModel: DatePickerModalViewModel) {
-        self.coordinator = coordinator
+    init(coordinator: AppCoordinator, viewModel: DatePickerModalViewModel) {
         self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
+        super.init(coordinator: coordinator)
     }
     
     override func loadView() {
@@ -53,7 +51,7 @@ extension DatePickerModalViewController {
         output.confirm
             .emit(with: self) { owner, date in
                 owner.coordinator?.momentEditViewModel.startDate.accept(date)
-                owner.coordinator?.dismiss()
+                owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
     }
