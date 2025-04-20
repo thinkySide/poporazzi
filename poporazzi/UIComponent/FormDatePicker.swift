@@ -71,9 +71,8 @@ extension FormDatePicker {
 extension FormDatePicker {
     
     func configLayout() {
-        containerView.flex.direction(.row).define { flex in
-            flex.addItem(dateLabel)
-            flex.addItem().grow(1)
+        containerView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
+            flex.addItem(dateLabel).grow(1)
             flex.addItem(chevronRight)
         }
     }
