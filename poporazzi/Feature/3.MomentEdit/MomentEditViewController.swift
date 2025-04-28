@@ -50,7 +50,7 @@ extension MomentEditViewController {
             .disposed(by: disposeBag)
         
         ouput.record
-            .drive(with: self) { owner, record in
+            .bind(with: self) { owner, record in
                 owner.scene.titleTextField.action(.updateText(record.title))
                 owner.scene.titleTextField.action(.updatePlaceholder(record.title))
                 owner.scene.startDatePicker.action(.updateDate(record.trackingStartDate))
@@ -58,7 +58,7 @@ extension MomentEditViewController {
             .disposed(by: disposeBag)
         
         ouput.isSaveButtonEnabled
-            .drive(with: self) { owner, isEnabled in
+            .bind(with: self) { owner, isEnabled in
                 owner.scene.saveButton.action(.toggleDisabled(!isEnabled))
             }
             .disposed(by: disposeBag)

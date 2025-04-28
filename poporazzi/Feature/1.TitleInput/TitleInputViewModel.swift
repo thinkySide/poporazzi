@@ -14,7 +14,7 @@ final class TitleInputViewModel: ViewModel {
     private let disposeBag = DisposeBag()
     private let output = Output()
     
-    let delegate = Delegate()
+    let navigation = Navigation()
     
     struct Input {
         let titleTextChanged: Signal<String>
@@ -26,7 +26,7 @@ final class TitleInputViewModel: ViewModel {
         let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
     }
     
-    struct Delegate {
+    struct Navigation {
         let pushRecord = PublishRelay<Record>()
     }
 }
@@ -48,7 +48,7 @@ extension TitleInputViewModel {
         input.startButtonTapped
             .emit(with: self) { owner, _ in
                 let record = Record(title: owner.output.titleText.value, trackingStartDate: .now)
-                owner.delegate.pushRecord.accept(record)
+                owner.navigation.pushRecord.accept(record)
                 UserDefaultsService.record = record
                 UserDefaultsService.isTracking = true
             }

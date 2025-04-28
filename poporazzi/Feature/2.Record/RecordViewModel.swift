@@ -12,26 +12,36 @@ import Photos
 
 final class RecordViewModel: ViewModel {
     
-    private let disposeBag = DisposeBag()
     private let photoKitService = PhotoKitService()
     private var fetchResult: PHFetchResult<PHAsset>?
+    
+    private let disposeBag = DisposeBag()
+    private let output: Output
+    
+    private let alertAction = AlertAction()
+    private let menuAction = MenuAction()
+    
+    let navigation = Navigation()
+    let delegate = Delegate()
+    
+    init(record: Record) {
+        self.output = Output(record: .init(value: record))
+    }
     
     struct Input {
         let viewDidLoad: Signal<Void>
         let viewBecomeActive: Signal<Notification>
-        let viewDidRefresh: Signal<Void>
+        let refresh: Signal<Void>
         let seemoreButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
     
     struct Output {
-        let record: Driver<Record>
-        let mediaList: Driver<[Media]>
-        let seemoreMenuPresented: Signal<UIMenu>
-        let finishAlertPresented: Signal<Alert>
-        let saveCompleteAlertPresented: Signal<Alert>
-        let navigateToHome: Signal<Void>
-        let navigateToEdit: Signal<Void>
+        let record: BehaviorRelay<Record>
+        let mediaList = BehaviorRelay<[Media]>(value: [])
+        let seemoreMenuPresented = PublishRelay<UIMenu>()
+        let finishAlertPresented = PublishRelay<Alert>()
+        let saveCompleteAlertPresented = PublishRelay<Alert>()
     }
     
     struct AlertAction {
@@ -43,16 +53,14 @@ final class RecordViewModel: ViewModel {
         let edit = PublishRelay<Void>()
     }
     
-    private let alertAction = AlertAction()
-    private let menuAction = MenuAction()
+    struct Navigation {
+        let pop = PublishRelay<Void>()
+        let pushEdit = PublishRelay<Record>()
+    }
     
-    let record = BehaviorRelay<Record>(value: .initialValue)
-    let mediaList = BehaviorRelay<[Media]>(value: [])
-    let seemoreMenuPresented = PublishRelay<UIMenu>()
-    let finishAlertPresented = PublishRelay<Alert>()
-    let saveCompleteAlertPresented = PublishRelay<Alert>()
-    let navigateToHome = PublishRelay<Void>()
-    let navigateToEdit = PublishRelay<Void>()
+    struct Delegate {
+        let editedRecord = PublishRelay<Record>()
+    }
 }
 
 // MARK: - Input & Output
@@ -62,14 +70,14 @@ extension RecordViewModel {
     func transform(_ input: Input) -> Output {
         let updateRecord = Signal.merge(
             input.viewDidLoad,
-            input.viewDidRefresh,
+            input.refresh,
             input.viewBecomeActive.map { _ in }
         )
         
         updateRecord
             .withUnretained(self)
-            .map { owner, _ in owner.currentRecord() }
-            .emit(to: record)
+            .map { owner, _ in owner.output.record.value }
+            .emit(to: output.record)
             .disposed(by: disposeBag)
         
         updateRecord
@@ -77,18 +85,22 @@ extension RecordViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .bind(to: mediaList)
+            .bind(to: output.mediaList)
+            .disposed(by: disposeBag)
+        
+        delegate.editedRecord
+            .bind(to: output.record)
             .disposed(by: disposeBag)
         
         input.seemoreButtonTapped
             .withUnretained(self)
             .map { owner, _ in owner.seemoreMenu }
-            .emit(to: seemoreMenuPresented)
+            .emit(to: output.seemoreMenuPresented)
             .disposed(by: disposeBag)
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.finishAlertPresented.accept(owner.finishAlert)
+                owner.output.finishAlertPresented.accept(owner.finishAlert)
             }
             .disposed(by: disposeBag)
         
@@ -97,29 +109,23 @@ extension RecordViewModel {
             .bind(with: self) { owner, _ in
                 do {
                     // try owner.saveToAlbums()
-                    owner.saveCompleteAlertPresented.accept(owner.saveAlert)
+                    owner.output.saveCompleteAlertPresented.accept(owner.saveAlert)
                 }
             }
             .disposed(by: disposeBag)
         
         alertAction.navigateToHome
             .do { _ in UserDefaultsService.isTracking = false }
-            .bind(to: navigateToHome)
+            .bind(to: navigation.pop)
             .disposed(by: disposeBag)
         
         menuAction.edit
-            .bind(to: navigateToEdit)
+            .withUnretained(self)
+            .map {owner, _ in owner.output.record.value }
+            .bind(to: navigation.pushEdit)
             .disposed(by: disposeBag)
         
-        return Output(
-            record: record.asDriver(),
-            mediaList: mediaList.asDriver(),
-            seemoreMenuPresented: seemoreMenuPresented.asSignal(),
-            finishAlertPresented: finishAlertPresented.asSignal(),
-            saveCompleteAlertPresented: saveCompleteAlertPresented.asSignal(),
-            navigateToHome: navigateToHome.asSignal(),
-            navigateToEdit: navigateToEdit.asSignal()
-        )
+        return output
     }
 }
 
@@ -127,16 +133,9 @@ extension RecordViewModel {
 
 extension RecordViewModel {
     
-    /// UserDefault 값을 기반으로 Record를 반환합니다.
-    private func currentRecord() -> Record {
-        let albumTitle = UserDefaultsService.albumTitle
-        let trackingStartDate = UserDefaultsService.trackingStartDate
-        return Record(title: albumTitle, trackingStartDate: trackingStartDate)
-    }
-    
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
-        let trackingStartDate = UserDefaultsService.trackingStartDate
+        let trackingStartDate = output.record.value.trackingStartDate
         fetchResult = photoKitService.fetchAssetResult(
             mediaFetchType: .all,
             date: trackingStartDate,
@@ -147,7 +146,7 @@ extension RecordViewModel {
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        let title = UserDefaultsService.albumTitle
+        let title = output.record.value.title
         try photoKitService.saveAlbum(title: title, assets: fetchResult)
     }
 }
@@ -158,8 +157,8 @@ extension RecordViewModel {
     
     /// 기록 종료 Alert
     private var finishAlert: Alert {
-        let title = UserDefaultsService.albumTitle
-        let totalCount = mediaList.value.count
+        let title = output.record.value.title
+        let totalCount = output.mediaList.value.count
         return Alert(
             title: "기록을 종료할까요?",
             message: "총 \(totalCount)장의 '\(title)' 기록 종료 후 앨범에 저장돼요",
@@ -170,7 +169,7 @@ extension RecordViewModel {
     
     /// 앨범 저장 Alert
     private var saveAlert: Alert {
-        let title = UserDefaultsService.albumTitle
+        let title = output.record.value.title
         return Alert(
             title: "기록이 종료되었습니다!",
             message: "'\(title)' 앨범을 확인해보세요!",

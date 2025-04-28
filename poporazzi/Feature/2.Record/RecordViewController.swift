@@ -38,21 +38,21 @@ extension RecordViewController {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
             viewBecomeActive: Notification.didBecomeActive,
-            viewDidRefresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
+            refresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
             seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
         output.record
-            .drive(with: self) { owner, record in
+            .bind(with: self) { owner, record in
                 owner.scene.action(.setAlbumTitleLabel(record.title))
                 owner.scene.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
         output.mediaList
-            .drive(scene.albumCollectionView.rx.items(
+            .bind(to: scene.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { [weak self] index, media, cell in
@@ -63,52 +63,30 @@ extension RecordViewController {
             .disposed(by: disposeBag)
         
         output.mediaList
-            .drive(with: self) { owner, medias in
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
                 owner.scene.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         
         output.seemoreMenuPresented
-            .emit(with: self) { owner, menu in
+            .bind(with: self) { owner, menu in
                 owner.scene.seemoreButton.button.menu = menu
             }
             .disposed(by: disposeBag)
         
         output.finishAlertPresented
-            .emit(with: self) { owner, alert in
+            .bind(with: self) { owner, alert in
                 owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
         
         output.saveCompleteAlertPresented
-            .emit(with: self) { owner, alert in
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, alert in
                 owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
-        
-        output.navigateToHome
-            .emit(with: self) { owner, _ in
-                // owner.dismiss(animated: true)
-            }
-            .disposed(by: disposeBag)
-        
-        output.navigateToEdit
-            .emit(with: self) { owner, _ in
-                // owner.presentMomentEdit()
-            }
-            .disposed(by: disposeBag)
     }
-}
-
-// MARK: - Navigation
-
-extension RecordViewController {
-    
-    /// 기록 화면을 출력합니다.
-//    private func presentMomentEdit() {
-//        let momentEditVC = MomentEditViewController()
-//        momentEditVC.modalPresentationStyle = .overFullScreen
-//        self.present(momentEditVC, animated: true)
-//    }
 }

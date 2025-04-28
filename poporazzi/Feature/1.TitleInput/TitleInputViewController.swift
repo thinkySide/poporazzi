@@ -58,7 +58,7 @@ extension TitleInputViewController {
             }
             .disposed(by: disposeBag)
         
-        viewModel.delegate.pushRecord
+        viewModel.navigation.pushRecord
             .bind(with: self) { owner, _ in
                 owner.scene.titleTextField.textField.text = ""
             }

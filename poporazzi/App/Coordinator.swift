@@ -25,15 +25,15 @@ final class Coordinator {
         navigationController = UINavigationController(rootViewController: titleInputVC)
         navigationController.setNavigationBarHidden(true, animated: false)
         
-        titleInputVM.delegate.pushRecord
-            .bind(with: self) { owner, _ in
-                owner.pushRecord(titleInputVM)
+        titleInputVM.navigation.pushRecord
+            .bind(with: self) { owner, record in
+                owner.pushRecord(titleInputVM, record)
             }
             .disposed(by: disposeBag)
         
         if UserDefaultsService.isTracking {
             let record = UserDefaultsService.record
-            titleInputVM.delegate.pushRecord.accept((record))
+            titleInputVM.navigation.pushRecord.accept((record))
         }
         
         window?.rootViewController = navigationController
@@ -45,32 +45,33 @@ final class Coordinator {
 
 extension Coordinator {
     
-    private func pushRecord(_ titleInputVM: TitleInputViewModel) {
-        let recordVM = RecordViewModel()
+    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ record: Record) {
+        let recordVM = RecordViewModel(record: record)
         let recordVC = RecordViewController(viewModel: recordVM)
         self.navigationController.pushViewController(recordVC, animated: true)
         
-        recordVM.navigateToHome
+        recordVM.navigation.pop
             .bind(with: self) { owner, _ in
                 owner.navigationController.popViewController(animated: true)
             }
             .disposed(by: self.disposeBag)
         
-        recordVM.navigateToEdit
-            .bind(with: self) { owner, _ in
-                owner.presentEdit(recordVM)
+        recordVM.navigation.pushEdit
+            .bind(with: self) { owner, record in
+                owner.presentEdit(recordVM, record)
             }
             .disposed(by: self.disposeBag)
     }
     
-    private func presentEdit(_ recordVM: RecordViewModel) {
-        let editVM = MomentEditViewModel()
+    private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
+        let editVM = MomentEditViewModel(record: record)
         let editVC = MomentEditViewController(viewModel: editVM)
+        editVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(editVC, animated: true)
         
-        editVM.dismiss
+        editVM.navigation.dismiss
             .bind(with: self) { owner, record in
-                recordVM.record.accept(record)
+                recordVM.delegate.editedRecord.accept(record)
                 editVC.dismiss(animated: true)
             }
             .disposed(by: self.disposeBag)
