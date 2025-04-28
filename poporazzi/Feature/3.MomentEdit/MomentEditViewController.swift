@@ -12,8 +12,13 @@ import RxCocoa
 final class MomentEditViewController: ViewController {
     
     private let scene = MomentEditView()
-    private let viewModel = MomentEditViewModel()
+    private let viewModel: MomentEditViewModel
     private let disposeBag = DisposeBag()
+    
+    init(viewModel: MomentEditViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene
@@ -60,7 +65,7 @@ extension MomentEditViewController {
         
         scene.startDatePicker.tapGesture.rx.event
             .subscribe(with: self) { owner, _ in
-                owner.presentDatePickerModal()
+                // owner.presentDatePickerModal()
             }
             .disposed(by: disposeBag)
         
@@ -92,11 +97,11 @@ extension MomentEditViewController {
 extension MomentEditViewController {
     
     /// 날짜 선택 모달을 출력합니다.
-    private func presentDatePickerModal() {
-        let datePickerVC = DatePickerModalViewController()
-        datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
-        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
-        datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
-        self.present(datePickerVC, animated: true)
-    }
+//    private func presentDatePickerModal() {
+//        let datePickerVC = DatePickerModalViewController()
+//        datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
+//        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
+//        datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
+//        self.present(datePickerVC, animated: true)
+//    }
 }

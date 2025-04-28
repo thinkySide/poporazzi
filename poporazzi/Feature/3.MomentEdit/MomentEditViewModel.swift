@@ -23,13 +23,13 @@ final class MomentEditViewModel: ViewModel {
         let record: Driver<Record>
         let titleText: Signal<String>
         let isSaveButtonEnabled: Driver<Bool>
-        let dismiss: Signal<Void>
+        let dismiss: Signal<Record>
     }
     
-    private let record = BehaviorRelay<Record>(value: .initialValue)
-    private let titleText = BehaviorRelay<String>(value: "")
-    private let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
-    private let dismiss = PublishRelay<Void>()
+    let record = BehaviorRelay<Record>(value: .initialValue)
+    let titleText = BehaviorRelay<String>(value: "")
+    let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
+    let dismiss = PublishRelay<Record>()
 }
 
 // MARK: - Transform
@@ -57,8 +57,8 @@ extension MomentEditViewModel {
             .emit { owner, _ in
                 let currentTitle = owner.titleText.value
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
-                UserDefaultsService.albumTitle = albumTitle
-                owner.dismiss.accept(())
+                // UserDefaultsService.albumTitle = albumTitle
+                owner.dismiss.accept((Record(title: albumTitle, trackingStartDate: .now)))
             }
             .disposed(by: disposeBag)
         

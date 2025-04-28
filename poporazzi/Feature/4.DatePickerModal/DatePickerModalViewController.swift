@@ -12,8 +12,13 @@ import RxCocoa
 final class DatePickerModalViewController: ViewController {
     
     private let scene = DatePickerModalView()
-    private let viewModel = DatePickerModalViewModel()
+    private let viewModel: DatePickerModalViewModel
     private let disposeBag = DisposeBag()
+    
+    init(viewModel: DatePickerModalViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene

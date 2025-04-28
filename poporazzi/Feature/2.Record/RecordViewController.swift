@@ -12,8 +12,13 @@ import RxCocoa
 final class RecordViewController: ViewController {
     
     private let scene = RecordView()
-    private let viewModel = RecordViewModel()
+    private let viewModel: RecordViewModel
     private let disposeBag = DisposeBag()
+    
+    init(viewModel: RecordViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene
@@ -84,13 +89,13 @@ extension RecordViewController {
         
         output.navigateToHome
             .emit(with: self) { owner, _ in
-                owner.dismiss(animated: true)
+                // owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
         
         output.navigateToEdit
             .emit(with: self) { owner, _ in
-                owner.presentMomentEdit()
+                // owner.presentMomentEdit()
             }
             .disposed(by: disposeBag)
     }
@@ -101,9 +106,9 @@ extension RecordViewController {
 extension RecordViewController {
     
     /// 기록 화면을 출력합니다.
-    private func presentMomentEdit() {
-        let momentEditVC = MomentEditViewController()
-        momentEditVC.modalPresentationStyle = .overFullScreen
-        self.present(momentEditVC, animated: true)
-    }
+//    private func presentMomentEdit() {
+//        let momentEditVC = MomentEditViewController()
+//        momentEditVC.modalPresentationStyle = .overFullScreen
+//        self.present(momentEditVC, animated: true)
+//    }
 }

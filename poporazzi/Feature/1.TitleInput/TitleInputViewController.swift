@@ -12,8 +12,13 @@ import RxCocoa
 final class TitleInputViewController: ViewController {
     
     private let scene = TitleInputView()
-    private let viewModel = TitleInputViewModel()
+    private let viewModel: TitleInputViewModel
     private let disposeBag = DisposeBag()
+    
+    init(viewModel: TitleInputViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene
@@ -56,7 +61,7 @@ extension TitleInputViewController {
         output.didNavigateToRecord
             .emit(with: self) { owner, _ in
                 owner.scene.titleTextField.textField.text = ""
-                owner.presentMomentRecord()
+                // owner.presentMomentRecord()
             }
             .disposed(by: disposeBag)
     }
@@ -66,11 +71,11 @@ extension TitleInputViewController {
 
 extension TitleInputViewController {
     
-    /// 기록 화면을 출력합니다.
-    private func presentMomentRecord() {
-        let momentRecordVC = RecordViewController()
-        momentRecordVC.modalPresentationStyle = .fullScreen
-        momentRecordVC.modalTransitionStyle = .crossDissolve
-        self.present(momentRecordVC, animated: true)
-    }
+//    /// 기록 화면을 출력합니다.
+//    private func presentMomentRecord() {
+//        let momentRecordVC = RecordViewController()
+//        momentRecordVC.modalPresentationStyle = .fullScreen
+//        momentRecordVC.modalTransitionStyle = .crossDissolve
+//        self.present(momentRecordVC, animated: true)
+//    }
 }

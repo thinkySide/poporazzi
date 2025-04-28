@@ -24,9 +24,9 @@ final class TitleInputViewModel: ViewModel {
         let didNavigateToRecord: Signal<Void>
     }
     
-    private let titleText = BehaviorRelay<String>(value: "")
-    private let isStartButtonEnabled = PublishRelay<Bool>()
-    private let navigateToRecord = PublishRelay<Void>()
+    let titleText = BehaviorRelay<String>(value: "")
+    let isStartButtonEnabled = PublishRelay<Bool>()
+    let navigateToRecord = PublishRelay<Void>()
 }
 
 // MARK: - Transform

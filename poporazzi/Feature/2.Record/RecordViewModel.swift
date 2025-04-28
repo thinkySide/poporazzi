@@ -46,13 +46,13 @@ final class RecordViewModel: ViewModel {
     private let alertAction = AlertAction()
     private let menuAction = MenuAction()
     
-    private let record = BehaviorRelay<Record>(value: .initialValue)
-    private let mediaList = BehaviorRelay<[Media]>(value: [])
-    private let seemoreMenuPresented = PublishRelay<UIMenu>()
-    private let finishAlertPresented = PublishRelay<Alert>()
-    private let saveCompleteAlertPresented = PublishRelay<Alert>()
-    private let navigateToHome = PublishRelay<Void>()
-    private let navigateToEdit = PublishRelay<Void>()
+    let record = BehaviorRelay<Record>(value: .initialValue)
+    let mediaList = BehaviorRelay<[Media]>(value: [])
+    let seemoreMenuPresented = PublishRelay<UIMenu>()
+    let finishAlertPresented = PublishRelay<Alert>()
+    let saveCompleteAlertPresented = PublishRelay<Alert>()
+    let navigateToHome = PublishRelay<Void>()
+    let navigateToEdit = PublishRelay<Void>()
 }
 
 // MARK: - Input & Output
@@ -96,10 +96,8 @@ extension RecordViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, _ in
                 do {
-                    try owner.saveToAlbums()
+                    // try owner.saveToAlbums()
                     owner.saveCompleteAlertPresented.accept(owner.saveAlert)
-                } catch {
-                    print(error)
                 }
             }
             .disposed(by: disposeBag)
