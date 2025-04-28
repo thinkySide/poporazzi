@@ -1,5 +1,5 @@
 //
-//  MomentRecordViewController.swift
+//  RecordViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/5/25.
@@ -9,10 +9,10 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class MomentRecordViewController: ViewController {
+final class RecordViewController: ViewController {
     
-    private let scene = MomentRecordView()
-    private let viewModel = MomentRecordViewModel()
+    private let scene = RecordView()
+    private let viewModel = RecordViewModel()
     private let disposeBag = DisposeBag()
     
     override func loadView() {
@@ -27,10 +27,10 @@ final class MomentRecordViewController: ViewController {
 
 // MARK: - Binding
 
-extension MomentRecordViewController {
+extension RecordViewController {
     
     func bind() {
-        let input = MomentRecordViewModel.Input(
+        let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
             viewBecomeActive: Notification.didBecomeActive,
             viewDidRefresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
@@ -98,7 +98,7 @@ extension MomentRecordViewController {
 
 // MARK: - Navigation
 
-extension MomentRecordViewController {
+extension RecordViewController {
     
     /// 기록 화면을 출력합니다.
     private func presentMomentEdit() {

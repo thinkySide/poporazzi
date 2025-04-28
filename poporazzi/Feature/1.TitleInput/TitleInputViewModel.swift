@@ -1,5 +1,5 @@
 //
-//  MomentTitleInputViewModel.swift
+//  TitleInputViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/5/25.
@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-final class MomentTitleInputViewModel: ViewModel {
+final class TitleInputViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
     
@@ -31,7 +31,7 @@ final class MomentTitleInputViewModel: ViewModel {
 
 // MARK: - Transform
 
-extension MomentTitleInputViewModel {
+extension TitleInputViewModel {
     
     func transform(_ input: Input) -> Output {
         input.titleTextChanged

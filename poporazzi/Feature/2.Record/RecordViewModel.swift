@@ -1,5 +1,5 @@
 //
-//  MomentRecordViewModel.swift
+//  RecordViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/5/25.
@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import Photos
 
-final class MomentRecordViewModel: ViewModel {
+final class RecordViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
     private let photoKitService = PhotoKitService()
@@ -57,7 +57,7 @@ final class MomentRecordViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension MomentRecordViewModel {
+extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
         let updateRecord = Signal.merge(
@@ -127,7 +127,7 @@ extension MomentRecordViewModel {
 
 // MARK: - Album Logic
 
-extension MomentRecordViewModel {
+extension RecordViewModel {
     
     /// UserDefault 값을 기반으로 Record를 반환합니다.
     private func currentRecord() -> Record {
@@ -156,7 +156,7 @@ extension MomentRecordViewModel {
 
 // MARK: - Alert
 
-extension MomentRecordViewModel {
+extension RecordViewModel {
     
     /// 기록 종료 Alert
     private var finishAlert: Alert {
@@ -183,7 +183,7 @@ extension MomentRecordViewModel {
 
 // MARK: - UIAction
 
-extension MomentRecordViewModel {
+extension RecordViewModel {
     
     /// 더보기 메뉴를 반환합니다.
     private var seemoreMenu: UIMenu {

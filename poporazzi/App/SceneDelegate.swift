@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = MomentTitleInputViewController()
+        window?.rootViewController = TitleInputViewController()
         window?.makeKeyAndVisible()
         
         if UserDefaultsService.isTracking {
@@ -31,7 +31,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 extension SceneDelegate {
     
     private func presentMomentRecortViewController() {
-        let momentRecordVC = MomentRecordViewController()
+        let momentRecordVC = RecordViewController()
         momentRecordVC.modalPresentationStyle = .fullScreen
         momentRecordVC.modalTransitionStyle = .crossDissolve
         window?.rootViewController?.present(momentRecordVC, animated: true)

@@ -1,5 +1,5 @@
 //
-//  MomentTitleInputView.swift
+//  TitleInputView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/4/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentTitleInputView: CodeBaseUI {
+final class TitleInputView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -47,7 +47,7 @@ final class MomentTitleInputView: CodeBaseUI {
 
 // MARK: - Action
 
-extension MomentTitleInputView {
+extension TitleInputView {
     
     enum Action {
         
@@ -60,7 +60,7 @@ extension MomentTitleInputView {
 
 // MARK: - Layout
 
-extension MomentTitleInputView {
+extension TitleInputView {
     
     func configLayout() {
         containerView.flex
