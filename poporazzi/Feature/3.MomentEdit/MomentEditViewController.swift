@@ -69,12 +69,6 @@ extension MomentEditViewController {
             }
             .disposed(by: disposeBag)
         
-        ouput.dismiss
-            .emit(with: self) { owner, _ in
-                owner.dismiss(animated: true)
-            }
-            .disposed(by: disposeBag)
-        
         scene.backButton.button.rx.tap
             .subscribe(with: self) { owner, _ in
                 owner.dismiss(animated: true)

@@ -53,29 +53,15 @@ extension TitleInputViewController {
             .disposed(by: disposeBag)
         
         output.isStartButtonEnabled
-            .emit(with: self) { owner, isEnabled in
+            .bind(with: self) { owner, isEnabled in
                 owner.scene.actionButton.action(.toggleEnabled(isEnabled))
             }
             .disposed(by: disposeBag)
         
-        output.didNavigateToRecord
-            .emit(with: self) { owner, _ in
+        viewModel.delegate.pushRecord
+            .bind(with: self) { owner, _ in
                 owner.scene.titleTextField.textField.text = ""
-                // owner.presentMomentRecord()
             }
             .disposed(by: disposeBag)
     }
-}
-
-// MARK: - Navigation
-
-extension TitleInputViewController {
-    
-//    /// 기록 화면을 출력합니다.
-//    private func presentMomentRecord() {
-//        let momentRecordVC = RecordViewController()
-//        momentRecordVC.modalPresentationStyle = .fullScreen
-//        momentRecordVC.modalTransitionStyle = .crossDissolve
-//        self.present(momentRecordVC, animated: true)
-//    }
 }

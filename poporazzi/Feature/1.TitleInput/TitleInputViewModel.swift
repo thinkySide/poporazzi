@@ -12,6 +12,9 @@ import RxCocoa
 final class TitleInputViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
+    private let output = Output()
+    
+    let delegate = Delegate()
     
     struct Input {
         let titleTextChanged: Signal<String>
@@ -19,14 +22,13 @@ final class TitleInputViewModel: ViewModel {
     }
     
     struct Output {
-        let titleText: Signal<String>
-        let isStartButtonEnabled: Signal<Bool>
-        let didNavigateToRecord: Signal<Void>
+        let titleText = BehaviorRelay<String>(value: "")
+        let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
     }
     
-    let titleText = BehaviorRelay<String>(value: "")
-    let isStartButtonEnabled = PublishRelay<Bool>()
-    let navigateToRecord = PublishRelay<Void>()
+    struct Delegate {
+        let pushRecord = PublishRelay<Record>()
+    }
 }
 
 // MARK: - Transform
@@ -35,27 +37,23 @@ extension TitleInputViewModel {
     
     func transform(_ input: Input) -> Output {
         input.titleTextChanged
-            .emit(to: titleText)
+            .emit(to: output.titleText)
             .disposed(by: disposeBag)
         
         input.titleTextChanged
             .map { !$0.isEmpty }
-            .emit(to: isStartButtonEnabled)
+            .emit(to: output.isStartButtonEnabled)
             .disposed(by: disposeBag)
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
+                let record = Record(title: owner.output.titleText.value, trackingStartDate: .now)
+                owner.delegate.pushRecord.accept(record)
+                UserDefaultsService.record = record
                 UserDefaultsService.isTracking = true
-                UserDefaultsService.albumTitle = owner.titleText.value
-                UserDefaultsService.trackingStartDate = .now
-                owner.navigateToRecord.accept(())
             }
             .disposed(by: disposeBag)
         
-        return Output(
-            titleText: titleText.asSignal(onErrorJustReturn: ""),
-            isStartButtonEnabled: isStartButtonEnabled.asSignal(),
-            didNavigateToRecord: navigateToRecord.asSignal()
-        )
+        return output
     }
 }
