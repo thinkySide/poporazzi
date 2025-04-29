@@ -16,6 +16,9 @@ protocol CodeBaseUIProtocol: UIView {
     /// FlexLayout을 위한 Container View
     var containerView: UIView { get }
     
+    /// 탭 이벤트 설정을 위한 속성
+    var tapGesture: UITapGestureRecognizer { get }
+    
     /// 화면 세팅
     func setup()
     
@@ -32,5 +35,6 @@ extension CodeBaseUIProtocol {
         containerView.backgroundColor = .white
         addSubview(containerView)
         configLayout()
+        addGestureRecognizer(tapGesture)
     }
 }

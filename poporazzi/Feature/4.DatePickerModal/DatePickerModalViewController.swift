@@ -37,19 +37,14 @@ extension DatePickerModalViewController {
     func bind() {
         let action = DatePickerModalViewModel.Action(
             viewDidLoad: .just(()),
-            datePickerChanged: scene.datePicker.rx.value.changed.asSignal()
+            datePickerChanged: scene.datePicker.rx.value.changed.asSignal(),
+            confirmButtonTapped: scene.confirmButton.button.rx.tap.asSignal()
         )
         let state = viewModel.transform(action)
         
         state.selectedDate
             .bind(with: self) { owner, date in
                 owner.scene.datePicker.date = date
-            }
-            .disposed(by: disposeBag)
-        
-        scene.confirmButton.button.rx.tap
-            .subscribe(with: self) { owner, _ in
-                owner.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
     }

@@ -12,8 +12,9 @@ import RxCocoa
 final class DatePickerModalViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
-    
     private let state: State
+    
+    let navigation = PublishRelay<Navigation>()
     
     init(state: State) {
         self.state = state
@@ -31,6 +32,11 @@ extension DatePickerModalViewModel {
     struct Action {
         let viewDidLoad: Signal<Void>
         let datePickerChanged: Signal<Date>
+        let confirmButtonTapped: Signal<Void>
+    }
+    
+    enum Navigation {
+        case pop(Date)
     }
 }
 
@@ -42,6 +48,12 @@ extension DatePickerModalViewModel {
         action.datePickerChanged
             .emit(with: self) { owner, date in
                 owner.state.selectedDate.accept(date)
+            }
+            .disposed(by: disposeBag)
+        
+        action.confirmButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.pop(owner.state.selectedDate.value))
             }
             .disposed(by: disposeBag)
         

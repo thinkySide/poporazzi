@@ -38,6 +38,8 @@ final class NavigationButton: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     private let buttonType: ButtonType
     
     var button = UIButton()

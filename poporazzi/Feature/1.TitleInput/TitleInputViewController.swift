@@ -46,15 +46,15 @@ extension TitleInputViewController {
         )
         let state = viewModel.transform(action)
         
-        scene.titleTextField.textField.rx.text
-            .subscribe(with: self) { owner, _ in
-                owner.scene.titleTextField.action(.toggleLine)
-            }
-            .disposed(by: disposeBag)
-        
         state.isStartButtonEnabled
             .bind(with: self) { owner, isEnabled in
                 owner.scene.actionButton.action(.toggleEnabled(isEnabled))
+            }
+            .disposed(by: disposeBag)
+        
+        scene.titleTextField.textField.rx.text
+            .subscribe(with: self) { owner, _ in
+                owner.scene.titleTextField.action(.toggleLine)
             }
             .disposed(by: disposeBag)
         

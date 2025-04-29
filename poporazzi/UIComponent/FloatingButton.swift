@@ -13,6 +13,8 @@ final class FloatingButton: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     /// 버튼
     let button: UIButton = {
         let button = UIButton()

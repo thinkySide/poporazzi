@@ -15,7 +15,8 @@ final class MomentEditViewModel: ViewModel {
     
     private let state: State
     
-    let navigation = Navigation()
+    let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     
     init(state: State) {
         self.state = state
@@ -29,17 +30,25 @@ extension MomentEditViewModel {
     struct State {
         let record: BehaviorRelay<Record>
         let titleText: BehaviorRelay<String>
+        let startDate: BehaviorRelay<Date>
         let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     struct Action {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
+        let startDatePickerTapped: Signal<Void>
+        let backButtonTapped: Signal<Void>
         let saveButtonTapped: Signal<Void>
     }
     
-    struct Navigation {
-        let dismiss = PublishRelay<Record>()
+    enum Navigation {
+        case presentStartDatePicker(Date)
+        case dismiss(Record)
+    }
+    
+    enum Delegate {
+        case startDateDidChanged(Date)
     }
 }
 
@@ -57,14 +66,35 @@ extension MomentEditViewModel {
             .emit(to: state.isSaveButtonEnabled)
             .disposed(by: disposeBag)
         
+        action.startDatePickerTapped
+            .emit(with: self) { owner, _ in
+                let startDate = owner.state.record.value.trackingStartDate
+                owner.navigation.accept(.presentStartDatePicker(startDate))
+            }
+            .disposed(by: disposeBag)
+        
+        action.backButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.dismiss(owner.state.record.value))
+            }
+            .disposed(by: disposeBag)
+        
         action.saveButtonTapped
-            .withUnretained(self)
-            .emit { owner, _ in
+            .emit(with: self) { owner, _ in
                 let currentTitle = owner.state.titleText.value
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
-                let record = (Record(title: albumTitle, trackingStartDate: .now))
-                owner.navigation.dismiss.accept(record)
+                let record = (Record(title: albumTitle, trackingStartDate: owner.state.startDate.value))
+                owner.navigation.accept(.dismiss(record))
                 UserDefaultsService.record = record
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .startDateDidChanged(let date):
+                    owner.state.startDate.accept(date)
+                }
             }
             .disposed(by: disposeBag)
         

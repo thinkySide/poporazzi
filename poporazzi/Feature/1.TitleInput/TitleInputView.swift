@@ -13,6 +13,8 @@ final class TitleInputView: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     /// 상단 라벨
     let headerLabel: UILabel = {
         let label = UILabel()
@@ -42,19 +44,6 @@ final class TitleInputView: CodeBaseUI {
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
         titleTextField.action(.setupInputAccessoryView(actionButton))
-    }
-}
-
-// MARK: - Action
-
-extension TitleInputView {
-    
-    enum Action {
-        
-    }
-    
-    func action(_ action: Action) {
-        
     }
 }
 

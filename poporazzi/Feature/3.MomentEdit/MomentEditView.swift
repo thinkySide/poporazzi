@@ -13,6 +13,8 @@ final class MomentEditView: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         title: "기록 수정",

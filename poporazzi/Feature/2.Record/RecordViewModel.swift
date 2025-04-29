@@ -39,16 +39,15 @@ extension RecordViewModel {
         let effect = PublishRelay<Effect>()
         
         enum Effect {
-            case seemoreMenuPresented(UIMenu)
             case finishAlertPresented(Alert)
             case saveCompleteAlertPresented(Alert)
         }
     }
     
     struct Action {
-        let viewBecomeActive: Signal<Notification>
-        let seemoreButtonTapped: Signal<Void>
+        let viewBecomeActive: Signal<Void>
         let finishButtonTapped: Signal<Void>
+        let viewDidRefresh = PublishRelay<Void>()
     }
     
     enum AlertAction {
@@ -66,7 +65,7 @@ extension RecordViewModel {
     }
     
     enum Delegate {
-        case editComplete(Record)
+        case momentDidEdited(Record)
     }
 }
 
@@ -75,25 +74,12 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     func transform(_ action: Action) -> State {
-        action.viewBecomeActive
-            .withUnretained(self)
-            .map { owner, _ in owner.state.record.value }
-            .emit(to: state.record)
-            .disposed(by: disposeBag)
-        
-        action.viewBecomeActive
+        Signal.merge(action.viewBecomeActive, action.viewDidRefresh.asSignal())
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
             .bind(to: state.mediaList)
-            .disposed(by: disposeBag)
-        
-        action.seemoreButtonTapped
-            .withUnretained(self)
-            .emit(with: self) { owner, _ in
-                owner.state.effect.accept(.seemoreMenuPresented(owner.seemoreMenu))
-            }
             .disposed(by: disposeBag)
         
         action.finishButtonTapped
@@ -121,16 +107,16 @@ extension RecordViewModel {
                 case .edit:
                     let record = owner.state.record.value
                     owner.navigation.accept(.pushEdit(record))
-                    UserDefaultsService.isTracking = false
                 }
             }
             .disposed(by: disposeBag)
         
         delegate
-            .bind(with: self) { owner, action in
-                switch action {
-                case .editComplete(let record):
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .momentDidEdited(let record):
                     owner.state.record.accept(record)
+                    action.viewDidRefresh.accept(())
                 }
             }
             .disposed(by: disposeBag)
@@ -198,12 +184,12 @@ extension RecordViewModel {
     }
 }
 
-// MARK: - UIAction
+// MARK: - UIMenu
 
 extension RecordViewModel {
     
-    /// 더보기 메뉴를 반환합니다.
-    private var seemoreMenu: UIMenu {
+    /// 더보기 UIMenu
+    var seemoreMenu: UIMenu {
         let editImage = UIImage(systemName: SFSymbol.edit.rawValue)
         let editAction = UIAction(title: "기록 수정", image: editImage) { [weak self] _ in
             self?.menu.accept(.edit)

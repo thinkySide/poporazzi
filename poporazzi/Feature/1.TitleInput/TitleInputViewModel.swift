@@ -13,7 +13,8 @@ final class TitleInputViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
     
-    let state: State
+    private let state: State
+    
     let navigation = PublishRelay<Navigation>()
     
     init(state: State) {

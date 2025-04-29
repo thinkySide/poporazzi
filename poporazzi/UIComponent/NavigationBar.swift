@@ -13,6 +13,8 @@ final class NavigationBar: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     /// 네비게이션 제목 라벨
     private let titleLabel: UILabel = {
         let label = UILabel()

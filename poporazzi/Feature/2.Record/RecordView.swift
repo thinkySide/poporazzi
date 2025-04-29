@@ -13,6 +13,8 @@ final class RecordView: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         trailing: navigationTrailingButtons

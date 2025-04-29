@@ -27,8 +27,8 @@ final class Coordinator {
         navigationController.setNavigationBarHidden(true, animated: false)
         
         titleInputVM.navigation
-            .bind(with: self) { owner, navigation in
-                switch navigation {
+            .bind(with: self) { owner, path in
+                switch path {
                 case .pushRecord(let record):
                     owner.pushRecord(titleInputVM, record)
                 }
@@ -55,8 +55,8 @@ extension Coordinator {
         self.navigationController.pushViewController(recordVC, animated: true)
         
         recordVM.navigation
-            .bind(with: self) { owner, navigation in
-                switch navigation {
+            .bind(with: self) { owner, path in
+                switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
@@ -71,18 +71,44 @@ extension Coordinator {
         let editVM = MomentEditViewModel(
             state: .init(
                 record: .init(value: record),
-                titleText: .init(value: record.title)
+                titleText: .init(value: record.title),
+                startDate: .init(value: record.trackingStartDate)
             )
         )
         let editVC = MomentEditViewController(viewModel: editVM)
         editVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(editVC, animated: true)
         
-        editVM.navigation.dismiss
-            .bind(with: self) { owner, record in
-                recordVM.delegate.accept(.editComplete(record))
-                editVC.dismiss(animated: true)
+        editVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .presentStartDatePicker(let date):
+                    owner.presentDatePickerModal(editVC, editVM, startDate: date)
+                    
+                case .dismiss(let record):
+                    recordVM.delegate.accept(.momentDidEdited(record))
+                    editVC.dismiss(animated: true)
+                }
             }
             .disposed(by: self.disposeBag)
+    }
+    
+    private func presentDatePickerModal(_ editVC: MomentEditViewController, _ editVM: MomentEditViewModel, startDate: Date) {
+        let datePickerVM = DatePickerModalViewModel(state: .init(selectedDate: .init(value: startDate)))
+        let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)
+        datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
+        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
+        datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
+        editVC.present(datePickerVC, animated: true)
+        
+        datePickerVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case let .pop(date):
+                    editVM.delegate.accept(.startDateDidChanged(date))
+                    editVC.dismiss(animated: true)
+                }
+            }
+            .disposed(by: disposeBag)
     }
 }
