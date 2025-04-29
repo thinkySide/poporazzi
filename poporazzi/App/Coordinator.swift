@@ -45,10 +45,11 @@ final class Coordinator {
     }
 }
 
-// MARK: - Navigation
+// MARK: - Navigation Path
 
 extension Coordinator {
     
+    /// 기록 화면으로 Push 합니다.
     private func pushRecord(_ titleInputVM: TitleInputViewModel, _ record: Record) {
         let recordVM = RecordViewModel(state: .init(record: .init(value: record)))
         let recordVC = RecordViewController(viewModel: recordVM)
@@ -66,7 +67,13 @@ extension Coordinator {
             }
             .disposed(by: disposeBag)
     }
+}
+
+// MARK: - Sheet
+
+extension Coordinator {
     
+    /// 기록 수정 화면을 Present 합니다.
     private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
         let editVM = MomentEditViewModel(
             state: .init(
@@ -93,6 +100,7 @@ extension Coordinator {
             .disposed(by: self.disposeBag)
     }
     
+    /// 날짜 선택 모달을 Present합니다.
     private func presentDatePickerModal(_ editVC: MomentEditViewController, _ editVM: MomentEditViewModel, startDate: Date) {
         let datePickerVM = DatePickerModalViewModel(state: .init(selectedDate: .init(value: startDate)))
         let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)
