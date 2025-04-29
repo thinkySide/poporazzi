@@ -1,16 +1,14 @@
 //
-//  Alert+.swift
+//  AlertModel+.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/9/25.
 //
 
 import UIKit
-import RxSwift
-import RxCocoa
 
 /// Alert 타입
-struct Alert {
+struct AlertModel {
     let title: String
     let message: String?
     let eventButton: AlertButton
@@ -32,9 +30,9 @@ struct Alert {
 /// Alert 버튼
 struct AlertButton {
     let title: String
-    let action: PublishRelay<Void>?
+    let action: (() -> Void)?
     
-    init(title: String, action: PublishRelay<Void>? = nil) {
+    init(title: String, action: (() -> Void)? = nil) {
         self.title = title
         self.action = action
     }
@@ -45,7 +43,7 @@ struct AlertButton {
 extension UIViewController {
     
     /// Alert를 출력합니다.
-    func showAlert(_ alert: Alert) {
+    func showAlert(_ alert: AlertModel) {
         let alertController = UIAlertController(
             title: alert.title,
             message: alert.message,
@@ -53,13 +51,13 @@ extension UIViewController {
         )
         
         let action = UIAlertAction(title: alert.eventButton.title, style: .default) { _ in
-            alert.eventButton.action?.accept(())
+            alert.eventButton.action?()
         }
         alertController.addAction(action)
         
         if let cancelButton = alert.cancelButton {
             let cancelAction = UIAlertAction(title: cancelButton.title, style: .cancel) { _ in
-                cancelButton.action?.accept(())
+                alert.cancelButton?.action?()
             }
             alertController.addAction(cancelAction)
         }

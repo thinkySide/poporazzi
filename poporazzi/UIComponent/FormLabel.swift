@@ -13,6 +13,8 @@ final class FormLabel: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     /// 앨범 제목 라벨
     private let label: UILabel = {
         let label = UILabel()

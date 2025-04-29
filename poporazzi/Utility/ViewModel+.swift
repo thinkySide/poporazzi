@@ -10,12 +10,12 @@ import RxSwift
 /// ViewModel을 추상화하는 인터페이스
 protocol ViewModel: AnyObject {
     
-    /// 이벤트 입력
+    /// 이벤트 액션
     associatedtype Input
     
-    /// 이벤트 출력
+    /// 출력
     associatedtype Output
     
-    /// 입력을 출력으로 전환하는 함수
+    /// 이벤트 액션 바인딩
     func transform(_ input: Input) -> Output
 }

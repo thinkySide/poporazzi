@@ -13,23 +13,43 @@ final class MomentEditViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
     
+    private let output: Output
+    
+    let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
+    
+    init(output: Output) {
+        self.output = output
+    }
+}
+
+// MARK: - Input & Output
+
+extension MomentEditViewModel {
+    
     struct Input {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
+        let startDatePickerTapped: Signal<Void>
+        let backButtonTapped: Signal<Void>
         let saveButtonTapped: Signal<Void>
     }
     
     struct Output {
-        let record: Driver<Record>
-        let titleText: Signal<String>
-        let isSaveButtonEnabled: Driver<Bool>
-        let dismiss: Signal<Void>
+        let record: BehaviorRelay<Record>
+        let titleText: BehaviorRelay<String>
+        let startDate: BehaviorRelay<Date>
+        let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
-    private let record = BehaviorRelay<Record>(value: .initialValue)
-    private let titleText = BehaviorRelay<String>(value: "")
-    private let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
-    private let dismiss = PublishRelay<Void>()
+    enum Navigation {
+        case presentStartDatePicker(Date)
+        case dismiss(Record)
+    }
+    
+    enum Delegate {
+        case startDateDidChanged(Date)
+    }
 }
 
 // MARK: - Transform
@@ -37,48 +57,47 @@ final class MomentEditViewModel: ViewModel {
 extension MomentEditViewModel {
     
     func transform(_ input: Input) -> Output {
-        input.viewDidLoad
-            .withUnretained(self)
-            .map { owner, _ in owner.currentRecord() }
-            .emit(to: record)
-            .disposed(by: disposeBag)
-        
         input.titleTextChanged
-            .emit(to: titleText)
+            .emit(to: output.titleText)
             .disposed(by: disposeBag)
         
         input.titleTextChanged
             .map { !$0.isEmpty }
-            .emit(to: isSaveButtonEnabled)
+            .emit(to: output.isSaveButtonEnabled)
             .disposed(by: disposeBag)
         
-        input.saveButtonTapped
-            .withUnretained(self)
-            .emit { owner, _ in
-                let currentTitle = owner.titleText.value
-                let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
-                UserDefaultsService.albumTitle = albumTitle
-                owner.dismiss.accept(())
+        input.startDatePickerTapped
+            .emit(with: self) { owner, _ in
+                let startDate = owner.output.record.value.trackingStartDate
+                owner.navigation.accept(.presentStartDatePicker(startDate))
             }
             .disposed(by: disposeBag)
         
-        return Output(
-            record: record.asDriver(),
-            titleText: titleText.asSignal(onErrorJustReturn: ""),
-            isSaveButtonEnabled: isSaveButtonEnabled.asDriver(),
-            dismiss: dismiss.asSignal()
-        )
-    }
-}
-
-// MARK: - Logic
-
-extension MomentEditViewModel {
-    
-    /// UserDefault 값을 기반으로 Record를 반환합니다.
-    private func currentRecord() -> Record {
-        let albumTitle = UserDefaultsService.albumTitle
-        let trackingStartDate = UserDefaultsService.trackingStartDate
-        return Record(title: albumTitle, trackingStartDate: trackingStartDate)
+        input.backButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.dismiss(owner.output.record.value))
+            }
+            .disposed(by: disposeBag)
+        
+        input.saveButtonTapped
+            .emit(with: self) { owner, _ in
+                let currentTitle = owner.output.titleText.value
+                let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
+                let record = (Record(title: albumTitle, trackingStartDate: owner.output.startDate.value))
+                owner.navigation.accept(.dismiss(record))
+                UserDefaultsService.record = record
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .startDateDidChanged(let date):
+                    owner.output.startDate.accept(date)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        return output
     }
 }

@@ -1,5 +1,5 @@
 //
-//  MomentRecordView.swift
+//  RecordView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/5/25.
@@ -9,9 +9,11 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentRecordView: CodeBaseUI {
+final class RecordView: CodeBaseUI {
     
     var containerView = UIView()
+    
+    let tapGesture = UITapGestureRecognizer()
     
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
@@ -78,13 +80,10 @@ final class MomentRecordView: CodeBaseUI {
     
     /// 앨범 컬렉션 뷰
     lazy var albumCollectionView: UICollectionView = {
-        let refreshControl = UIRefreshControl()
-        refreshControl.endRefreshing()
         let collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: compositionalLayout
         )
-        collectionView.refreshControl = refreshControl
         collectionView.register(
             MomentRecordCell.self,
             forCellWithReuseIdentifier: MomentRecordCell.identifier
@@ -143,7 +142,7 @@ final class MomentRecordView: CodeBaseUI {
 
 // MARK: - Action
 
-extension MomentRecordView {
+extension RecordView {
     
     enum Action {
         case setAlbumTitleLabel(String)
@@ -174,7 +173,7 @@ extension MomentRecordView {
 
 // MARK: - Layout
 
-extension MomentRecordView {
+extension RecordView {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in

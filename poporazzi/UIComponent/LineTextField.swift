@@ -13,6 +13,8 @@ final class LineTextField: CodeBaseUI {
     
     var containerView = UIView()
     
+    let tapGesture = UITapGestureRecognizer()
+    
     /// 텍스트필드
     let textField: UITextField = {
         let textField = UITextField()
@@ -54,6 +56,7 @@ extension LineTextField {
     enum Action {
         case setupInputAccessoryView(UIView)
         case presentKeyboard
+        case dismissKeyboard
         case toggleLine
         case updateText(String)
         case updatePlaceholder(String)
@@ -67,8 +70,11 @@ extension LineTextField {
         case .presentKeyboard:
             textField.becomeFirstResponder()
             
+        case .dismissKeyboard:
+            textField.resignFirstResponder()
+            
         case .toggleLine:
-            if let text = textField.text, text.isEmpty {
+            if !textField.isFirstResponder {
                 bottomLine.backgroundColor = .line
             } else {
                 bottomLine.backgroundColor = .brandPrimary

@@ -1,5 +1,5 @@
 //
-//  MomentRecordViewController.swift
+//  RecordViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/5/25.
@@ -9,11 +9,16 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class MomentRecordViewController: ViewController {
+final class RecordViewController: ViewController {
     
-    private let scene = MomentRecordView()
-    private let viewModel = MomentRecordViewModel()
+    private let scene = RecordView()
+    private let viewModel: RecordViewModel
     private let disposeBag = DisposeBag()
+    
+    init(viewModel: RecordViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     override func loadView() {
         view = scene
@@ -27,27 +32,25 @@ final class MomentRecordViewController: ViewController {
 
 // MARK: - Binding
 
-extension MomentRecordViewController {
+extension RecordViewController {
     
     func bind() {
-        let input = MomentRecordViewModel.Input(
+        let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
             viewBecomeActive: Notification.didBecomeActive,
-            viewDidRefresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
-            seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
         output.record
-            .drive(with: self) { owner, record in
+            .bind(with: self) { owner, record in
                 owner.scene.action(.setAlbumTitleLabel(record.title))
                 owner.scene.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
         output.mediaList
-            .drive(scene.albumCollectionView.rx.items(
+            .bind(to: scene.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { [weak self] index, media, cell in
@@ -58,52 +61,29 @@ extension MomentRecordViewController {
             .disposed(by: disposeBag)
         
         output.mediaList
-            .drive(with: self) { owner, medias in
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
                 owner.scene.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         
-        output.seemoreMenuPresented
-            .emit(with: self) { owner, menu in
-                owner.scene.seemoreButton.button.menu = menu
+        output.setupSeeMoreMenu
+            .bind(with: self) { owner, menus in
+                owner.scene.seemoreButton.button.menu = menus.toUIMenu
             }
             .disposed(by: disposeBag)
         
         output.finishAlertPresented
-            .emit(with: self) { owner, alert in
+            .bind(with: self) { owner, alert in
                 owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
         
         output.saveCompleteAlertPresented
-            .emit(with: self) { owner, alert in
+            .bind(with: self) { owner, alert in
                 owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
-        
-        output.navigateToHome
-            .emit(with: self) { owner, _ in
-                owner.dismiss(animated: true)
-            }
-            .disposed(by: disposeBag)
-        
-        output.navigateToEdit
-            .emit(with: self) { owner, _ in
-                owner.presentMomentEdit()
-            }
-            .disposed(by: disposeBag)
-    }
-}
-
-// MARK: - Navigation
-
-extension MomentRecordViewController {
-    
-    /// 기록 화면을 출력합니다.
-    private func presentMomentEdit() {
-        let momentEditVC = MomentEditViewController()
-        momentEditVC.modalPresentationStyle = .overFullScreen
-        self.present(momentEditVC, animated: true)
     }
 }

@@ -9,31 +9,14 @@ import UIKit
 import RxSwift
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
-    var window: UIWindow?
     
-    private let disposeBag = DisposeBag()
-
+    var window: UIWindow?
+    var coordinator: Coordinator?
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = MomentTitleInputViewController()
-        window?.makeKeyAndVisible()
-        
-        if UserDefaultsService.isTracking {
-            presentMomentRecortViewController()
-        }
-    }
-}
-
-// MARK: - Helper
-
-extension SceneDelegate {
-    
-    private func presentMomentRecortViewController() {
-        let momentRecordVC = MomentRecordViewController()
-        momentRecordVC.modalPresentationStyle = .fullScreen
-        momentRecordVC.modalTransitionStyle = .crossDissolve
-        window?.rootViewController?.present(momentRecordVC, animated: true)
+        coordinator = Coordinator(window: window)
+        coordinator?.start()
     }
 }
