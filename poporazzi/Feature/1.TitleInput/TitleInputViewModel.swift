@@ -21,7 +21,7 @@ final class TitleInputViewModel: ViewModel {
     }
 }
 
-// MARK: - State / Action / Effect
+// MARK: - State & Action
 
 extension TitleInputViewModel {
     

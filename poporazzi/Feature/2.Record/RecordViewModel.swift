@@ -47,7 +47,6 @@ extension RecordViewModel {
     
     struct Action {
         let viewBecomeActive: Signal<Notification>
-        let refresh: Signal<Void>
         let seemoreButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
@@ -76,18 +75,13 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     func transform(_ action: Action) -> State {
-        let updateRecord = Signal.merge(
-            action.refresh,
-            action.viewBecomeActive.map { _ in }
-        )
-        
-        updateRecord
+        action.viewBecomeActive
             .withUnretained(self)
             .map { owner, _ in owner.state.record.value }
             .emit(to: state.record)
             .disposed(by: disposeBag)
         
-        updateRecord
+        action.viewBecomeActive
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)

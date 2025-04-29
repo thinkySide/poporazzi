@@ -37,7 +37,6 @@ extension RecordViewController {
     func bind() {
         let action = RecordViewModel.Action(
             viewBecomeActive: Notification.didBecomeActive,
-            refresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
             seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )

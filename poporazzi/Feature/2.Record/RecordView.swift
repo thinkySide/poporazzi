@@ -78,13 +78,10 @@ final class RecordView: CodeBaseUI {
     
     /// 앨범 컬렉션 뷰
     lazy var albumCollectionView: UICollectionView = {
-        let refreshControl = UIRefreshControl()
-        refreshControl.endRefreshing()
         let collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: compositionalLayout
         )
-        collectionView.refreshControl = refreshControl
         collectionView.register(
             MomentRecordCell.self,
             forCellWithReuseIdentifier: MomentRecordCell.identifier
