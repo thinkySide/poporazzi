@@ -40,11 +40,11 @@ final class TitleInputViewController: ViewController {
 extension TitleInputViewController {
     
     func bind() {
-        let input = TitleInputViewModel.Input(
+        let action = TitleInputViewModel.Action(
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
-            startButtonTapped:scene.actionButton.button.rx.tap.asSignal()
+            startButtonTapped: scene.actionButton.button.rx.tap.asSignal()
         )
-        let output = viewModel.transform(input)
+        let state = viewModel.transform(action)
         
         scene.titleTextField.textField.rx.text
             .subscribe(with: self) { owner, _ in
@@ -52,15 +52,18 @@ extension TitleInputViewController {
             }
             .disposed(by: disposeBag)
         
-        output.isStartButtonEnabled
+        state.isStartButtonEnabled
             .bind(with: self) { owner, isEnabled in
                 owner.scene.actionButton.action(.toggleEnabled(isEnabled))
             }
             .disposed(by: disposeBag)
         
-        viewModel.navigation.pushRecord
-            .bind(with: self) { owner, _ in
-                owner.scene.titleTextField.textField.text = ""
+        viewModel.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pushRecord:
+                    owner.scene.titleTextField.textField.text = ""
+                }
             }
             .disposed(by: disposeBag)
     }

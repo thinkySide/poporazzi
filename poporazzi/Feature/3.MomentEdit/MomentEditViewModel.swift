@@ -10,26 +10,34 @@ import RxSwift
 import RxCocoa
 
 final class MomentEditViewModel: ViewModel {
+    func transform(_ action: Action) -> State {
+        return State()
+    }
+    
     
     private let disposeBag = DisposeBag()
-    private let output: Output
+    private let output: Effect
     
     let navigation = Navigation()
     
     init(record: Record) {
-        self.output = Output(
+        self.output = Effect(
             record: .init(value: record),
             titleText: .init(value: record.title)
         )
     }
     
-    struct Input {
+    struct Action {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
         let saveButtonTapped: Signal<Void>
     }
     
-    struct Output {
+    struct State {
+        
+    }
+    
+    struct Effect {
         let record: BehaviorRelay<Record>
         let titleText: BehaviorRelay<String>
         let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
@@ -44,7 +52,7 @@ final class MomentEditViewModel: ViewModel {
 
 extension MomentEditViewModel {
     
-    func transform(_ input: Input) -> Output {
+    func transform(_ input: Action) -> (State, Effect) {
         input.viewDidLoad
             .withUnretained(self)
             .map { owner, _ in owner.output.record.value }
@@ -71,6 +79,6 @@ extension MomentEditViewModel {
             }
             .disposed(by: disposeBag)
         
-        return output
+        return (State(), output)
     }
 }

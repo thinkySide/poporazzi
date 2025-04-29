@@ -12,22 +12,31 @@ import RxCocoa
 final class TitleInputViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
-    private let output = Output()
     
-    let navigation = Navigation()
+    let state: State
+    let navigation = PublishRelay<Navigation>()
     
-    struct Input {
-        let titleTextChanged: Signal<String>
-        let startButtonTapped: Signal<Void>
+    init(state: State) {
+        self.state = state
     }
+}
+
+// MARK: - State / Action / Effect
+
+extension TitleInputViewModel {
     
-    struct Output {
+    struct State {
         let titleText = BehaviorRelay<String>(value: "")
         let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
     }
     
-    struct Navigation {
-        let pushRecord = PublishRelay<Record>()
+    struct Action {
+        let titleTextChanged: Signal<String>
+        let startButtonTapped: Signal<Void>
+    }
+    
+    enum Navigation {
+        case pushRecord(Record)
     }
 }
 
@@ -35,25 +44,25 @@ final class TitleInputViewModel: ViewModel {
 
 extension TitleInputViewModel {
     
-    func transform(_ input: Input) -> Output {
-        input.titleTextChanged
-            .emit(to: output.titleText)
+    func transform(_ action: Action) -> State {
+        action.titleTextChanged
+            .emit(to: state.titleText)
             .disposed(by: disposeBag)
         
-        input.titleTextChanged
+        action.titleTextChanged
             .map { !$0.isEmpty }
-            .emit(to: output.isStartButtonEnabled)
+            .emit(to: state.isStartButtonEnabled)
             .disposed(by: disposeBag)
         
-        input.startButtonTapped
+        action.startButtonTapped
             .emit(with: self) { owner, _ in
-                let record = Record(title: owner.output.titleText.value, trackingStartDate: .now)
-                owner.navigation.pushRecord.accept(record)
+                let record = Record(title: owner.state.titleText.value, trackingStartDate: .now)
+                owner.navigation.accept(.pushRecord(record))
                 UserDefaultsService.record = record
                 UserDefaultsService.isTracking = true
             }
             .disposed(by: disposeBag)
         
-        return output
+        return state
     }
 }

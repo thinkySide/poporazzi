@@ -14,7 +14,7 @@ final class TitleInputView: CodeBaseUI {
     var containerView = UIView()
     
     /// 상단 라벨
-    private let headerLabel: UILabel = {
+    let headerLabel: UILabel = {
         let label = UILabel()
         label.text = "어떤 순간을 기록하고 싶으신가요?"
         label.textColor = .mainLabel

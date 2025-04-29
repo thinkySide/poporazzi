@@ -7,6 +7,7 @@
 
 import UIKit
 import RxSwift
+import RxCocoa
 
 final class Coordinator {
     
@@ -20,20 +21,23 @@ final class Coordinator {
     
     /// 진입 화면을 설정합니다.
     func start() {
-        let titleInputVM = TitleInputViewModel()
+        let titleInputVM = TitleInputViewModel(state: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
         navigationController.setNavigationBarHidden(true, animated: false)
         
-        titleInputVM.navigation.pushRecord
-            .bind(with: self) { owner, record in
-                owner.pushRecord(titleInputVM, record)
+        titleInputVM.navigation
+            .bind(with: self) { owner, navigation in
+                switch navigation {
+                case .pushRecord(let record):
+                    owner.pushRecord(titleInputVM, record)
+                }
             }
             .disposed(by: disposeBag)
         
         if UserDefaultsService.isTracking {
             let record = UserDefaultsService.record
-            titleInputVM.navigation.pushRecord.accept((record))
+            titleInputVM.navigation.accept(.pushRecord(record))
         }
         
         window?.rootViewController = navigationController
@@ -46,21 +50,21 @@ final class Coordinator {
 extension Coordinator {
     
     private func pushRecord(_ titleInputVM: TitleInputViewModel, _ record: Record) {
-        let recordVM = RecordViewModel(record: record)
+        let recordVM = RecordViewModel(state: .init(record: .init(value: record)))
         let recordVC = RecordViewController(viewModel: recordVM)
         self.navigationController.pushViewController(recordVC, animated: true)
         
-        recordVM.navigation.pop
-            .bind(with: self) { owner, _ in
-                owner.navigationController.popViewController(animated: true)
+        recordVM.navigation
+            .bind(with: self) { owner, navigation in
+                switch navigation {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case .pushEdit(let record):
+                    owner.presentEdit(recordVM, record)
+                }
             }
-            .disposed(by: self.disposeBag)
-        
-        recordVM.navigation.pushEdit
-            .bind(with: self) { owner, record in
-                owner.presentEdit(recordVM, record)
-            }
-            .disposed(by: self.disposeBag)
+            .disposed(by: disposeBag)
     }
     
     private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
@@ -71,7 +75,7 @@ extension Coordinator {
         
         editVM.navigation.dismiss
             .bind(with: self) { owner, record in
-                recordVM.delegate.editedRecord.accept(record)
+                recordVM.delegate.accept(.editComplete(record))
                 editVC.dismiss(animated: true)
             }
             .disposed(by: self.disposeBag)

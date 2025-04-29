@@ -32,9 +32,9 @@ struct Alert {
 /// Alert 버튼
 struct AlertButton {
     let title: String
-    let action: PublishRelay<Void>?
+    let action: (() -> Void)?
     
-    init(title: String, action: PublishRelay<Void>? = nil) {
+    init(title: String, action: (() -> Void)? = nil) {
         self.title = title
         self.action = action
     }
@@ -53,13 +53,13 @@ extension UIViewController {
         )
         
         let action = UIAlertAction(title: alert.eventButton.title, style: .default) { _ in
-            alert.eventButton.action?.accept(())
+            alert.eventButton.action?()
         }
         alertController.addAction(action)
         
         if let cancelButton = alert.cancelButton {
             let cancelAction = UIAlertAction(title: cancelButton.title, style: .cancel) { _ in
-                cancelButton.action?.accept(())
+                alert.cancelButton?.action?()
             }
             alertController.addAction(cancelAction)
         }

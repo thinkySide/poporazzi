@@ -35,23 +35,23 @@ final class RecordViewController: ViewController {
 extension RecordViewController {
     
     func bind() {
-        let input = RecordViewModel.Input(
+        let input = RecordViewModel.Action(
             viewDidLoad: .just(()),
             viewBecomeActive: Notification.didBecomeActive,
             refresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
             seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
-        let output = viewModel.transform(input)
+        let state = viewModel.transform(input)
         
-        output.record
+        state.record
             .bind(with: self) { owner, record in
                 owner.scene.action(.setAlbumTitleLabel(record.title))
                 owner.scene.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
-        output.mediaList
+        state.mediaList
             .bind(to: scene.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
@@ -62,7 +62,7 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.mediaList
+        state.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
@@ -70,23 +70,23 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.seemoreMenuPresented
-            .bind(with: self) { owner, menu in
-                owner.scene.seemoreButton.button.menu = menu
-            }
-            .disposed(by: disposeBag)
-        
-        output.finishAlertPresented
-            .bind(with: self) { owner, alert in
-                owner.showAlert(alert)
-            }
-            .disposed(by: disposeBag)
-        
-        output.saveCompleteAlertPresented
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, alert in
-                owner.showAlert(alert)
-            }
-            .disposed(by: disposeBag)
+//        effect.seemoreMenuPresented
+//            .bind(with: self) { owner, menu in
+//                owner.scene.seemoreButton.button.menu = menu
+//            }
+//            .disposed(by: disposeBag)
+//        
+//        effect.finishAlertPresented
+//            .bind(with: self) { owner, alert in
+//                owner.showAlert(alert)
+//            }
+//            .disposed(by: disposeBag)
+//        
+//        effect.saveCompleteAlertPresented
+//            .observe(on: MainScheduler.instance)
+//            .bind(with: self) { owner, alert in
+//                owner.showAlert(alert)
+//            }
+//            .disposed(by: disposeBag)
     }
 }

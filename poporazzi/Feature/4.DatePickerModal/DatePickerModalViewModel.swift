@@ -10,15 +10,23 @@ import RxSwift
 import RxCocoa
 
 final class DatePickerModalViewModel: ViewModel {
+    func transform(_ action: Action) -> State {
+        State()
+    }
+    
     
     private let disposeBag = DisposeBag()
     
-    struct Input {
+    struct Action {
         let viewDidLoad: Signal<Void>
         let datePickerChanged: Signal<Date>
     }
     
-    struct Output {
+    struct State {
+        
+    }
+    
+    struct Effect {
         let selectedDate: Driver<Date>
     }
     
@@ -29,7 +37,7 @@ final class DatePickerModalViewModel: ViewModel {
 
 extension DatePickerModalViewModel {
     
-    func transform(_ input: Input) -> Output {
+    func transform(_ input: Action) -> (State, Effect) {
         input.viewDidLoad
             .emit(with: self) { owner, _ in
                 let startDate = UserDefaultsService.trackingStartDate
@@ -43,8 +51,8 @@ extension DatePickerModalViewModel {
             }
             .disposed(by: disposeBag)
         
-        return Output(
+        return (State(), Effect(
             selectedDate: selectedDate.asDriver()
-        )
+        ))
     }
 }
