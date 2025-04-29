@@ -87,6 +87,6 @@ extension RecordViewController {
 extension RecordViewController {
     
     func setupMenu() {
-        scene.seemoreButton.button.menu = viewModel.seemoreMenu
+        scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
     }
 }

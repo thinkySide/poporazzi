@@ -5,7 +5,6 @@
 //  Created by 김민준 on 4/5/25.
 //
 
-import UIKit
 import RxSwift
 import RxCocoa
 import Photos
@@ -50,15 +49,6 @@ extension RecordViewModel {
         let viewDidRefresh = PublishRelay<Void>()
     }
     
-    enum AlertAction {
-        case save
-        case navigateToHome
-    }
-    
-    enum MenuAction {
-        case edit
-    }
-    
     enum Navigation {
         case pop
         case pushEdit(Record)
@@ -66,6 +56,15 @@ extension RecordViewModel {
     
     enum Delegate {
         case momentDidEdited(Record)
+    }
+    
+    enum AlertAction {
+        case save
+        case navigateToHome
+    }
+    
+    enum MenuAction {
+        case edit
     }
 }
 
@@ -92,7 +91,12 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .save:
-                    owner.state.effect.accept(.saveCompleteAlertPresented(owner.saveAlert))
+                    do {
+                        try owner.saveToAlbums()
+                        owner.state.effect.accept(.saveCompleteAlertPresented(owner.saveAlert))
+                    } catch {
+                        print(error)
+                    }
                     
                 case .navigateToHome:
                     owner.navigation.accept(.pop)
@@ -188,12 +192,11 @@ extension RecordViewModel {
 
 extension RecordViewModel {
     
-    /// 더보기 UIMenu
-    var seemoreMenu: UIMenu {
-        let editImage = UIImage(systemName: SFSymbol.edit.rawValue)
-        let editAction = UIAction(title: "기록 수정", image: editImage) { [weak self] _ in
+    /// 더보기 Menu
+    var seemoreMenu: [Menu] {
+        let edit = Menu(symbol: .edit, title: "기록 수정") { [weak self] in
             self?.menu.accept(.edit)
         }
-        return UIMenu(children: [editAction])
+        return [edit]
     }
 }
