@@ -26,7 +26,6 @@ final class RecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupMenu()
         bind()
     }
 }
@@ -37,6 +36,7 @@ extension RecordViewController {
     
     func bind() {
         let input = RecordViewModel.Input(
+            viewDidLoad: .just(()),
             viewBecomeActive: Notification.didBecomeActive,
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
@@ -68,25 +68,22 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.effect
-            .bind(with: self) { owner, effects in
-                switch effects {
-                case .finishAlertPresented(let alert):
-                    owner.showAlert(alert)
-                    
-                case .saveCompleteAlertPresented(let alert):
-                    owner.showAlert(alert)
-                }
+        output.setupSeeMoreMenu
+            .bind(with: self) { owner, menus in
+                owner.scene.seemoreButton.button.menu = menus.toUIMenu
             }
             .disposed(by: disposeBag)
-    }
-}
-
-// MARK: - Record
-
-extension RecordViewController {
-    
-    func setupMenu() {
-        scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
+        
+        output.finishAlertPresented
+            .bind(with: self) { owner, alert in
+                owner.showAlert(alert)
+            }
+            .disposed(by: disposeBag)
+        
+        output.saveCompleteAlertPresented
+            .bind(with: self) { owner, alert in
+                owner.showAlert(alert)
+            }
+            .disposed(by: disposeBag)
     }
 }

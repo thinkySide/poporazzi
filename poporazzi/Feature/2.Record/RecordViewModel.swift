@@ -19,6 +19,8 @@ final class RecordViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
+    let alert = PublishRelay<Alert>()
+    let menu = PublishRelay<Menu>()
     
     init(output: Output) {
         self.output = output
@@ -30,31 +32,18 @@ final class RecordViewModel: ViewModel {
 extension RecordViewModel {
     
     struct Input {
+        let viewDidLoad: Signal<Void>
         let viewBecomeActive: Signal<Void>
         let finishButtonTapped: Signal<Void>
-        let viewDidRefresh = PublishRelay<Void>()
     }
     
     struct Output {
         let record: BehaviorRelay<Record>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let effect = PublishRelay<Effect>()
-        let alert = PublishRelay<Alert>()
-        let menu = PublishRelay<Menu>()
-        
-        enum Effect {
-            case finishAlertPresented(AlertModel)
-            case saveCompleteAlertPresented(AlertModel)
-        }
-        
-        enum Alert {
-            case save
-            case navigateToHome
-        }
-        
-        enum Menu {
-            case edit
-        }
+        let viewDidRefresh = PublishRelay<Void>()
+        let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
+        let finishAlertPresented = PublishRelay<AlertModel>()
+        let saveCompleteAlertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
@@ -65,6 +54,15 @@ extension RecordViewModel {
     enum Delegate {
         case momentDidEdited(Record)
     }
+    
+    enum Alert {
+        case save
+        case popToHome
+    }
+    
+    enum Menu {
+        case edit
+    }
 }
 
 // MARK: - Transform
@@ -72,7 +70,13 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
-        Signal.merge(input.viewBecomeActive, input.viewDidRefresh.asSignal())
+        input.viewDidLoad
+            .emit(with: self) { owner, _ in
+                owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
+            }
+            .disposed(by: disposeBag)
+        
+        Signal.merge(input.viewBecomeActive, output.viewDidRefresh.asSignal())
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
@@ -82,29 +86,29 @@ extension RecordViewModel {
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.effect.accept(.finishAlertPresented(owner.finishAlert))
+                owner.output.finishAlertPresented.accept(owner.finishAlert)
             }
             .disposed(by: disposeBag)
         
-        output.alert
+        alert
             .bind(with: self) { owner, action in
                 switch action {
                 case .save:
                     do {
                         try owner.saveToAlbums()
-                        owner.output.effect.accept(.saveCompleteAlertPresented(owner.saveAlert))
+                        owner.output.saveCompleteAlertPresented.accept(owner.saveAlert)
                     } catch {
                         print(error)
                     }
                     
-                case .navigateToHome:
+                case .popToHome:
                     owner.navigation.accept(.pop)
                     UserDefaultsService.isTracking = false
                 }
             }
             .disposed(by: disposeBag)
         
-        output.menu
+        menu
             .bind(with: self) { owner, action in
                 switch action {
                 case .edit:
@@ -119,7 +123,7 @@ extension RecordViewModel {
                 switch delegate {
                 case .momentDidEdited(let record):
                     owner.output.record.accept(record)
-                    input.viewDidRefresh.accept(())
+                    owner.output.viewDidRefresh.accept(())
                 }
             }
             .disposed(by: disposeBag)
@@ -164,7 +168,7 @@ extension RecordViewModel {
             eventButton: .init(
                 title: "종료",
                 action: { [weak self] in
-                    self?.output.alert.accept(.save)
+                    self?.alert.accept(.save)
                 }
             ),
             cancelButton: .init(title: "취소")
@@ -180,21 +184,21 @@ extension RecordViewModel {
             eventButton: .init(
                 title: "홈으로 돌아가기",
                 action: { [weak self] in
-                    self?.output.alert.accept(.navigateToHome)
+                    self?.alert.accept(.popToHome)
                 }
             )
         )
     }
 }
 
-// MARK: - UIMenu
+// MARK: - Menu
 
 extension RecordViewModel {
     
     /// 더보기 Menu
-    var seemoreMenu: [MenuModel] {
+    private var seemoreMenu: [MenuModel] {
         let edit = MenuModel(symbol: .edit, title: "기록 수정") { [weak self] in
-            self?.output.menu.accept(.edit)
+            self?.menu.accept(.edit)
         }
         return [edit]
     }
