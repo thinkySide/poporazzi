@@ -35,7 +35,7 @@ final class DatePickerModalViewController: ViewController {
 extension DatePickerModalViewController {
     
     func bind() {
-        let action = DatePickerModalViewModel.Action(
+        let action = DatePickerModalViewModel.Input(
             viewDidLoad: .just(()),
             datePickerChanged: scene.datePicker.rx.value.changed.asSignal(),
             confirmButtonTapped: scene.confirmButton.button.rx.tap.asSignal()

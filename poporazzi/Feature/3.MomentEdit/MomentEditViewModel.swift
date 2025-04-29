@@ -13,33 +13,33 @@ final class MomentEditViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
     
-    private let state: State
+    private let output: Output
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
     
-    init(state: State) {
-        self.state = state
+    init(output: Output) {
+        self.output = output
     }
 }
 
-// MARK: - State & Action
+// MARK: - Input & Output
 
 extension MomentEditViewModel {
     
-    struct State {
-        let record: BehaviorRelay<Record>
-        let titleText: BehaviorRelay<String>
-        let startDate: BehaviorRelay<Date>
-        let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
-    }
-    
-    struct Action {
+    struct Input {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
         let startDatePickerTapped: Signal<Void>
         let backButtonTapped: Signal<Void>
         let saveButtonTapped: Signal<Void>
+    }
+    
+    struct Output {
+        let record: BehaviorRelay<Record>
+        let titleText: BehaviorRelay<String>
+        let startDate: BehaviorRelay<Date>
+        let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     enum Navigation {
@@ -56,34 +56,34 @@ extension MomentEditViewModel {
 
 extension MomentEditViewModel {
     
-    func transform(_ action: Action) -> State {
-        action.titleTextChanged
-            .emit(to: state.titleText)
+    func transform(_ input: Input) -> Output {
+        input.titleTextChanged
+            .emit(to: output.titleText)
             .disposed(by: disposeBag)
         
-        action.titleTextChanged
+        input.titleTextChanged
             .map { !$0.isEmpty }
-            .emit(to: state.isSaveButtonEnabled)
+            .emit(to: output.isSaveButtonEnabled)
             .disposed(by: disposeBag)
         
-        action.startDatePickerTapped
+        input.startDatePickerTapped
             .emit(with: self) { owner, _ in
-                let startDate = owner.state.record.value.trackingStartDate
+                let startDate = owner.output.record.value.trackingStartDate
                 owner.navigation.accept(.presentStartDatePicker(startDate))
             }
             .disposed(by: disposeBag)
         
-        action.backButtonTapped
+        input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.dismiss(owner.state.record.value))
+                owner.navigation.accept(.dismiss(owner.output.record.value))
             }
             .disposed(by: disposeBag)
         
-        action.saveButtonTapped
+        input.saveButtonTapped
             .emit(with: self) { owner, _ in
-                let currentTitle = owner.state.titleText.value
+                let currentTitle = owner.output.titleText.value
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
-                let record = (Record(title: albumTitle, trackingStartDate: owner.state.startDate.value))
+                let record = (Record(title: albumTitle, trackingStartDate: owner.output.startDate.value))
                 owner.navigation.accept(.dismiss(record))
                 UserDefaultsService.record = record
             }
@@ -93,11 +93,11 @@ extension MomentEditViewModel {
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case .startDateDidChanged(let date):
-                    owner.state.startDate.accept(date)
+                    owner.output.startDate.accept(date)
                 }
             }
             .disposed(by: disposeBag)
         
-        return state
+        return output
     }
 }

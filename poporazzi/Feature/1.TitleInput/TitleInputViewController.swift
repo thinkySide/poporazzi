@@ -40,13 +40,13 @@ final class TitleInputViewController: ViewController {
 extension TitleInputViewController {
     
     func bind() {
-        let action = TitleInputViewModel.Action(
+        let input = TitleInputViewModel.Input(
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
             startButtonTapped: scene.actionButton.button.rx.tap.asSignal()
         )
-        let state = viewModel.transform(action)
+        let output = viewModel.transform(input)
         
-        state.isStartButtonEnabled
+        output.isStartButtonEnabled
             .bind(with: self) { owner, isEnabled in
                 owner.scene.actionButton.action(.toggleEnabled(isEnabled))
             }

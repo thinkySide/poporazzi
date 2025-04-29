@@ -36,20 +36,20 @@ final class RecordViewController: ViewController {
 extension RecordViewController {
     
     func bind() {
-        let action = RecordViewModel.Action(
+        let input = RecordViewModel.Input(
             viewBecomeActive: Notification.didBecomeActive,
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
-        let state = viewModel.transform(action)
+        let output = viewModel.transform(input)
         
-        state.record
+        output.record
             .bind(with: self) { owner, record in
                 owner.scene.action(.setAlbumTitleLabel(record.title))
                 owner.scene.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
-        state.mediaList
+        output.mediaList
             .bind(to: scene.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
@@ -60,7 +60,7 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        state.mediaList
+        output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
@@ -68,7 +68,7 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        state.effect
+        output.effect
             .bind(with: self) { owner, effects in
                 switch effects {
                 case .finishAlertPresented(let alert):

@@ -1,5 +1,5 @@
 //
-//  Menu+.swift
+//  MenuModel+.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/29/25.
@@ -8,13 +8,13 @@
 import UIKit
 
 /// Menu 타입
-struct Menu {
+struct MenuModel {
     let symbol: SFSymbol
     let title: String
     let action: () -> Void
 }
 
-extension [Menu] {
+extension [MenuModel] {
     
     /// UIMenu로 변환합니다.
     var toUIMenu: UIMenu {

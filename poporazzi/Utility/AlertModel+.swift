@@ -1,5 +1,5 @@
 //
-//  Alert+.swift
+//  AlertModel+.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/9/25.
@@ -8,7 +8,7 @@
 import UIKit
 
 /// Alert 타입
-struct Alert {
+struct AlertModel {
     let title: String
     let message: String?
     let eventButton: AlertButton
@@ -43,7 +43,7 @@ struct AlertButton {
 extension UIViewController {
     
     /// Alert를 출력합니다.
-    func showAlert(_ alert: Alert) {
+    func showAlert(_ alert: AlertModel) {
         let alertController = UIAlertController(
             title: alert.title,
             message: alert.message,

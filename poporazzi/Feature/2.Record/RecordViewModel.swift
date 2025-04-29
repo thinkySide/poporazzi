@@ -15,38 +15,46 @@ final class RecordViewModel: ViewModel {
     private var fetchResult: PHFetchResult<PHAsset>?
     
     private let disposeBag = DisposeBag()
-    
-    private let state: State
-    private let alert = PublishRelay<AlertAction>()
-    private let menu = PublishRelay<MenuAction>()
+    private let output: Output
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
     
-    init(state: State) {
-        self.state = state
+    init(output: Output) {
+        self.output = output
     }
 }
 
-// MARK: - State & Action
+// MARK: - Input & Output
 
 extension RecordViewModel {
     
-    struct State {
-        let record: BehaviorRelay<Record>
-        let mediaList = BehaviorRelay<[Media]>(value: [])
-        let effect = PublishRelay<Effect>()
-        
-        enum Effect {
-            case finishAlertPresented(Alert)
-            case saveCompleteAlertPresented(Alert)
-        }
-    }
-    
-    struct Action {
+    struct Input {
         let viewBecomeActive: Signal<Void>
         let finishButtonTapped: Signal<Void>
         let viewDidRefresh = PublishRelay<Void>()
+    }
+    
+    struct Output {
+        let record: BehaviorRelay<Record>
+        let mediaList = BehaviorRelay<[Media]>(value: [])
+        let effect = PublishRelay<Effect>()
+        let alert = PublishRelay<Alert>()
+        let menu = PublishRelay<Menu>()
+        
+        enum Effect {
+            case finishAlertPresented(AlertModel)
+            case saveCompleteAlertPresented(AlertModel)
+        }
+        
+        enum Alert {
+            case save
+            case navigateToHome
+        }
+        
+        enum Menu {
+            case edit
+        }
     }
     
     enum Navigation {
@@ -57,43 +65,34 @@ extension RecordViewModel {
     enum Delegate {
         case momentDidEdited(Record)
     }
-    
-    enum AlertAction {
-        case save
-        case navigateToHome
-    }
-    
-    enum MenuAction {
-        case edit
-    }
 }
 
 // MARK: - Transform
 
 extension RecordViewModel {
     
-    func transform(_ action: Action) -> State {
-        Signal.merge(action.viewBecomeActive, action.viewDidRefresh.asSignal())
+    func transform(_ input: Input) -> Output {
+        Signal.merge(input.viewBecomeActive, input.viewDidRefresh.asSignal())
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .bind(to: state.mediaList)
+            .bind(to: output.mediaList)
             .disposed(by: disposeBag)
         
-        action.finishButtonTapped
+        input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.state.effect.accept(.finishAlertPresented(owner.finishAlert))
+                owner.output.effect.accept(.finishAlertPresented(owner.finishAlert))
             }
             .disposed(by: disposeBag)
         
-        alert
+        output.alert
             .bind(with: self) { owner, action in
                 switch action {
                 case .save:
                     do {
                         try owner.saveToAlbums()
-                        owner.state.effect.accept(.saveCompleteAlertPresented(owner.saveAlert))
+                        owner.output.effect.accept(.saveCompleteAlertPresented(owner.saveAlert))
                     } catch {
                         print(error)
                     }
@@ -105,11 +104,11 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        menu
+        output.menu
             .bind(with: self) { owner, action in
                 switch action {
                 case .edit:
-                    let record = owner.state.record.value
+                    let record = owner.output.record.value
                     owner.navigation.accept(.pushEdit(record))
                 }
             }
@@ -119,13 +118,13 @@ extension RecordViewModel {
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case .momentDidEdited(let record):
-                    owner.state.record.accept(record)
-                    action.viewDidRefresh.accept(())
+                    owner.output.record.accept(record)
+                    input.viewDidRefresh.accept(())
                 }
             }
             .disposed(by: disposeBag)
         
-        return state
+        return output
     }
 }
 
@@ -135,7 +134,7 @@ extension RecordViewModel {
     
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
-        let trackingStartDate = state.record.value.trackingStartDate
+        let trackingStartDate = output.record.value.trackingStartDate
         fetchResult = photoKitService.fetchAssetResult(
             mediaFetchType: .all,
             date: trackingStartDate,
@@ -146,7 +145,7 @@ extension RecordViewModel {
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        let title = state.record.value.title
+        let title = output.record.value.title
         try photoKitService.saveAlbum(title: title, assets: fetchResult)
     }
 }
@@ -156,16 +155,16 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     /// 기록 종료 Alert
-    private var finishAlert: Alert {
-        let title = state.record.value.title
-        let totalCount = state.mediaList.value.count
-        return Alert(
+    private var finishAlert: AlertModel {
+        let title = output.record.value.title
+        let totalCount = output.mediaList.value.count
+        return AlertModel(
             title: "기록을 종료할까요?",
             message: "총 \(totalCount)장의 '\(title)' 기록 종료 후 앨범에 저장돼요",
             eventButton: .init(
                 title: "종료",
                 action: { [weak self] in
-                    self?.alert.accept(.save)
+                    self?.output.alert.accept(.save)
                 }
             ),
             cancelButton: .init(title: "취소")
@@ -173,15 +172,15 @@ extension RecordViewModel {
     }
     
     /// 앨범 저장 Alert
-    private var saveAlert: Alert {
-        let title = state.record.value.title
-        return Alert(
+    private var saveAlert: AlertModel {
+        let title = output.record.value.title
+        return AlertModel(
             title: "기록이 종료되었습니다!",
             message: "'\(title)' 앨범을 확인해보세요!",
             eventButton: .init(
                 title: "홈으로 돌아가기",
                 action: { [weak self] in
-                    self?.alert.accept(.navigateToHome)
+                    self?.output.alert.accept(.navigateToHome)
                 }
             )
         )
@@ -193,9 +192,9 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     /// 더보기 Menu
-    var seemoreMenu: [Menu] {
-        let edit = Menu(symbol: .edit, title: "기록 수정") { [weak self] in
-            self?.menu.accept(.edit)
+    var seemoreMenu: [MenuModel] {
+        let edit = MenuModel(symbol: .edit, title: "기록 수정") { [weak self] in
+            self?.output.menu.accept(.edit)
         }
         return [edit]
     }

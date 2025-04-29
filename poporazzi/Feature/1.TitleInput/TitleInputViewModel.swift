@@ -12,28 +12,27 @@ import RxCocoa
 final class TitleInputViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
-    
-    private let state: State
+    private let output: Output
     
     let navigation = PublishRelay<Navigation>()
     
-    init(state: State) {
-        self.state = state
+    init(output: Output) {
+        self.output = output
     }
 }
 
-// MARK: - State & Action
+// MARK: - Input & Output
 
 extension TitleInputViewModel {
     
-    struct State {
-        let titleText = BehaviorRelay<String>(value: "")
-        let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
-    }
-    
-    struct Action {
+    struct Input {
         let titleTextChanged: Signal<String>
         let startButtonTapped: Signal<Void>
+    }
+    
+    struct Output {
+        let titleText = BehaviorRelay<String>(value: "")
+        let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
     }
     
     enum Navigation {
@@ -45,25 +44,25 @@ extension TitleInputViewModel {
 
 extension TitleInputViewModel {
     
-    func transform(_ action: Action) -> State {
-        action.titleTextChanged
-            .emit(to: state.titleText)
+    func transform(_ input: Input) -> Output {
+        input.titleTextChanged
+            .emit(to: output.titleText)
             .disposed(by: disposeBag)
         
-        action.titleTextChanged
+        input.titleTextChanged
             .map { !$0.isEmpty }
-            .emit(to: state.isStartButtonEnabled)
+            .emit(to: output.isStartButtonEnabled)
             .disposed(by: disposeBag)
         
-        action.startButtonTapped
+        input.startButtonTapped
             .emit(with: self) { owner, _ in
-                let record = Record(title: owner.state.titleText.value, trackingStartDate: .now)
+                let record = Record(title: owner.output.titleText.value, trackingStartDate: .now)
                 owner.navigation.accept(.pushRecord(record))
                 UserDefaultsService.record = record
                 UserDefaultsService.isTracking = true
             }
             .disposed(by: disposeBag)
         
-        return state
+        return output
     }
 }

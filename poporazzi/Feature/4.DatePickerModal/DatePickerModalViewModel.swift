@@ -12,27 +12,27 @@ import RxCocoa
 final class DatePickerModalViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
-    private let state: State
+    private let output: Output
     
     let navigation = PublishRelay<Navigation>()
     
-    init(state: State) {
-        self.state = state
+    init(output: Output) {
+        self.output = output
     }
 }
 
-// MARK: - State & Action
+// MARK: - Input & Output
 
 extension DatePickerModalViewModel {
     
-    struct State {
-        let selectedDate: BehaviorRelay<Date>
-    }
-    
-    struct Action {
+    struct Input {
         let viewDidLoad: Signal<Void>
         let datePickerChanged: Signal<Date>
         let confirmButtonTapped: Signal<Void>
+    }
+    
+    struct Output {
+        let selectedDate: BehaviorRelay<Date>
     }
     
     enum Navigation {
@@ -44,19 +44,19 @@ extension DatePickerModalViewModel {
 
 extension DatePickerModalViewModel {
     
-    func transform(_ action: Action) -> State {
-        action.datePickerChanged
+    func transform(_ input: Input) -> Output {
+        input.datePickerChanged
             .emit(with: self) { owner, date in
-                owner.state.selectedDate.accept(date)
+                owner.output.selectedDate.accept(date)
             }
             .disposed(by: disposeBag)
         
-        action.confirmButtonTapped
+        input.confirmButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.pop(owner.state.selectedDate.value))
+                owner.navigation.accept(.pop(owner.output.selectedDate.value))
             }
             .disposed(by: disposeBag)
         
-        return state
+        return output
     }
 }

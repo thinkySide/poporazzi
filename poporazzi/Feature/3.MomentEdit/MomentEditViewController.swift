@@ -35,16 +35,16 @@ final class MomentEditViewController: ViewController {
 extension MomentEditViewController {
     
     func bind() {
-        let action = MomentEditViewModel.Action(
+        let input = MomentEditViewModel.Input(
             viewDidLoad: .just(()),
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
             startDatePickerTapped: scene.startDatePicker.tapGesture.rx.event.asVoidSignal(),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             saveButtonTapped: scene.saveButton.button.rx.tap.asSignal()
         )
-        let state = viewModel.transform(action)
+        let output = viewModel.transform(input)
         
-        state.record
+        output.record
             .bind(with: self) { owner, record in
                 owner.scene.titleTextField.action(.updateText(record.title))
                 owner.scene.titleTextField.action(.updatePlaceholder(record.title))
@@ -52,13 +52,13 @@ extension MomentEditViewController {
             }
             .disposed(by: disposeBag)
         
-        state.startDate
+        output.startDate
             .bind(with: self) { owner, date in
                 owner.scene.startDatePicker.action(.updateDate(date))
             }
             .disposed(by: disposeBag)
         
-        state.isSaveButtonEnabled
+        output.isSaveButtonEnabled
             .bind(with: self) { owner, isEnabled in
                 owner.scene.saveButton.action(.toggleDisabled(!isEnabled))
             }

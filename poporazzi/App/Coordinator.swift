@@ -21,7 +21,7 @@ final class Coordinator {
     
     /// 진입 화면을 설정합니다.
     func start() {
-        let titleInputVM = TitleInputViewModel(state: .init())
+        let titleInputVM = TitleInputViewModel(output: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
         navigationController.setNavigationBarHidden(true, animated: false)
@@ -51,7 +51,7 @@ extension Coordinator {
     
     /// 기록 화면으로 Push 합니다.
     private func pushRecord(_ titleInputVM: TitleInputViewModel, _ record: Record) {
-        let recordVM = RecordViewModel(state: .init(record: .init(value: record)))
+        let recordVM = RecordViewModel(output: .init(record: .init(value: record)))
         let recordVC = RecordViewController(viewModel: recordVM)
         self.navigationController.pushViewController(recordVC, animated: true)
         
@@ -76,7 +76,7 @@ extension Coordinator {
     /// 기록 수정 화면을 Present 합니다.
     private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
         let editVM = MomentEditViewModel(
-            state: .init(
+            output: .init(
                 record: .init(value: record),
                 titleText: .init(value: record.title),
                 startDate: .init(value: record.trackingStartDate)
@@ -102,7 +102,7 @@ extension Coordinator {
     
     /// 날짜 선택 모달을 Present합니다.
     private func presentDatePickerModal(_ editVC: MomentEditViewController, _ editVM: MomentEditViewModel, startDate: Date) {
-        let datePickerVM = DatePickerModalViewModel(state: .init(selectedDate: .init(value: startDate)))
+        let datePickerVM = DatePickerModalViewModel(output: .init(selectedDate: .init(value: startDate)))
         let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)
         datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
         datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
