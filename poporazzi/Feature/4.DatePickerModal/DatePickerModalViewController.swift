@@ -35,14 +35,14 @@ final class DatePickerModalViewController: ViewController {
 extension DatePickerModalViewController {
     
     func bind() {
-        let input = DatePickerModalViewModel.Action(
+        let action = DatePickerModalViewModel.Action(
             viewDidLoad: .just(()),
             datePickerChanged: scene.datePicker.rx.value.changed.asSignal()
         )
-        let (state, effect) = viewModel.transform(input)
+        let state = viewModel.transform(action)
         
-        effect.selectedDate
-            .drive(with: self) { owner, date in
+        state.selectedDate
+            .bind(with: self) { owner, date in
                 owner.scene.datePicker.date = date
             }
             .disposed(by: disposeBag)

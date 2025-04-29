@@ -10,37 +10,32 @@ import RxSwift
 import RxCocoa
 
 final class MomentEditViewModel: ViewModel {
-    func transform(_ action: Action) -> State {
-        return State()
-    }
-    
     
     private let disposeBag = DisposeBag()
-    private let output: Effect
+    
+    private let state: State
     
     let navigation = Navigation()
     
-    init(record: Record) {
-        self.output = Effect(
-            record: .init(value: record),
-            titleText: .init(value: record.title)
-        )
+    init(state: State) {
+        self.state = state
+    }
+}
+
+// MARK: - State & Action
+
+extension MomentEditViewModel {
+    
+    struct State {
+        let record: BehaviorRelay<Record>
+        let titleText: BehaviorRelay<String>
+        let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     struct Action {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
         let saveButtonTapped: Signal<Void>
-    }
-    
-    struct State {
-        
-    }
-    
-    struct Effect {
-        let record: BehaviorRelay<Record>
-        let titleText: BehaviorRelay<String>
-        let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     struct Navigation {
@@ -52,26 +47,20 @@ final class MomentEditViewModel: ViewModel {
 
 extension MomentEditViewModel {
     
-    func transform(_ input: Action) -> (State, Effect) {
-        input.viewDidLoad
-            .withUnretained(self)
-            .map { owner, _ in owner.output.record.value }
-            .emit(to: output.record)
+    func transform(_ action: Action) -> State {
+        action.titleTextChanged
+            .emit(to: state.titleText)
             .disposed(by: disposeBag)
         
-        input.titleTextChanged
-            .emit(to: output.titleText)
-            .disposed(by: disposeBag)
-        
-        input.titleTextChanged
+        action.titleTextChanged
             .map { !$0.isEmpty }
-            .emit(to: output.isSaveButtonEnabled)
+            .emit(to: state.isSaveButtonEnabled)
             .disposed(by: disposeBag)
         
-        input.saveButtonTapped
+        action.saveButtonTapped
             .withUnretained(self)
             .emit { owner, _ in
-                let currentTitle = owner.output.titleText.value
+                let currentTitle = owner.state.titleText.value
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
                 let record = (Record(title: albumTitle, trackingStartDate: .now))
                 owner.navigation.dismiss.accept(record)
@@ -79,6 +68,6 @@ extension MomentEditViewModel {
             }
             .disposed(by: disposeBag)
         
-        return (State(), output)
+        return state
     }
 }

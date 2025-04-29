@@ -68,7 +68,12 @@ extension Coordinator {
     }
     
     private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
-        let editVM = MomentEditViewModel(record: record)
+        let editVM = MomentEditViewModel(
+            state: .init(
+                record: .init(value: record),
+                titleText: .init(value: record.title)
+            )
+        )
         let editVC = MomentEditViewController(viewModel: editVM)
         editVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(editVC, animated: true)

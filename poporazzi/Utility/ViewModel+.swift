@@ -16,9 +16,6 @@ protocol ViewModel: AnyObject {
     /// 이벤트 액션
     associatedtype Action
     
-    /// 의존성 주입
-    // associatedtype Dependencies
-    
     /// 이벤트 액션 바인딩
     func transform(_ action: Action) -> State
 }

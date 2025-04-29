@@ -35,14 +35,13 @@ final class RecordViewController: ViewController {
 extension RecordViewController {
     
     func bind() {
-        let input = RecordViewModel.Action(
-            viewDidLoad: .just(()),
+        let action = RecordViewModel.Action(
             viewBecomeActive: Notification.didBecomeActive,
             refresh: scene.albumCollectionView.refreshControl?.rx.controlEvent(.valueChanged).asSignal() ?? .empty(),
             seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
-        let state = viewModel.transform(input)
+        let state = viewModel.transform(action)
         
         state.record
             .bind(with: self) { owner, record in
@@ -70,23 +69,19 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-//        effect.seemoreMenuPresented
-//            .bind(with: self) { owner, menu in
-//                owner.scene.seemoreButton.button.menu = menu
-//            }
-//            .disposed(by: disposeBag)
-//        
-//        effect.finishAlertPresented
-//            .bind(with: self) { owner, alert in
-//                owner.showAlert(alert)
-//            }
-//            .disposed(by: disposeBag)
-//        
-//        effect.saveCompleteAlertPresented
-//            .observe(on: MainScheduler.instance)
-//            .bind(with: self) { owner, alert in
-//                owner.showAlert(alert)
-//            }
-//            .disposed(by: disposeBag)
+        state.effect
+            .bind(with: self) { owner, effects in
+                switch effects {
+                case .seemoreMenuPresented(let menu):
+                    owner.scene.seemoreButton.button.menu = menu
+                    
+                case .finishAlertPresented(let alert):
+                    owner.showAlert(alert)
+                    
+                case .saveCompleteAlertPresented(let alert):
+                    owner.showAlert(alert)
+                }
+            }
+            .disposed(by: disposeBag)
     }
 }

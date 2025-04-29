@@ -18,8 +18,6 @@ final class RecordViewModel: ViewModel {
     private let disposeBag = DisposeBag()
     
     private let state: State
-    private let action = PublishRelay<Action>()
-    private let effect = PublishRelay<Effect>()
     private let alert = PublishRelay<AlertAction>()
     private let menu = PublishRelay<MenuAction>()
     
@@ -31,27 +29,27 @@ final class RecordViewModel: ViewModel {
     }
 }
 
-// MARK: - State / Action / Effect
+// MARK: - State & Action
 
 extension RecordViewModel {
     
     struct State {
         let record: BehaviorRelay<Record>
         let mediaList = BehaviorRelay<[Media]>(value: [])
+        let effect = PublishRelay<Effect>()
+        
+        enum Effect {
+            case seemoreMenuPresented(UIMenu)
+            case finishAlertPresented(Alert)
+            case saveCompleteAlertPresented(Alert)
+        }
     }
     
     struct Action {
-        let viewDidLoad: Signal<Void>
         let viewBecomeActive: Signal<Notification>
         let refresh: Signal<Void>
         let seemoreButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
-    }
-    
-    enum Effect {
-        case seemoreMenuPresented(UIMenu)
-        case finishAlertPresented(Alert)
-        case saveCompleteAlertPresented(Alert)
     }
     
     enum AlertAction {
@@ -79,7 +77,6 @@ extension RecordViewModel {
     
     func transform(_ action: Action) -> State {
         let updateRecord = Signal.merge(
-            action.viewDidLoad,
             action.refresh,
             action.viewBecomeActive.map { _ in }
         )
@@ -101,13 +98,13 @@ extension RecordViewModel {
         action.seemoreButtonTapped
             .withUnretained(self)
             .emit(with: self) { owner, _ in
-                owner.effect.accept(.seemoreMenuPresented(owner.seemoreMenu))
+                owner.state.effect.accept(.seemoreMenuPresented(owner.seemoreMenu))
             }
             .disposed(by: disposeBag)
         
         action.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.effect.accept(.finishAlertPresented(owner.finishAlert))
+                owner.state.effect.accept(.finishAlertPresented(owner.finishAlert))
             }
             .disposed(by: disposeBag)
         
@@ -115,7 +112,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .save:
-                    owner.effect.accept(.saveCompleteAlertPresented(owner.saveAlert))
+                    owner.state.effect.accept(.saveCompleteAlertPresented(owner.saveAlert))
                     
                 case .navigateToHome:
                     owner.navigation.accept(.pop)
@@ -197,9 +194,12 @@ extension RecordViewModel {
         return Alert(
             title: "기록이 종료되었습니다!",
             message: "'\(title)' 앨범을 확인해보세요!",
-            eventButton: .init(title: "홈으로 돌아가기", action: { [weak self] in
-                self?.alert.accept(.navigateToHome)
-            })
+            eventButton: .init(
+                title: "홈으로 돌아가기",
+                action: { [weak self] in
+                    self?.alert.accept(.navigateToHome)
+                }
+            )
         )
     }
 }
