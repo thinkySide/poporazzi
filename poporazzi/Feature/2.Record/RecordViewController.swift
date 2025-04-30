@@ -53,10 +53,9 @@ extension RecordViewController {
             .bind(to: scene.albumCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
-            )) { [weak self] index, media, cell in
+            )) { index, media, cell in
                 cell.action(.setImage(media.thumbnail))
                 cell.action(.setMediaType(media.mediaType))
-                self?.scene.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         
@@ -64,7 +63,6 @@ extension RecordViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
-                owner.scene.albumCollectionView.refreshControl?.endRefreshing()
             }
             .disposed(by: disposeBag)
         

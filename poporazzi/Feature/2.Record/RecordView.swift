@@ -74,7 +74,7 @@ final class RecordView: CodeBaseUI {
         label.numberOfLines = 3
         label.setLine(alignment: .center, spacing: 8)
         label.font = .setDovemayo(16)
-        label.textColor = .subLabel
+        label.textColor = .mainLabel
         return label
     }()
     
@@ -162,7 +162,7 @@ extension RecordView {
             trackingStartDateLabel.flex.markDirty()
             
         case let .setTotalImageCountLabel(count):
-            totalPhotoCountLabel.text = count > 0 ? "총 \(count)개" : ""
+            totalPhotoCountLabel.text = count > 0 ? "총 \(count)장" : ""
             totalPhotoCountLabel.flex.markDirty()
             let display: Flex.Display = count > 0 ? .none : .flex
             appIconImageView.flex.display(display)
