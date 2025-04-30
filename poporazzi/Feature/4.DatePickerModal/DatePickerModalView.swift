@@ -20,6 +20,7 @@ final class DatePickerModalView: CodeBaseUI {
         datePicker.datePickerMode = .dateAndTime
         datePicker.preferredDatePickerStyle = .wheels
         datePicker.locale = Locale(identifier: "ko-KR")
+        datePicker.maximumDate = .now
         return datePicker
     }()
     
