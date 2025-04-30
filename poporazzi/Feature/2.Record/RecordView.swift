@@ -162,7 +162,7 @@ extension RecordView {
             trackingStartDateLabel.flex.markDirty()
             
         case let .setTotalImageCountLabel(count):
-            totalPhotoCountLabel.text = count > 0 ? "총 \(count)개" : ""
+            totalPhotoCountLabel.text = count > 0 ? "총 \(count)장" : ""
             totalPhotoCountLabel.flex.markDirty()
             let display: Flex.Display = count > 0 ? .none : .flex
             appIconImageView.flex.display(display)
