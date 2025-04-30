@@ -1,10 +1,10 @@
-# poporazzi 포포라치
+# 🥷 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
 |상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.0.0)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit|
-|앱스토어|[소중한 순간을 조용히 기록해두는 나만의 포포라치](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068)|
+|Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11)|
 |이메일 문의|eunlyuing@gmail.com|
 
 ### 완전 쉬운 포포라치 3️⃣단계 이용법
@@ -12,7 +12,7 @@
 2. 내맘대로 여행 즐기며 마음껏 사진 찍기.
 3. 여행 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기!
 
-![Frame 2](https://github.com/user-attachments/assets/0e70e01e-e351-4205-9925-00ac5f57a2fa)
+![Frame 2](https://github.com/user-attachments/assets/3a721bcb-5739-471c-8b49-00059548175f)
 
 ### 🛠️ 개발 타임라인
 
