@@ -74,7 +74,7 @@ final class RecordView: CodeBaseUI {
         label.numberOfLines = 3
         label.setLine(alignment: .center, spacing: 8)
         label.font = .setDovemayo(16)
-        label.textColor = .subLabel
+        label.textColor = .mainLabel
         return label
     }()
     
