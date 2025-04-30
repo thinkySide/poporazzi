@@ -39,3 +39,6 @@
 |[#26 전체 UI 업데이트](https://github.com/thinkySide/poporazzi/pull/26)|둘기마요 폰트 적용, 디자인 일괄 업데이트, SFSymbol 관리 열거형 구현|
 |[#28 MomentRecordView 이벤트 연결](https://github.com/thinkySide/poporazzi/pull/28)|더보기 Menu 구현, Media 엔티티 업데이트, 기록 Cell MediaType 별 UI 구현|
 |[#30 MomentEditView 기능 구현을 위한 세팅](https://github.com/thinkySide/poporazzi/pull/30)|MomentEdit 화면 구현, SFSymbol 편의생성자 구현|
+|[#32 MomentEdit 기능 구현](https://github.com/thinkySide/poporazzi/pull/32)|앨범 이름 및 시작 날짜 변경 기능 구현|
+|[#35 전체 ViewModel 리팩토링 및 Coordinator 도입](https://github.com/thinkySide/poporazzi/pull/35)|전체 ViewModel 리팩토링, Coordinator 패턴 도입|
+|[#37 UX/UI 디테일 추가](https://github.com/thinkySide/poporazzi/pull/37)|앱 아이콘 업데이트, 컬러 보드 업데이트, DatePicker 수정|
