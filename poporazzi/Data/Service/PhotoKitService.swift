@@ -21,7 +21,6 @@ struct PhotoKitService {
     /// PhotoKit에서 발생할 수 있는 에러
     enum PhotoKitError: Error {
         case emptyAssets
-        case cannotFindAlbum
     }
 }
 
