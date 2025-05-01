@@ -47,8 +47,8 @@
 |[#44 1.1.1 배포](https://github.com/thinkySide/poporazzi/pull/44)|1.1.1 배포 완료|
 
 #### v1.2.0 / 25.05.01 ~ 진행중
-> 이펙트를 크게 낼 수 있는 기능 위주로 구현해보자!
+> 이펙트를 크게 낼 수 있는 기능 위주로 구현해보자! 우선은 Live Activity를 이용해 지속적인 경험을 할 수 있게 도와주자~
 
 |PR 제목|주요 구현 내용|
 |:--|:--|
-|||
+|[#45 기록 Live Activity 기능 구현](https://github.com/thinkySide/poporazzi/pull/45)|기본 LiveActivity 기능 구현, Coordinator 순환 참조 문제 해결, 디버깅을 위한 Log 구조체 생성, 앱 Light 모드 고정|
