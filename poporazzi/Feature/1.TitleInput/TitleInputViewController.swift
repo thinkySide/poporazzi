@@ -33,6 +33,10 @@ final class TitleInputViewController: ViewController {
         super.viewDidAppear(animated)
         scene.titleTextField.action(.presentKeyboard)
     }
+    
+    deinit {
+        Log.print(#file, .deinit)
+    }
 }
 
 // MARK: - Binding

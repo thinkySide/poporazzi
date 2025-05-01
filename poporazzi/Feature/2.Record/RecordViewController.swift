@@ -13,7 +13,8 @@ final class RecordViewController: ViewController {
     
     private let scene = RecordView()
     private let viewModel: RecordViewModel
-    private let disposeBag = DisposeBag()
+    
+    let disposeBag = DisposeBag()
     
     init(viewModel: RecordViewModel) {
         self.viewModel = viewModel
@@ -27,6 +28,10 @@ final class RecordViewController: ViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         bind()
+    }
+    
+    deinit {
+        Log.print(#file, .deinit)
     }
 }
 

@@ -13,7 +13,8 @@ final class DatePickerModalViewController: ViewController {
     
     private let scene = DatePickerModalView()
     private let viewModel: DatePickerModalViewModel
-    private let disposeBag = DisposeBag()
+    
+    let disposeBag = DisposeBag()
     
     init(viewModel: DatePickerModalViewModel) {
         self.viewModel = viewModel
@@ -27,6 +28,10 @@ final class DatePickerModalViewController: ViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         bind()
+    }
+    
+    deinit {
+        Log.print(#file, .deinit)
     }
 }
 

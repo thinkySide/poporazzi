@@ -11,7 +11,7 @@ import RxCocoa
 
 final class MomentEditViewModel: ViewModel {
     
-    private let disposeBag = DisposeBag()
+    let disposeBag = DisposeBag()
     
     private let output: Output
     
@@ -20,6 +20,10 @@ final class MomentEditViewModel: ViewModel {
     
     init(output: Output) {
         self.output = output
+    }
+    
+    deinit {
+        Log.print(#file, .deinit)
     }
 }
 
