@@ -43,7 +43,10 @@ struct PoporazziWidgetLiveActivity: Widget {
                 Text("\(context.state.totalCount)장")
                     .padding(.trailing, 4)
             } minimal: {
-                Text("m")
+                Image(.appIcon)
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .padding(.leading, 4)
             }
             .widgetURL(URL(string: "http://www.apple.com"))
             .keylineTint(.brandPrimary)
