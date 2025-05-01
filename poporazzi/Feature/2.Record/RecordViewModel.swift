@@ -103,17 +103,16 @@ extension RecordViewModel {
                 case .save:
                     if owner.output.mediaList.value.isEmpty {
                         owner.navigation.accept(.pop)
-                        owner.liveActivityService.stop()
-                        UserDefaultsService.isTracking = false
                     } else {
                         try? owner.saveToAlbums()
                         owner.output.alertPresented.accept(owner.saveCompleteAlert)
                     }
                     
-                case .popToHome:
-                    owner.navigation.accept(.pop)
                     owner.liveActivityService.stop()
                     UserDefaultsService.isTracking = false
+                    
+                case .popToHome:
+                    owner.navigation.accept(.pop)
                 }
             }
             .disposed(by: disposeBag)
