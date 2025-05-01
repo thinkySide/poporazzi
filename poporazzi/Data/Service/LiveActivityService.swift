@@ -10,9 +10,15 @@ import ActivityKit
 
 class LiveActivityService {
     
-    var activity: Activity<PoporazziWidgetAttributes>?
+    private var activity: Activity<PoporazziWidgetAttributes>?
+}
+
+// MARK: - Use Case
+
+extension LiveActivityService {
     
-    func start(_ albumTitle: String, startDate: Date, totalCount: Int) {
+    /// Live Activity를 시작합니다.
+    func start(albumTitle: String, startDate: Date, totalCount: Int) {
         guard activity == nil else { return }
         let attributes = PoporazziWidgetAttributes()
         let contentState = PoporazziWidgetAttributes.ContentState(
@@ -20,18 +26,37 @@ class LiveActivityService {
             startDate: startDate,
             totalCount: totalCount
         )
+        let content = ActivityContent(state: contentState, staleDate: nil)
         
         do {
-            let activity = try Activity<PoporazziWidgetAttributes>.request(
+            activity = try Activity<PoporazziWidgetAttributes>.request(
                 attributes: attributes,
-                contentState: contentState
+                content: content,
+                pushType: nil
             )
         } catch {
             print(error)
         }
     }
     
-    func stop() {
+    /// Live Activity를 업데이트합니다.
+    func update(albumTitle: String, startDate: Date, totalCount: Int) {
+        let contentState = PoporazziWidgetAttributes.ContentState(
+            albumTitle: albumTitle,
+            startDate: startDate,
+            totalCount: totalCount
+        )
+        let content = ActivityContent(state: contentState, staleDate: nil)
         
+        Task {
+            await activity?.update(content)
+        }
+    }
+    
+    /// Live Activity를 종료합니다.
+    func stop() {
+        Task {
+            await activity?.end(nil, dismissalPolicy: .immediate)
+        }
     }
 }
