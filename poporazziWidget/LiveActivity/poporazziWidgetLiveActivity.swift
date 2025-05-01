@@ -25,14 +25,28 @@ struct PoporazziWidgetLiveActivity: Widget {
             LockScreen(context: context)
         } dynamicIsland: { context in
             DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-                    Text("Leading")
-                }
-                DynamicIslandExpandedRegion(.trailing) {
-                    Text("Trailing")
-                }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text("Bottom")
+                    HStack(spacing: 0) {
+                        Image(.appIcon)
+                            .resizable()
+                            .frame(width: 52, height: 52)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(context.state.albumTitle)
+                                .font(.doveMayo(size: 20))
+                            
+                            Text(context.state.startDate.startDateFormat)
+                                .font(.doveMayo(size: 14))
+                        }
+                        .padding(.leading, 12)
+                        
+                        Spacer()
+                        
+                        Text("\(context.state.totalCount)장")
+                            .font(.doveMayo(size: 28))
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 8)
                 }
             } compactLeading: {
                 Image(.appIcon)
@@ -41,6 +55,7 @@ struct PoporazziWidgetLiveActivity: Widget {
                     .padding(.leading, 4)
             } compactTrailing: {
                 Text("\(context.state.totalCount)장")
+                    .font(.doveMayo(size: 14))
                     .padding(.trailing, 4)
             } minimal: {
                 Image(.appIcon)
