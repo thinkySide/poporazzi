@@ -72,13 +72,7 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.finishAlertPresented
-            .bind(with: self) { owner, alert in
-                owner.showAlert(alert)
-            }
-            .disposed(by: disposeBag)
-        
-        output.saveCompleteAlertPresented
+        output.alertPresented
             .bind(with: self) { owner, alert in
                 owner.showAlert(alert)
             }

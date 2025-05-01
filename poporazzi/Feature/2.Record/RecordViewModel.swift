@@ -42,8 +42,7 @@ extension RecordViewModel {
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
-        let finishAlertPresented = PublishRelay<AlertModel>()
-        let saveCompleteAlertPresented = PublishRelay<AlertModel>()
+        let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
@@ -86,7 +85,7 @@ extension RecordViewModel {
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.finishAlertPresented.accept(owner.finishAlert)
+                owner.output.alertPresented.accept(owner.finishConfirmAlert)
             }
             .disposed(by: disposeBag)
         
@@ -94,11 +93,12 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .save:
-                    do {
-                        try owner.saveToAlbums()
-                        owner.output.saveCompleteAlertPresented.accept(owner.saveAlert)
-                    } catch {
-                        print(error)
+                    if owner.output.mediaList.value.isEmpty {
+                        owner.navigation.accept(.pop)
+                        UserDefaultsService.isTracking = false
+                    } else {
+                        try? owner.saveToAlbums()
+                        owner.output.alertPresented.accept(owner.saveCompleteAlert)
                     }
                     
                 case .popToHome:
@@ -158,13 +158,16 @@ extension RecordViewModel {
 
 extension RecordViewModel {
     
-    /// 기록 종료 Alert
-    private var finishAlert: AlertModel {
+    /// 기록 종료 확인 Alert
+    private var finishConfirmAlert: AlertModel {
         let title = output.record.value.title
         let totalCount = output.mediaList.value.count
+        let message = output.mediaList.value.isEmpty
+        ? "촬영된 기록이 없어 앨범 저장 없이 종료돼요"
+        : "총 \(totalCount)장의 '\(title)' 기록이 종료 후 앨범에 저장돼요"
         return AlertModel(
             title: "기록을 종료할까요?",
-            message: "총 \(totalCount)장의 '\(title)' 기록 종료 후 앨범에 저장돼요",
+            message: message,
             eventButton: .init(
                 title: "종료",
                 action: { [weak self] in
@@ -175,8 +178,8 @@ extension RecordViewModel {
         )
     }
     
-    /// 앨범 저장 Alert
-    private var saveAlert: AlertModel {
+    /// 앨범 저장 완료 Alert
+    private var saveCompleteAlert: AlertModel {
         let title = output.record.value.title
         return AlertModel(
             title: "기록이 종료되었습니다!",
