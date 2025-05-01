@@ -35,14 +35,18 @@ struct PoporazziWidgetLiveActivity: Widget {
                     Text("Bottom")
                 }
             } compactLeading: {
-                Text("L")
+                Image(.appIcon)
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .padding(.leading, 4)
             } compactTrailing: {
-                Text("T")
+                Text("\(context.state.totalCount)장")
+                    .padding(.trailing, 4)
             } minimal: {
                 Text("m")
             }
             .widgetURL(URL(string: "http://www.apple.com"))
-            .keylineTint(Color.red)
+            .keylineTint(.brandPrimary)
         }
     }
 }
@@ -75,16 +79,8 @@ private struct LockScreen: View {
                 .font(.doveMayo(size: 28))
                 .foregroundStyle(.brandPrimary)
         }
-        .padding(.vertical, 20)
-        .padding(.horizontal, 20)
+        .padding(20)
         .activityBackgroundTint(.white)
         .activitySystemActionForegroundColor(Color.black)
-    }
-}
-
-extension Font {
-    
-    static func doveMayo(size: CGFloat) -> Font {
-        .custom("Dovemayo_gothic", size: size)
     }
 }

@@ -70,7 +70,8 @@
 		8221E3652DC367580092469D /* Exceptions for "poporazziWidget" folder in "poporazzi" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				poporazziWidgetLiveActivity.swift,
+				LiveActivity/poporazziWidgetLiveActivity.swift,
+				"Utility/Font+.swift",
 			);
 			target = 8232593B2D9FBF4800CFC860 /* poporazzi */;
 		};
