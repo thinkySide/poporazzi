@@ -1,7 +1,7 @@
 # 🥷 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.0.0)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.1.0)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11)|
@@ -30,7 +30,7 @@
 |[#15 전체 Flow 연결](https://github.com/thinkySide/poporazzi/pull/15)|전체 Flow 연결, 기록 종료 Alert 추가, 화면 진입 시(SceneDelegate) 앨범 리스트 업데이트|
 |[#17 1.0.0 심사 제출](https://github.com/thinkySide/poporazzi/pull/17)|지원 OS iOS로 한정, 앱 로고 및 스크린샷 설정, 앱스토어 심사 설정|
 
-#### v1.1.0 / 25.04.16 ~ 진행중
+#### v1.1.0 / 25.04.16 ~ 25.04.30
 > MVP는 기능이 너무 많이빠져있었다,,! 기록을 편집할 수 있는 기능 추가 및 약간의 디자인 업데이트(개구쟁이 파파라치 컨셉?)
 
 |PR 제목|주요 구현 내용|
@@ -42,3 +42,4 @@
 |[#32 MomentEdit 기능 구현](https://github.com/thinkySide/poporazzi/pull/32)|앨범 이름 및 시작 날짜 변경 기능 구현|
 |[#35 전체 ViewModel 리팩토링 및 Coordinator 도입](https://github.com/thinkySide/poporazzi/pull/35)|전체 ViewModel 리팩토링, Coordinator 패턴 도입|
 |[#37 UX/UI 디테일 추가](https://github.com/thinkySide/poporazzi/pull/37)|앱 아이콘 업데이트, 컬러 보드 업데이트, DatePicker 수정|
+|[#39 1.1.0 배포](https://github.com/thinkySide/poporazzi/pull/39)|1.1.0 배포 완료|
