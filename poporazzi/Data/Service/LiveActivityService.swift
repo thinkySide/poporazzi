@@ -10,15 +10,19 @@ import ActivityKit
 
 class LiveActivityService {
     
-    var activity: Activity<PoporazziLiveActivityAttributes>?
+    var activity: Activity<PoporazziWidgetAttributes>?
     
-    func start() {
+    func start(_ albumTitle: String, startDate: Date, totalCount: Int) {
         guard activity == nil else { return }
-        let attributes = PoporazziLiveActivityAttributes(name: "테스트")
-        let contentState = PoporazziLiveActivityAttributes.ContentState(value: 5)
+        let attributes = PoporazziWidgetAttributes()
+        let contentState = PoporazziWidgetAttributes.ContentState(
+            albumTitle: albumTitle,
+            startDate: startDate,
+            totalCount: totalCount
+        )
         
         do {
-            let activity = try Activity<PoporazziLiveActivityAttributes>.request(
+            let activity = try Activity<PoporazziWidgetAttributes>.request(
                 attributes: attributes,
                 contentState: contentState
             )

@@ -84,6 +84,7 @@ final class RecordView: CodeBaseUI {
             frame: .zero,
             collectionViewLayout: compositionalLayout
         )
+        collectionView.backgroundColor = .white
         collectionView.register(
             MomentRecordCell.self,
             forCellWithReuseIdentifier: MomentRecordCell.identifier

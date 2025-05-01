@@ -11,6 +11,8 @@ import SwiftUI
 @main
 struct poporazziWidgetBundle: WidgetBundle {
     var body: some Widget {
-        PoporazziLiveActivity()
+        // PoporazziWidget()
+        // PoporazziWidgetControl()
+        PoporazziWidgetLiveActivity()
     }
 }

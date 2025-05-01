@@ -60,7 +60,11 @@ extension TitleInputViewModel {
             .emit(with: self) { owner, _ in
                 let record = Record(title: owner.output.titleText.value, trackingStartDate: .now)
                 owner.navigation.accept(.pushRecord(record))
-                owner.liveActivityService.start()
+                owner.liveActivityService.start(
+                    record.title,
+                    startDate: record.trackingStartDate,
+                    totalCount: 0
+                )
                 UserDefaultsService.record = record
                 UserDefaultsService.isTracking = true
             }

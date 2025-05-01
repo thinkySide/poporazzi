@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8221E3002DC35CF80092469D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8221E2FF2DC35CF80092469D /* WidgetKit.framework */; };
-		8221E3022DC35CF80092469D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8221E3012DC35CF80092469D /* SwiftUI.framework */; };
-		8221E30D2DC35CF90092469D /* poporazziWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8221E2FD2DC35CF80092469D /* poporazziWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8221E34A2DC3668F0092469D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8221E3492DC3668F0092469D /* WidgetKit.framework */; };
+		8221E34C2DC3668F0092469D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8221E34B2DC3668F0092469D /* SwiftUI.framework */; };
+		8221E35D2DC366900092469D /* poporazziWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8221E3472DC3668F0092469D /* poporazziWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8273A72E2D9FC4F4008DD144 /* PinLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 8273A72D2D9FC4F4008DD144 /* PinLayout */; };
 		8273A7312D9FC4FE008DD144 /* FlexLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 8273A7302D9FC4FE008DD144 /* FlexLayout */; };
 		8273A7342D9FC590008DD144 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 8273A7332D9FC590008DD144 /* RxCocoa */; };
@@ -17,11 +17,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		8221E30B2DC35CF90092469D /* PBXContainerItemProxy */ = {
+		8221E35B2DC366900092469D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 823259342D9FBF4800CFC860 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8221E2FC2DC35CF80092469D;
+			remoteGlobalIDString = 8221E3462DC3668F0092469D;
 			remoteInfo = poporazziWidgetExtension;
 		};
 /* End PBXContainerItemProxy section */
@@ -33,7 +33,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				8221E30D2DC35CF90092469D /* poporazziWidgetExtension.appex in Embed Foundation Extensions */,
+				8221E35D2DC366900092469D /* poporazziWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -41,33 +41,38 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8221E2FD2DC35CF80092469D /* poporazziWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = poporazziWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		8221E2FF2DC35CF80092469D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
-		8221E3012DC35CF80092469D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		8221E3472DC3668F0092469D /* poporazziWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = poporazziWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8221E3492DC3668F0092469D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		8221E34B2DC3668F0092469D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		8232593C2D9FBF4800CFC860 /* poporazzi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = poporazzi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		8221E3122DC35CF90092469D /* Exceptions for "poporazziWidget" folder in "poporazziWidgetExtension" target */ = {
+		8221E3612DC366900092469D /* Exceptions for "poporazziWidget" folder in "poporazziWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 8221E2FC2DC35CF80092469D /* poporazziWidgetExtension */;
+			target = 8221E3462DC3668F0092469D /* poporazziWidgetExtension */;
 		};
-		8221E3162DC35EF10092469D /* Exceptions for "poporazziWidget" folder in "poporazzi" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				poporazziLiveActivity.swift,
-			);
-			target = 8232593B2D9FBF4800CFC860 /* poporazzi */;
-		};
-		8221E31A2DC35F7F0092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */ = {
+		8221E3632DC366D50092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Service/LiveActivityService.swift,
+				Resource/Colors.xcassets,
+				Resource/Font/DovemayoGothic/Dovemayo_gothic.ttf,
+				Resource/Images.xcassets,
+				"Utility/CustomFont+.swift",
+				"Utility/Formatter+.swift",
 			);
-			target = 8221E2FC2DC35CF80092469D /* poporazziWidgetExtension */;
+			target = 8221E3462DC3668F0092469D /* poporazziWidgetExtension */;
+		};
+		8221E3652DC367580092469D /* Exceptions for "poporazziWidget" folder in "poporazzi" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				poporazziWidgetLiveActivity.swift,
+			);
+			target = 8232593B2D9FBF4800CFC860 /* poporazzi */;
 		};
 		8232594E2D9FBF4900CFC860 /* Exceptions for "poporazzi" folder in "poporazzi" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -79,11 +84,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8221E3032DC35CF80092469D /* poporazziWidget */ = {
+		8221E34D2DC3668F0092469D /* poporazziWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8221E3162DC35EF10092469D /* Exceptions for "poporazziWidget" folder in "poporazzi" target */,
-				8221E3122DC35CF90092469D /* Exceptions for "poporazziWidget" folder in "poporazziWidgetExtension" target */,
+				8221E3652DC367580092469D /* Exceptions for "poporazziWidget" folder in "poporazzi" target */,
+				8221E3612DC366900092469D /* Exceptions for "poporazziWidget" folder in "poporazziWidgetExtension" target */,
 			);
 			path = poporazziWidget;
 			sourceTree = "<group>";
@@ -92,7 +97,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				8232594E2D9FBF4900CFC860 /* Exceptions for "poporazzi" folder in "poporazzi" target */,
-				8221E31A2DC35F7F0092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */,
+				8221E3632DC366D50092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */,
 			);
 			path = poporazzi;
 			sourceTree = "<group>";
@@ -100,12 +105,12 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		8221E2FA2DC35CF80092469D /* Frameworks */ = {
+		8221E3442DC3668F0092469D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8221E3022DC35CF80092469D /* SwiftUI.framework in Frameworks */,
-				8221E3002DC35CF80092469D /* WidgetKit.framework in Frameworks */,
+				8221E34C2DC3668F0092469D /* SwiftUI.framework in Frameworks */,
+				8221E34A2DC3668F0092469D /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,11 +128,11 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		8221E2FE2DC35CF80092469D /* Frameworks */ = {
+		8221E3482DC3668F0092469D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				8221E2FF2DC35CF80092469D /* WidgetKit.framework */,
-				8221E3012DC35CF80092469D /* SwiftUI.framework */,
+				8221E3492DC3668F0092469D /* WidgetKit.framework */,
+				8221E34B2DC3668F0092469D /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -136,8 +141,8 @@
 			isa = PBXGroup;
 			children = (
 				8232593E2D9FBF4800CFC860 /* poporazzi */,
-				8221E3032DC35CF80092469D /* poporazziWidget */,
-				8221E2FE2DC35CF80092469D /* Frameworks */,
+				8221E34D2DC3668F0092469D /* poporazziWidget */,
+				8221E3482DC3668F0092469D /* Frameworks */,
 				8232593D2D9FBF4800CFC860 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -146,7 +151,7 @@
 			isa = PBXGroup;
 			children = (
 				8232593C2D9FBF4800CFC860 /* poporazzi.app */,
-				8221E2FD2DC35CF80092469D /* poporazziWidgetExtension.appex */,
+				8221E3472DC3668F0092469D /* poporazziWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -154,26 +159,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8221E2FC2DC35CF80092469D /* poporazziWidgetExtension */ = {
+		8221E3462DC3668F0092469D /* poporazziWidgetExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8221E3112DC35CF90092469D /* Build configuration list for PBXNativeTarget "poporazziWidgetExtension" */;
+			buildConfigurationList = 8221E35E2DC366900092469D /* Build configuration list for PBXNativeTarget "poporazziWidgetExtension" */;
 			buildPhases = (
-				8221E2F92DC35CF80092469D /* Sources */,
-				8221E2FA2DC35CF80092469D /* Frameworks */,
-				8221E2FB2DC35CF80092469D /* Resources */,
+				8221E3432DC3668F0092469D /* Sources */,
+				8221E3442DC3668F0092469D /* Frameworks */,
+				8221E3452DC3668F0092469D /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				8221E3032DC35CF80092469D /* poporazziWidget */,
+				8221E34D2DC3668F0092469D /* poporazziWidget */,
 			);
 			name = poporazziWidgetExtension;
 			packageProductDependencies = (
 			);
 			productName = poporazziWidgetExtension;
-			productReference = 8221E2FD2DC35CF80092469D /* poporazziWidgetExtension.appex */;
+			productReference = 8221E3472DC3668F0092469D /* poporazziWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		8232593B2D9FBF4800CFC860 /* poporazzi */ = {
@@ -188,7 +193,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				8221E30C2DC35CF90092469D /* PBXTargetDependency */,
+				8221E35C2DC366900092469D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				8232593E2D9FBF4800CFC860 /* poporazzi */,
@@ -214,7 +219,7 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
-					8221E2FC2DC35CF80092469D = {
+					8221E3462DC3668F0092469D = {
 						CreatedOnToolsVersion = 16.2;
 					};
 					8232593B2D9FBF4800CFC860 = {
@@ -242,13 +247,13 @@
 			projectRoot = "";
 			targets = (
 				8232593B2D9FBF4800CFC860 /* poporazzi */,
-				8221E2FC2DC35CF80092469D /* poporazziWidgetExtension */,
+				8221E3462DC3668F0092469D /* poporazziWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		8221E2FB2DC35CF80092469D /* Resources */ = {
+		8221E3452DC3668F0092469D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -265,7 +270,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		8221E2F92DC35CF80092469D /* Sources */ = {
+		8221E3432DC3668F0092469D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -282,15 +287,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		8221E30C2DC35CF90092469D /* PBXTargetDependency */ = {
+		8221E35C2DC366900092469D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 8221E2FC2DC35CF80092469D /* poporazziWidgetExtension */;
-			targetProxy = 8221E30B2DC35CF90092469D /* PBXContainerItemProxy */;
+			target = 8221E3462DC3668F0092469D /* poporazziWidgetExtension */;
+			targetProxy = 8221E35B2DC366900092469D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		8221E30F2DC35CF90092469D /* Debug */ = {
+		8221E35F2DC366900092469D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -318,7 +323,7 @@
 			};
 			name = Debug;
 		};
-		8221E3102DC35CF90092469D /* Release */ = {
+		8221E3602DC366900092469D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -540,11 +545,11 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8221E3112DC35CF90092469D /* Build configuration list for PBXNativeTarget "poporazziWidgetExtension" */ = {
+		8221E35E2DC366900092469D /* Build configuration list for PBXNativeTarget "poporazziWidgetExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				8221E30F2DC35CF90092469D /* Debug */,
-				8221E3102DC35CF90092469D /* Release */,
+				8221E35F2DC366900092469D /* Debug */,
+				8221E3602DC366900092469D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
