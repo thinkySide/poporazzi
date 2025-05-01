@@ -11,6 +11,7 @@ import Photos
 
 final class RecordViewModel: ViewModel {
     
+    private let liveActivityService = LiveActivityService.shared
     private let photoKitService = PhotoKitService()
     private var fetchResult: PHFetchResult<PHAsset>?
     
@@ -47,7 +48,7 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case pushEdit(Record)
+        case pushEdit(Record, _ totalMediaListCount: Int)
     }
     
     enum Delegate {
@@ -80,7 +81,14 @@ extension RecordViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .bind(to: output.mediaList)
+            .bind(with: self) { owner, mediaList in
+                owner.output.mediaList.accept(mediaList)
+                owner.liveActivityService.update(
+                    albumTitle: owner.output.record.value.title,
+                    startDate: owner.output.record.value.trackingStartDate,
+                    totalCount: mediaList.count
+                )
+            }
             .disposed(by: disposeBag)
         
         input.finishButtonTapped
@@ -95,6 +103,7 @@ extension RecordViewModel {
                 case .save:
                     if owner.output.mediaList.value.isEmpty {
                         owner.navigation.accept(.pop)
+                        owner.liveActivityService.stop()
                         UserDefaultsService.isTracking = false
                     } else {
                         try? owner.saveToAlbums()
@@ -103,6 +112,7 @@ extension RecordViewModel {
                     
                 case .popToHome:
                     owner.navigation.accept(.pop)
+                    owner.liveActivityService.stop()
                     UserDefaultsService.isTracking = false
                 }
             }
@@ -113,7 +123,7 @@ extension RecordViewModel {
                 switch action {
                 case .edit:
                     let record = owner.output.record.value
-                    owner.navigation.accept(.pushEdit(record))
+                    owner.navigation.accept(.pushEdit(record, owner.output.mediaList.value.count))
                 }
             }
             .disposed(by: disposeBag)

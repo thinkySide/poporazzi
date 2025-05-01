@@ -8,7 +8,10 @@
 import Foundation
 import ActivityKit
 
-class LiveActivityService {
+final class LiveActivityService {
+    
+    static let shared = LiveActivityService()
+    private init() {}
     
     private var activity: Activity<PoporazziWidgetAttributes>?
 }
@@ -18,13 +21,13 @@ class LiveActivityService {
 extension LiveActivityService {
     
     /// Live Activity를 시작합니다.
-    func start(albumTitle: String, startDate: Date, totalCount: Int) {
+    func start(albumTitle: String, startDate: Date) {
         guard activity == nil else { return }
         let attributes = PoporazziWidgetAttributes()
         let contentState = PoporazziWidgetAttributes.ContentState(
             albumTitle: albumTitle,
             startDate: startDate,
-            totalCount: totalCount
+            totalCount: 0
         )
         let content = ActivityContent(state: contentState, staleDate: nil)
         

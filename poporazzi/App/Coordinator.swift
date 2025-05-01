@@ -61,8 +61,8 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case .pushEdit(let record):
-                    owner.presentEdit(recordVM, record)
+                case let .pushEdit(record, totalMediaListCount):
+                    owner.presentEdit(recordVM, record, totalMediaListCount)
                 }
             }
             .disposed(by: disposeBag)
@@ -74,12 +74,13 @@ extension Coordinator {
 extension Coordinator {
     
     /// 기록 수정 화면을 Present 합니다.
-    private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
+    private func presentEdit(_ recordVM: RecordViewModel, _ record: Record, _ totalMediaCount: Int) {
         let editVM = MomentEditViewModel(
             output: .init(
                 record: .init(value: record),
                 titleText: .init(value: record.title),
-                startDate: .init(value: record.trackingStartDate)
+                startDate: .init(value: record.trackingStartDate),
+                totalMediaCount: .init(value: totalMediaCount)
             )
         )
         let editVC = MomentEditViewController(viewModel: editVM)
