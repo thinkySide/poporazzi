@@ -1,7 +1,7 @@
-# 🥷 poporazzi 포포라치
+# 🥷📸 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.1.0)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.1.1)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11)|
