@@ -55,6 +55,20 @@
 			);
 			target = 8221E2FC2DC35CF80092469D /* poporazziWidgetExtension */;
 		};
+		8221E3162DC35EF10092469D /* Exceptions for "poporazziWidget" folder in "poporazzi" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				poporazziLiveActivity.swift,
+			);
+			target = 8232593B2D9FBF4800CFC860 /* poporazzi */;
+		};
+		8221E31A2DC35F7F0092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Data/Service/LiveActivityService.swift,
+			);
+			target = 8221E2FC2DC35CF80092469D /* poporazziWidgetExtension */;
+		};
 		8232594E2D9FBF4900CFC860 /* Exceptions for "poporazzi" folder in "poporazzi" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -68,6 +82,7 @@
 		8221E3032DC35CF80092469D /* poporazziWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				8221E3162DC35EF10092469D /* Exceptions for "poporazziWidget" folder in "poporazzi" target */,
 				8221E3122DC35CF90092469D /* Exceptions for "poporazziWidget" folder in "poporazziWidgetExtension" target */,
 			);
 			path = poporazziWidget;
@@ -77,6 +92,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				8232594E2D9FBF4900CFC860 /* Exceptions for "poporazzi" folder in "poporazzi" target */,
+				8221E31A2DC35F7F0092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */,
 			);
 			path = poporazzi;
 			sourceTree = "<group>";
@@ -286,6 +302,7 @@
 				INFOPLIST_FILE = poporazziWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = poporazziWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -313,6 +330,7 @@
 				INFOPLIST_FILE = poporazziWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = poporazziWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -346,7 +364,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -382,7 +400,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

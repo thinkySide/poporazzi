@@ -11,6 +11,8 @@ import RxCocoa
 
 final class TitleInputViewModel: ViewModel {
     
+    private let liveActivityService = LiveActivityService()
+    
     private let disposeBag = DisposeBag()
     private let output: Output
     
@@ -58,6 +60,7 @@ extension TitleInputViewModel {
             .emit(with: self) { owner, _ in
                 let record = Record(title: owner.output.titleText.value, trackingStartDate: .now)
                 owner.navigation.accept(.pushRecord(record))
+                owner.liveActivityService.start()
                 UserDefaultsService.record = record
                 UserDefaultsService.isTracking = true
             }
