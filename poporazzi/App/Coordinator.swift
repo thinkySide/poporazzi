@@ -90,11 +90,11 @@ extension Coordinator {
             .bind(with: self) { [weak editVC] owner, path in
                 switch path {
                 case .presentStartDatePicker(let date):
-                    owner.presentDatePickerModal(editVC, editVM, startDate: date) // 이거
+                    owner.presentDatePickerModal(editVC, editVM, startDate: date)
                     
                 case .dismiss(let record):
                     recordVM.delegate.accept(.momentDidEdited(record))
-                    editVC?.dismiss(animated: true) // 이거
+                    editVC?.dismiss(animated: true)
                 }
             }
             .disposed(by: editVC.disposeBag)
