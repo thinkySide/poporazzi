@@ -13,7 +13,8 @@ final class MomentEditViewController: ViewController {
     
     private let scene = MomentEditView()
     private let viewModel: MomentEditViewModel
-    private let disposeBag = DisposeBag()
+    
+    let disposeBag = DisposeBag()
     
     init(viewModel: MomentEditViewModel) {
         self.viewModel = viewModel
@@ -27,6 +28,10 @@ final class MomentEditViewController: ViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         bind()
+    }
+    
+    deinit {
+        Log.print(#file, .deinit)
     }
 }
 

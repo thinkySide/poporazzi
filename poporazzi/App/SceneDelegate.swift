@@ -20,3 +20,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         coordinator?.start()
     }
 }
+
+// MARK: - LifeCycle
+
+extension SceneDelegate {
+    
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        AppLifeCycleService.shared.didBecomeActive.accept(())
+    }
+}

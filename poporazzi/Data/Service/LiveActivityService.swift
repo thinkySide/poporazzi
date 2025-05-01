@@ -44,6 +44,8 @@ extension LiveActivityService {
     
     /// Live Activity를 업데이트합니다.
     func update(albumTitle: String, startDate: Date, totalCount: Int) {
+        guard let activity = activity else { return }
+        
         let contentState = PoporazziWidgetAttributes.ContentState(
             albumTitle: albumTitle,
             startDate: startDate,
@@ -52,14 +54,17 @@ extension LiveActivityService {
         let content = ActivityContent(state: contentState, staleDate: nil)
         
         Task {
-            await activity?.update(content)
+            await activity.update(content)
         }
     }
     
     /// Live Activity를 종료합니다.
     func stop() {
+        guard let activity = activity else { return }
+        
         Task {
-            await activity?.end(nil, dismissalPolicy: .immediate)
+            await activity.end(nil, dismissalPolicy: .immediate)
+            self.activity = nil
         }
     }
 }

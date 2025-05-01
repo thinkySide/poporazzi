@@ -26,6 +26,10 @@ final class RecordViewModel: ViewModel {
     init(output: Output) {
         self.output = output
     }
+    
+    deinit {
+        Log.print(#file, .deinit)
+    }
 }
 
 // MARK: - Input & Output
@@ -48,7 +52,7 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case pushEdit(Record, _ totalMediaListCount: Int)
+        case pushEdit(Record)
     }
     
     enum Delegate {
@@ -76,20 +80,37 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        Signal.merge(input.viewBecomeActive, output.viewDidRefresh.asSignal())
-            .asObservable()
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .withUnretained(self)
-            .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .bind(with: self) { owner, mediaList in
-                owner.output.mediaList.accept(mediaList)
-                owner.liveActivityService.update(
-                    albumTitle: owner.output.record.value.title,
-                    startDate: owner.output.record.value.trackingStartDate,
-                    totalCount: mediaList.count
-                )
-            }
-            .disposed(by: disposeBag)
+//        input.viewBecomeActive
+//            .asObservable()
+//            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+//            .withUnretained(self)
+//            .flatMap { owner, _ in owner.fetchCurrentPhotos() }
+//            .bind(with: self) { owner, mediaList in
+//                owner.output.mediaList.accept(mediaList)
+//                print("호출")
+////                owner.liveActivityService.update(
+////                    albumTitle: owner.output.record.value.title,
+////                    startDate: owner.output.record.value.trackingStartDate,
+////                    totalCount: mediaList.count
+////                )
+//            }
+//            .disposed(by: AppLifeCycleService.shared.disposeBag)
+        
+//        Signal.merge(input.viewBecomeActive, output.viewDidRefresh.asSignal())
+//            .asObservable()
+//            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+//            .withUnretained(self)
+//            .flatMap { owner, _ in owner.fetchCurrentPhotos() }
+//            .bind(with: self) { owner, mediaList in
+//                owner.output.mediaList.accept(mediaList)
+//                print("호출")
+////                owner.liveActivityService.update(
+////                    albumTitle: owner.output.record.value.title,
+////                    startDate: owner.output.record.value.trackingStartDate,
+////                    totalCount: mediaList.count
+////                )
+//            }
+//            .disposed(by: disposeBag)
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
@@ -122,7 +143,7 @@ extension RecordViewModel {
                 switch action {
                 case .edit:
                     let record = owner.output.record.value
-                    owner.navigation.accept(.pushEdit(record, owner.output.mediaList.value.count))
+                    owner.navigation.accept(.pushEdit(record))
                 }
             }
             .disposed(by: disposeBag)

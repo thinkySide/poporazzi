@@ -61,11 +61,11 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .pushEdit(record, totalMediaListCount):
-                    owner.presentEdit(recordVM, record, totalMediaListCount)
+                case let .pushEdit(record):
+                    owner.presentEdit(recordVM, record)
                 }
             }
-            .disposed(by: disposeBag)
+            .disposed(by: recordVC.disposeBag)
     }
 }
 
@@ -74,13 +74,12 @@ extension Coordinator {
 extension Coordinator {
     
     /// 기록 수정 화면을 Present 합니다.
-    private func presentEdit(_ recordVM: RecordViewModel, _ record: Record, _ totalMediaCount: Int) {
+    private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
         let editVM = MomentEditViewModel(
             output: .init(
                 record: .init(value: record),
                 titleText: .init(value: record.title),
-                startDate: .init(value: record.trackingStartDate),
-                totalMediaCount: .init(value: totalMediaCount)
+                startDate: .init(value: record.trackingStartDate)
             )
         )
         let editVC = MomentEditViewController(viewModel: editVM)
@@ -88,36 +87,36 @@ extension Coordinator {
         self.navigationController.present(editVC, animated: true)
         
         editVM.navigation
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak editVC] owner, path in
                 switch path {
                 case .presentStartDatePicker(let date):
-                    owner.presentDatePickerModal(editVC, editVM, startDate: date)
+                    owner.presentDatePickerModal(editVC, editVM, startDate: date) // 이거
                     
                 case .dismiss(let record):
                     recordVM.delegate.accept(.momentDidEdited(record))
-                    editVC.dismiss(animated: true)
+                    editVC?.dismiss(animated: true) // 이거
                 }
             }
-            .disposed(by: self.disposeBag)
+            .disposed(by: editVC.disposeBag)
     }
     
     /// 날짜 선택 모달을 Present합니다.
-    private func presentDatePickerModal(_ editVC: MomentEditViewController, _ editVM: MomentEditViewModel, startDate: Date) {
+    private func presentDatePickerModal(_ editVC: MomentEditViewController?, _ editVM: MomentEditViewModel, startDate: Date) {
         let datePickerVM = DatePickerModalViewModel(output: .init(selectedDate: .init(value: startDate)))
         let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)
         datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
         datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
         datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
-        editVC.present(datePickerVC, animated: true)
+        editVC?.present(datePickerVC, animated: true)
         
         datePickerVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
                 case let .pop(date):
                     editVM.delegate.accept(.startDateDidChanged(date))
-                    editVC.dismiss(animated: true)
+                    editVC?.dismiss(animated: true)
                 }
             }
-            .disposed(by: disposeBag)
+            .disposed(by: datePickerVC.disposeBag)
     }
 }

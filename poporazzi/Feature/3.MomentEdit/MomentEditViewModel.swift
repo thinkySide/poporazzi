@@ -11,9 +11,7 @@ import RxCocoa
 
 final class MomentEditViewModel: ViewModel {
     
-    private let liveActivityService = LiveActivityService.shared
-    
-    private let disposeBag = DisposeBag()
+    let disposeBag = DisposeBag()
     
     private let output: Output
     
@@ -22,6 +20,10 @@ final class MomentEditViewModel: ViewModel {
     
     init(output: Output) {
         self.output = output
+    }
+    
+    deinit {
+        Log.print(#file, .deinit)
     }
 }
 
@@ -41,7 +43,6 @@ extension MomentEditViewModel {
         let record: BehaviorRelay<Record>
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
-        let totalMediaCount: BehaviorRelay<Int>
         let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
@@ -88,11 +89,6 @@ extension MomentEditViewModel {
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
                 let record = (Record(title: albumTitle, trackingStartDate: owner.output.startDate.value))
                 owner.navigation.accept(.dismiss(record))
-                owner.liveActivityService.update(
-                    albumTitle: record.title,
-                    startDate: record.trackingStartDate,
-                    totalCount: owner.output.totalMediaCount.value
-                )
                 UserDefaultsService.record = record
             }
             .disposed(by: disposeBag)

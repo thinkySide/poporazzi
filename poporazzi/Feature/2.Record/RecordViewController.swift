@@ -13,7 +13,8 @@ final class RecordViewController: ViewController {
     
     private let scene = RecordView()
     private let viewModel: RecordViewModel
-    private let disposeBag = DisposeBag()
+    
+    let disposeBag = DisposeBag()
     
     init(viewModel: RecordViewModel) {
         self.viewModel = viewModel
@@ -28,6 +29,15 @@ final class RecordViewController: ViewController {
         super.viewDidLoad()
         bind()
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        AppLifeCycleService.shared.dispose()
+    }
+    
+    deinit {
+        Log.print(#file, .deinit)
+    }
 }
 
 // MARK: - Binding
@@ -37,7 +47,7 @@ extension RecordViewController {
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
-            viewBecomeActive: Notification.didBecomeActive,
+            viewBecomeActive: AppLifeCycleService.shared.didBecomeActive.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)

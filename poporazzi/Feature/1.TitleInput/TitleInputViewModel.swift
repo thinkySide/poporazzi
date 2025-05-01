@@ -21,6 +21,10 @@ final class TitleInputViewModel: ViewModel {
     init(output: Output) {
         self.output = output
     }
+    
+    deinit {
+        Log.print(#file, .deinit)
+    }
 }
 
 // MARK: - Input & Output
