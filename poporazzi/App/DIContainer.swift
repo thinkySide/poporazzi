@@ -9,9 +9,11 @@ import Foundation
 
 final class DIContainer {
     
+    /// 싱글톤
     static let shared = DIContainer()
     private init() {}
     
+    /// 의존 객체를 담는 배열
     private var dependencies = [String: Any]()
     
     /// 객체를 등록합니다.
