@@ -16,7 +16,8 @@ final class DIContainer {
     
     /// 객체를 등록합니다.
     func register<T>(_ dependency: T) {
-        dependencies[key(from: dependency)] = dependency
+        let key = key(from: T.self)
+        dependencies[key] = dependency
     }
     
     /// 객체를 꺼내옵니다.
@@ -26,6 +27,17 @@ final class DIContainer {
             fatalError("\(key): 등록되지 않은 객체")
         }
         return dependency as! T
+    }
+}
+
+// MARK: - Injection
+
+extension DIContainer {
+    
+    /// 전체 의존성을 주입합니다.
+    func injectDependencies() {
+        register(LiveActivityService())
+        register(PhotoKitService())
     }
 }
 

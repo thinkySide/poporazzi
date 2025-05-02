@@ -11,8 +11,9 @@ import Photos
 
 final class RecordViewModel: ViewModel {
     
-    private let liveActivityService = LiveActivityService.shared
-    private let photoKitService = PhotoKitService()
+    @Dependency private var liveActivityService: LiveActivityService
+    @Dependency private var photoKitService: PhotoKitService
+    
     private var fetchResult: PHFetchResult<PHAsset>?
     
     private let disposeBag = DisposeBag()

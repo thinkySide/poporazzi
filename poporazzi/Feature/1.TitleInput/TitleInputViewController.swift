@@ -13,7 +13,8 @@ final class TitleInputViewController: ViewController {
     
     private let scene = TitleInputView()
     private let viewModel: TitleInputViewModel
-    private let disposeBag = DisposeBag()
+    
+    let disposeBag = DisposeBag()
     
     init(viewModel: TitleInputViewModel) {
         self.viewModel = viewModel

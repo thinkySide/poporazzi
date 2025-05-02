@@ -13,7 +13,6 @@ final class Coordinator {
     
     private var window: UIWindow?
     private var navigationController = UINavigationController()
-    private let disposeBag = DisposeBag()
     
     init(window: UIWindow?) {
         self.window = window
@@ -21,6 +20,7 @@ final class Coordinator {
     
     /// 진입 화면을 설정합니다.
     func start() {
+        DIContainer.shared.injectDependencies()
         let titleInputVM = TitleInputViewModel(output: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
@@ -33,7 +33,7 @@ final class Coordinator {
                     owner.pushRecord(titleInputVM, record)
                 }
             }
-            .disposed(by: disposeBag)
+            .disposed(by: titleInputVC.disposeBag)
         
         if UserDefaultsService.isTracking {
             let record = UserDefaultsService.record
