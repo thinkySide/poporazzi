@@ -7,14 +7,11 @@
 
 import RxSwift
 import RxCocoa
-import Photos
 
 final class RecordViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
-    
-    private var fetchResult: PHFetchResult<PHAsset>?
     
     private let disposeBag = DisposeBag()
     private let output: Output
@@ -39,7 +36,6 @@ extension RecordViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
-        let viewBecomeActive: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
     
@@ -81,7 +77,7 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        Signal.merge(input.viewBecomeActive, output.viewDidRefresh.asSignal())
+        Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
@@ -153,18 +149,13 @@ extension RecordViewModel {
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
         let trackingStartDate = output.record.value.trackingStartDate
-        fetchResult = photoKitService.fetchAssetResult(
-            mediaFetchType: .all,
-            date: trackingStartDate,
-            ascending: true
-        )
-        return photoKitService.fetchPhotos(fetchResult)
+        return photoKitService.fetchPhotos(date: trackingStartDate)
     }
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
         let title = output.record.value.title
-        try photoKitService.saveAlbum(title: title, assets: fetchResult)
+        try photoKitService.saveAlbum(title: title)
     }
 }
 

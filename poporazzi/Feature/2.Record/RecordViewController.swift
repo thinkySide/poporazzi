@@ -42,7 +42,6 @@ extension RecordViewController {
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
-            viewBecomeActive: Notification.didBecomeActive,
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
