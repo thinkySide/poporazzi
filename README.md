@@ -46,7 +46,7 @@
 |[#41 기록한 사진이 없을 때 종료 케이스 추가](https://github.com/thinkySide/poporazzi/pull/41)|사진이 비어있을 때 화면이 넘어가지 않던 버그 수정|
 |[#44 1.1.1 배포](https://github.com/thinkySide/poporazzi/pull/44)|1.1.1 배포 완료|
 
-#### v1.2.0 / 25.05.01 ~ 진행중
+#### v1.2.0 / 25.05.01 ~ 25.05.04
 > 이펙트를 크게 낼 수 있는 기능 위주로 구현해보자! 우선은 Live Activity를 이용해 지속적인 경험을 할 수 있게 도와주자~
 
 |PR 제목|주요 구현 내용|
@@ -54,6 +54,5 @@
 |[#45 기록 Live Activity 기능 구현](https://github.com/thinkySide/poporazzi/pull/45)|기본 LiveActivity 기능 구현, Coordinator 순환 참조 문제 해결, 디버깅을 위한 Log 구조체 생성, 앱 Light 모드 고정|
 |[#47 DI Container 구현](https://github.com/thinkySide/poporazzi/pull/47)|DI Container, Dependency 매크로 구현 및 ViewModel 내 주입|
 |[#49 사진 라이브러리 변경에 따른 업데이트 기능 추가](https://github.com/thinkySide/poporazzi/pull/49)|PHPhotoLibraryChangeObserver 프로토콜을 이용한 라이브러리 변화 감지 및 UI + LiveActivity 업데이트 기능 추가|
-|[#51 App 업데이트 Alert 기능 구현](https://github.com/thinkySide/poporazzi/pull/51)|VersionService 구현, 최신 버전 아닐 시 AppStore 이동 Alert 추가|
 |[#51 App 업데이트 Alert 기능 구현](https://github.com/thinkySide/poporazzi/pull/51)|VersionService 구현, 최신 버전 아닐 시 AppStore 이동 Alert 추가|
 |[#53 1.2.0 배포](https://github.com/thinkySide/poporazzi/pull/53)|1.2.0 배포 완료|
