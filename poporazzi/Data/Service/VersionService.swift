@@ -38,12 +38,12 @@ struct VersionService {
 extension VersionService {
     
     /// 현재 디바이스에 설치된 버전을 반환합니다.
-    static var deviceAppVersion: String {
+    var deviceAppVersion: String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as! String
     }
     
     /// 앱스토어 내 최신 버전을 반환합니다.
-    static var appStoreAppVersion: Observable<String> {
+    var appStoreAppVersion: Observable<String> {
         guard let url = URL(string: URLString.version.value) else { return .never() }
         
         return Observable.create { observer in
@@ -65,7 +65,7 @@ extension VersionService {
     }
     
     /// 앱스토어를 Open합니다.
-    static func openAppStore() {
+    func openAppStore() {
         guard let url = URL(string: URLString.appStore.value) else { return }
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
