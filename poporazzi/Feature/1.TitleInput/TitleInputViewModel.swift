@@ -11,12 +11,14 @@ import RxCocoa
 
 final class TitleInputViewModel: ViewModel {
     
+    @Dependency(\.versionService) private var versionService
     @Dependency(\.liveActivityService) private var liveActivityService
     
     private let disposeBag = DisposeBag()
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let alert = PublishRelay<Alert>()
     
     init(output: Output) {
         self.output = output
@@ -39,10 +41,15 @@ extension TitleInputViewModel {
     struct Output {
         let titleText = BehaviorRelay<String>(value: "")
         let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
+        let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
         case pushRecord(Record)
+    }
+    
+    enum Alert {
+        case openAppStore
     }
 }
 
@@ -73,6 +80,43 @@ extension TitleInputViewModel {
             }
             .disposed(by: disposeBag)
         
+        alert
+            .bind(with: self) { owner, action in
+                switch action {
+                case .openAppStore:
+                    owner.versionService.openAppStore()
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        versionService.appStoreAppVersion
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, appStoreVersion in
+                if appStoreVersion != owner.versionService.deviceAppVersion {
+                    owner.output.alertPresented.accept(owner.recommendUpdateAlert)
+                }
+            }
+            .disposed(by: disposeBag)
+        
         return output
+    }
+}
+
+// MARK: - Alert
+
+extension TitleInputViewModel {
+    
+    /// 업데이트 권장 Alert
+    private var recommendUpdateAlert: AlertModel {
+        AlertModel(
+            title: "새롭게 업데이트된 버전이 있어요!",
+            message: "포포라치의 새로운 기능을 이용하기 위해 업데이트가 필요해요 😎",
+            eventButton: .init(
+                title: "앱스토어로 이동",
+                action: { [weak self] in
+                    self?.alert.accept(.openAppStore)
+                }
+            )
+        )
     }
 }

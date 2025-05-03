@@ -20,6 +20,7 @@ final class DIContainer {
     final class Dependencies {
         let liveActivityService = LiveActivityService()
         let photoKitService = PhotoKitService()
+        let versionService = VersionService()
     }
     
     /// 객체를 꺼내옵니다.
