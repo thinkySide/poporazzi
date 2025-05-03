@@ -7,6 +7,7 @@
 
 import UIKit
 import RxSwift
+import RxCocoa
 import Photos
 
 final class PhotoKitService: NSObject {
@@ -23,6 +24,12 @@ final class PhotoKitService: NSObject {
         case emptyAssets
     }
     
+    /// 가장 최근의 FetchResult를 저장하는 변수
+    private var fetchResult: PHFetchResult<PHAsset>?
+    
+    /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
+    private let photoLibraryChangeRelay = PublishRelay<Void>()
+    
     override init() {
         super.init()
         PHPhotoLibrary.shared().register(self)
@@ -33,6 +40,11 @@ final class PhotoKitService: NSObject {
 
 extension PhotoKitService {
     
+    /// PhotoLibrayChangeRelay를 Observable로 반환
+    var photoLibraryChange: Observable<Void> {
+        photoLibraryChangeRelay.asObservable()
+    }
+    
     /// PhotoLibrary 권한을 요청합니다.
     func requestAuth() {
         PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
@@ -40,26 +52,22 @@ extension PhotoKitService {
         }
     }
     
-    /// PHFetchResult를 날짜에 맞게 반환합니다.
-    func fetchAssetResult(
-        mediaFetchType: MediaFetchType,
-        date: Date,
-        ascending: Bool
-    ) -> PHFetchResult<PHAsset> {
-        let fetchOptions = PHFetchOptions()
-        fetchOptions.predicate = makePredicate(mediaFetchType: mediaFetchType, date: date)
-        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: ascending)]
-        return PHAsset.fetchAssets(with: fetchOptions)
-    }
-    
     /// 기록을 반환합니다.
-    func fetchPhotos(_ fetchResult: PHFetchResult<PHAsset>?) -> Observable<[Media]> {
-        return Observable.create { observer in
+    func fetchPhotos(
+        mediaFetchType: MediaFetchType = .all,
+        date: Date,
+        ascending: Bool = true
+    ) -> Observable<[Media]> {
+        return Observable.create { [weak self] observer in
+            guard let self else { return Disposables.create() }
+            
             var newMedias = [Media]()
             let imageManager = PHImageManager.default()
             let requestOptions = PHImageRequestOptions()
             requestOptions.isSynchronous = true
             requestOptions.deliveryMode = .highQualityFormat
+            
+            fetchResult = fetchAssetResult(mediaFetchType: mediaFetchType, date: date, ascending: ascending)
             
             fetchResult?.enumerateObjects { asset, _, _ in
                 imageManager.requestImage(
@@ -87,9 +95,8 @@ extension PhotoKitService {
     }
     
     /// 앨범에 기록을 저장합니다.
-    func saveAlbum(title: String, assets: PHFetchResult<PHAsset>?) throws {
-        
-        guard let assets = assets else { throw PhotoKitError.emptyAssets }
+    func saveAlbum(title: String) throws {
+        guard let assets = fetchResult else { throw PhotoKitError.emptyAssets }
         
         // 기존 앨범에 추가
         if let album = fetchAlbum(title: title) {
@@ -112,6 +119,18 @@ extension PhotoKitService {
 // MARK: - Helper
 
 extension PhotoKitService {
+    
+    /// PHFetchResult를 날짜에 맞게 반환합니다.
+    private func fetchAssetResult(
+        mediaFetchType: MediaFetchType,
+        date: Date,
+        ascending: Bool
+    ) -> PHFetchResult<PHAsset> {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.predicate = makePredicate(mediaFetchType: mediaFetchType, date: date)
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: ascending)]
+        return PHAsset.fetchAssets(with: fetchOptions)
+    }
     
     /// 미디어 패치를 위한 Predicate 객체를 생성합니다.
     private func makePredicate(mediaFetchType: MediaFetchType, date: Date) -> NSPredicate {
@@ -166,6 +185,6 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
     
     /// PhotoLibrary의 변화 감지 시 호출됩니다.
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        print(changeInstance)
+        
     }
 }
