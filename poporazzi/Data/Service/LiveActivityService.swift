@@ -10,9 +10,6 @@ import ActivityKit
 
 final class LiveActivityService {
     
-    static let shared = LiveActivityService()
-    private init() {}
-    
     private var activity: Activity<PoporazziWidgetAttributes>?
 }
 

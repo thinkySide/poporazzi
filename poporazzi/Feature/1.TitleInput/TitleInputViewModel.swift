@@ -11,7 +11,7 @@ import RxCocoa
 
 final class TitleInputViewModel: ViewModel {
     
-    private let liveActivityService = LiveActivityService.shared
+    @Dependency(\.liveActivityService) private var liveActivityService
     
     private let disposeBag = DisposeBag()
     private let output: Output
