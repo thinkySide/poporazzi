@@ -11,8 +11,8 @@ import Photos
 
 final class RecordViewModel: ViewModel {
     
-    @Dependency private var liveActivityService: LiveActivityService
-    @Dependency private var photoKitService: PhotoKitService
+    @Dependency(\.liveActivityService) private var liveActivityService
+    @Dependency(\.photoKitService) private var photoKitService
     
     private var fetchResult: PHFetchResult<PHAsset>?
     

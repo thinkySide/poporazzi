@@ -13,43 +13,18 @@ final class DIContainer {
     static let shared = DIContainer()
     private init() {}
     
-    /// 의존 객체를 담는 배열
-    private var dependencies = [String: Any]()
+    /// 의존성이 담긴 객체
+    private let dependencies = Dependencies()
     
-    /// 객체를 등록합니다.
-    func register<T>(_ dependency: T) {
-        let key = key(from: T.self)
-        dependencies[key] = dependency
+    /// 의존성 리스트
+    final class Dependencies {
+        let liveActivityService = LiveActivityService()
+        let photoKitService = PhotoKitService()
     }
     
     /// 객체를 꺼내옵니다.
-    func resolve<T>() -> T {
-        let key = key(from: T.self)
-        guard let dependency = dependencies[key] else {
-            fatalError("\(key): 등록되지 않은 객체")
-        }
-        return dependency as! T
-    }
-}
-
-// MARK: - Injection
-
-extension DIContainer {
-    
-    /// 전체 의존성을 주입합니다.
-    func injectDependencies() {
-        register(LiveActivityService())
-        register(PhotoKitService())
-    }
-}
-
-// MARK: - Helper
-
-extension DIContainer {
-    
-    /// Dependency에 대한 Key를 생성합니다.
-    private func key<T>(from dependency: T) -> String {
-        String(describing: type(of: T.self))
+    fileprivate func resolve<T>(_ keyPath: KeyPath<Dependencies, T>) -> T {
+        dependencies[keyPath: keyPath]
     }
 }
 
@@ -60,7 +35,7 @@ final class Dependency<T> {
     
     let wrappedValue: T
     
-    init() {
-        self.wrappedValue = DIContainer.shared.resolve()
+    init(_ keyPath: KeyPath<DIContainer.Dependencies, T>) {
+        self.wrappedValue = DIContainer.shared.resolve(keyPath)
     }
 }

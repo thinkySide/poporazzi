@@ -20,7 +20,6 @@ final class Coordinator {
     
     /// 진입 화면을 설정합니다.
     func start() {
-        DIContainer.shared.injectDependencies()
         let titleInputVM = TitleInputViewModel(output: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
