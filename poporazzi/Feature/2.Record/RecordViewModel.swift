@@ -139,6 +139,12 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
+        photoKitService.photoLibraryChange
+            .bind(with: self) { owner, changeType in
+                print(changeType)
+            }
+            .disposed(by: disposeBag)
+        
         return output
     }
 }

@@ -185,6 +185,18 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
     
     /// PhotoLibrary의 변화 감지 시 호출됩니다.
     func photoLibraryDidChange(_ changeInstance: PHChange) {
+        guard let fetchResult,
+              let changeDetails = changeInstance.changeDetails(for: fetchResult) else {
+            return
+        }
         
+        /// 변화가 일어났는지 확인
+        if changeDetails.hasIncrementalChanges {
+            
+            // 추가 또는 삭제된 에셋이 있다면
+            if !changeDetails.insertedObjects.isEmpty || !changeDetails.removedObjects.isEmpty {
+                photoLibraryChangeRelay.accept(())
+            }
+        }
     }
 }
