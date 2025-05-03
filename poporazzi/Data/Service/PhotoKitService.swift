@@ -9,7 +9,7 @@ import UIKit
 import RxSwift
 import Photos
 
-struct PhotoKitService {
+final class PhotoKitService: NSObject {
     
     /// 미디어 검색 타입
     enum MediaFetchType {
@@ -21,6 +21,11 @@ struct PhotoKitService {
     /// PhotoKit에서 발생할 수 있는 에러
     enum PhotoKitError: Error {
         case emptyAssets
+    }
+    
+    override init() {
+        super.init()
+        PHPhotoLibrary.shared().register(self)
     }
 }
 
@@ -95,7 +100,8 @@ extension PhotoKitService {
         else {
             PHPhotoLibrary.shared().performChanges {
                 PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
-            } completionHandler: { isSuccess, error in
+            } completionHandler: { [weak self] isSuccess, error in
+                guard let self else { return }
                 guard let album = fetchAlbum(title: title) else { return }
                 appendToAlbum(assets: assets, to: album)
             }
@@ -151,5 +157,15 @@ extension PhotoKitService {
             let request = PHAssetCollectionChangeRequest(for: album)
             request?.addAssets(assets)
         }
+    }
+}
+
+// MARK: - PHPhotoLibraryChangeObserver
+
+extension PhotoKitService: PHPhotoLibraryChangeObserver {
+    
+    /// PhotoLibrary의 변화 감지 시 호출됩니다.
+    func photoLibraryDidChange(_ changeInstance: PHChange) {
+        print(changeInstance)
     }
 }
