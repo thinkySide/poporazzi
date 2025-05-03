@@ -36,7 +36,6 @@ extension RecordViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
-        let viewBecomeActive: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
     
@@ -78,7 +77,7 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        Signal.merge(input.viewBecomeActive, output.viewDidRefresh.asSignal())
+        Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
@@ -136,12 +135,6 @@ extension RecordViewModel {
                     owner.output.record.accept(record)
                     owner.output.viewDidRefresh.accept(())
                 }
-            }
-            .disposed(by: disposeBag)
-        
-        photoKitService.photoLibraryChange
-            .bind(with: self) { owner, changeType in
-                print(changeType)
             }
             .disposed(by: disposeBag)
         

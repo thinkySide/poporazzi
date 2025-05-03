@@ -28,7 +28,7 @@ final class PhotoKitService: NSObject {
     private var fetchResult: PHFetchResult<PHAsset>?
     
     /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
-    private let photoLibraryChangeRelay = PublishRelay<Void>()
+    private let photoLibraryChangeRelay = BehaviorRelay(value: ())
     
     override init() {
         super.init()
@@ -40,9 +40,9 @@ final class PhotoKitService: NSObject {
 
 extension PhotoKitService {
     
-    /// PhotoLibrayChangeRelay를 Observable로 반환
-    var photoLibraryChange: Observable<Void> {
-        photoLibraryChangeRelay.asObservable()
+    /// PhotoLibrayChangeRelay를 Signal로 반환
+    var photoLibraryChange: Signal<Void> {
+        photoLibraryChangeRelay.asSignal(onErrorJustReturn: ())
     }
     
     /// PhotoLibrary 권한을 요청합니다.
