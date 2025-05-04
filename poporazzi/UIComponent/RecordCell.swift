@@ -18,6 +18,13 @@ final class RecordCell: UICollectionViewCell {
     /// 영상 전용 오버레이
     private let videoOverlay = UIView()
     
+    /// 선택 전용 오버레이
+    private let selectOverlay: UIView = {
+        let view = UIView()
+        view.backgroundColor = .red
+        return view
+    }()
+    
     /// 미디어 썸네일
     private let thumbnail: UIImageView = {
         let imageView = UIImageView()
@@ -44,27 +51,44 @@ final class RecordCell: UICollectionViewCell {
         return label
     }()
     
+    /// 셀 선택 아이콘
+    private let checkIcon: UIImageView = {
+        let imageView = UIImageView(image: .checkIcon)
+        imageView.isHidden = true
+        return imageView
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.addSubview(containerView)
         contentView.addSubview(videoOverlay)
+        contentView.addSubview(selectOverlay)
         videoOverlay.layer.addSublayer(videoGradientLayer)
         configLayout()
-        [containerView, videoOverlay, thumbnail, videoDurationLabel].forEach { $0.isUserInteractionEnabled = false }
+        [containerView, videoOverlay, selectOverlay, thumbnail, videoDurationLabel]
+            .forEach { $0.isUserInteractionEnabled = false }
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.all()
-         videoOverlay.pin.all()
-         videoGradientLayer.frame = videoOverlay.bounds
-         containerView.flex.layout()
-         videoOverlay.flex.layout()
+        videoOverlay.pin.all()
+        selectOverlay.pin.all()
+        videoGradientLayer.frame = videoOverlay.bounds
+        containerView.flex.layout()
+        videoOverlay.flex.layout()
+        selectOverlay.flex.layout()
     }
     
     override var isSelected: Bool {
         didSet {
-            
+            if isSelected {
+                selectOverlay.isHidden = false
+                checkIcon.isHidden = false
+            } else {
+                selectOverlay.isHidden = true
+                checkIcon.isHidden = true
+            }
         }
     }
     
@@ -110,6 +134,7 @@ extension RecordCell {
     func configLayout() {
         containerView.flex.define { flex in
             flex.addItem(thumbnail)
+            flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }
         
         videoOverlay.flex.define { flex in

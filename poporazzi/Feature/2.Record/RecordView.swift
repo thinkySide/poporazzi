@@ -109,7 +109,7 @@ final class RecordView: CodeBaseUI {
             collectionViewLayout: compositionalLayout
         )
         collectionView.backgroundColor = .white
-        collectionView.allowsSelection = true
+        collectionView.allowsSelection = false
         collectionView.register(
             RecordCell.self,
             forCellWithReuseIdentifier: RecordCell.identifier
@@ -196,12 +196,10 @@ extension RecordView {
             emptyLabel.flex.display(display)
             
         case let .toggleSelectMode(bool):
-            if bool {
-                toolBar.action(.updateTitle("기록 선택"))
-                recordCollectionView.contentInset.bottom = 56
-            } else {
-                recordCollectionView.contentInset.bottom = 0
-            }
+            toolBar.action(.updateTitle("기록 선택"))
+            recordCollectionView.contentInset.bottom = bool ? 56 : 0
+            recordCollectionView.allowsSelection = bool
+            recordCollectionView.allowsMultipleSelection = true
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
         }
@@ -229,10 +227,12 @@ extension RecordView {
             flex.addItem().grow(1).marginTop(24).define { flex in
                 flex.addItem(recordCollectionView).position(.absolute).all(0)
                 
-                flex.addItem().direction(.column).position(.absolute).alignSelf(.center).alignItems(.center).top(30%).define { flex in
-                    flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
-                    flex.addItem(emptyLabel).marginTop(16)
-                }
+                flex.addItem().direction(.column)
+                    .position(.absolute).alignSelf(.center).alignItems(.center).top(30%)
+                    .define { flex in
+                        flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
+                        flex.addItem(emptyLabel).marginTop(16)
+                    }
             }
             
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
