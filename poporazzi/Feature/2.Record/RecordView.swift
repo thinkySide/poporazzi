@@ -27,11 +27,14 @@ final class RecordView: CodeBaseUI {
     let seemoreButton: NavigationButton = {
         let button = NavigationButton(
             buttonType: .systemIcon(.ellipsis, size: 14, weight: .black),
-            variation: .secondary
+            variation: .tertiary
         )
         button.button.showsMenuAsPrimaryAction = true
         return button
     }()
+    
+    /// 선택 버튼
+    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
@@ -202,6 +205,7 @@ extension RecordView {
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
             flex.addItem(seemoreButton)
+            flex.addItem(selectButton).marginLeft(8)
             flex.addItem(finishRecordButton).marginLeft(8)
         }
     }

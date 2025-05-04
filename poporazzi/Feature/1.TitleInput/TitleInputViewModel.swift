@@ -89,6 +89,7 @@ extension TitleInputViewModel {
             }
             .disposed(by: disposeBag)
         
+#if !DEBUG
         versionService.appStoreAppVersion
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, appStoreVersion in
@@ -97,6 +98,7 @@ extension TitleInputViewModel {
                 }
             }
             .disposed(by: disposeBag)
+#endif
         
         return output
     }
