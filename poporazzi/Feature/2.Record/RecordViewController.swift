@@ -44,6 +44,7 @@ extension RecordViewController {
             viewDidLoad: .just(()),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
+            recordCellTapped: scene.recordCollectionView.rx.itemSelected.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -57,8 +58,8 @@ extension RecordViewController {
         
         output.mediaList
             .bind(to: scene.recordCollectionView.rx.items(
-                cellIdentifier: MomentRecordCell.identifier,
-                cellType: MomentRecordCell.self
+                cellIdentifier: RecordCell.identifier,
+                cellType: RecordCell.self
             )) { index, media, cell in
                 cell.action(.setImage(media.thumbnail))
                 cell.action(.setMediaType(media.mediaType))

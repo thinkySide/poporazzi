@@ -13,8 +13,6 @@ final class RecordView: CodeBaseUI {
     
     var containerView = UIView()
     
-    let tapGesture = UITapGestureRecognizer()
-    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         trailing: navigationTrailingButtons
@@ -111,9 +109,10 @@ final class RecordView: CodeBaseUI {
             collectionViewLayout: compositionalLayout
         )
         collectionView.backgroundColor = .white
+        collectionView.allowsSelection = true
         collectionView.register(
-            MomentRecordCell.self,
-            forCellWithReuseIdentifier: MomentRecordCell.identifier
+            RecordCell.self,
+            forCellWithReuseIdentifier: RecordCell.identifier
         )
         return collectionView
     }()

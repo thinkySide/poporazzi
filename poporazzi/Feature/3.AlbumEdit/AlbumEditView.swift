@@ -49,6 +49,7 @@ final class AlbumEditView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        addGestureRecognizer(tapGesture)
     }
     
     required init?(coder: NSCoder) {

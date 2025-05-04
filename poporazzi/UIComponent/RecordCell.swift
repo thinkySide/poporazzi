@@ -1,5 +1,5 @@
 //
-//  MomentRecordCell.swift
+//  RecordCell.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/7/25.
@@ -9,9 +9,9 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentRecordCell: UICollectionViewCell {
+final class RecordCell: UICollectionViewCell {
     
-    static let identifier = "MomentRecordCell"
+    static let identifier = "RecordCell"
     
     var containerView = UIView()
     
@@ -50,15 +50,22 @@ final class MomentRecordCell: UICollectionViewCell {
         contentView.addSubview(videoOverlay)
         videoOverlay.layer.addSublayer(videoGradientLayer)
         configLayout()
+        [containerView, videoOverlay, thumbnail, videoDurationLabel].forEach { $0.isUserInteractionEnabled = false }
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.all()
-        videoOverlay.pin.all()
-        videoGradientLayer.frame = videoOverlay.bounds
-        containerView.flex.layout()
-        videoOverlay.flex.layout()
+         videoOverlay.pin.all()
+         videoGradientLayer.frame = videoOverlay.bounds
+         containerView.flex.layout()
+         videoOverlay.flex.layout()
+    }
+    
+    override var isSelected: Bool {
+        didSet {
+            
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -68,7 +75,7 @@ final class MomentRecordCell: UICollectionViewCell {
 
 // MARK: - Action
 
-extension MomentRecordCell {
+extension RecordCell {
     
     enum Action {
         case setImage(UIImage)
@@ -98,7 +105,7 @@ extension MomentRecordCell {
 
 // MARK: - Layout
 
-extension MomentRecordCell {
+extension RecordCell {
     
     func configLayout() {
         containerView.flex.define { flex in

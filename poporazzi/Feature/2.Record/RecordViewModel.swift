@@ -5,6 +5,7 @@
 //  Created by 김민준 on 4/5/25.
 //
 
+import Foundation
 import RxSwift
 import RxCocoa
 
@@ -38,6 +39,7 @@ extension RecordViewModel {
         let viewDidLoad: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
+        let recordCellTapped: Signal<IndexPath>
         let finishButtonTapped: Signal<Void>
     }
     
@@ -103,6 +105,12 @@ extension RecordViewModel {
         input.selectCancelButtonTapped
             .map { false }
             .emit(to: output.switchSelectMode)
+            .disposed(by: disposeBag)
+        
+        input.recordCellTapped
+            .emit(with: self) { owner, indexPath in
+                print(indexPath)
+            }
             .disposed(by: disposeBag)
         
         input.finishButtonTapped
