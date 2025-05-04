@@ -84,21 +84,20 @@ private struct LockScreen: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(context.state.albumTitle)
                     .font(.doveMayo(size: 20))
-                    .foregroundStyle(.mainLabel)
+                    .foregroundStyle(.white)
                 
                 Text(context.state.startDate.startDateFormat)
                     .font(.doveMayo(size: 14))
-                    .foregroundStyle(.subLabel)
+                    .foregroundStyle(.white)
             }
             
             Spacer()
             
             Text("\(context.state.totalCount)장")
                 .font(.doveMayo(size: 28))
-                .foregroundStyle(.brandPrimary)
+                .foregroundStyle(.white)
         }
         .padding(20)
-        .activityBackgroundTint(.white)
-        .activitySystemActionForegroundColor(Color.black)
+        .activityBackgroundTint(Color("WidgetBackground"))
     }
 }

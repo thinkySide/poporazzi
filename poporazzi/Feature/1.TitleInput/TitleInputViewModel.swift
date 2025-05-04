@@ -112,11 +112,12 @@ extension TitleInputViewModel {
             title: "새롭게 업데이트된 버전이 있어요!",
             message: "포포라치의 새로운 기능을 이용하기 위해 업데이트가 필요해요 😎",
             eventButton: .init(
-                title: "앱스토어로 이동",
+                title: "업데이트",
                 action: { [weak self] in
                     self?.alert.accept(.openAppStore)
                 }
-            )
+            ),
+            cancelButton: .init(title: "다음에")
         )
     }
 }
