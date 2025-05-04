@@ -1,7 +1,7 @@
 # 🥷📸 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.2.0)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.2.1)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11)|
@@ -12,7 +12,7 @@
 2. 내맘대로 여행 즐기며 마음껏 사진 찍기.
 3. 여행 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기!
 
-![Frame 2](https://github.com/user-attachments/assets/cec1dfdb-8582-4825-ac49-2421dbeb9e28)
+![Group 1](https://github.com/user-attachments/assets/8f47fbfa-fd77-4f4b-af66-5f1bff051731)
 
 ### 🛠️ 개발 타임라인
 
@@ -46,7 +46,7 @@
 |[#41 기록한 사진이 없을 때 종료 케이스 추가](https://github.com/thinkySide/poporazzi/pull/41)|사진이 비어있을 때 화면이 넘어가지 않던 버그 수정|
 |[#44 1.1.1 배포](https://github.com/thinkySide/poporazzi/pull/44)|1.1.1 배포 완료|
 
-#### v1.2.0 / 25.05.01 ~ 25.05.04
+#### v1.2.0 ~ v1.2.1 / 25.05.01 ~ 25.05.04
 > 이펙트를 크게 낼 수 있는 기능 위주로 구현해보자! 우선은 Live Activity를 이용해 지속적인 경험을 할 수 있게 도와주자~
 
 |PR 제목|주요 구현 내용|
@@ -56,3 +56,11 @@
 |[#49 사진 라이브러리 변경에 따른 업데이트 기능 추가](https://github.com/thinkySide/poporazzi/pull/49)|PHPhotoLibraryChangeObserver 프로토콜을 이용한 라이브러리 변화 감지 및 UI + LiveActivity 업데이트 기능 추가|
 |[#51 App 업데이트 Alert 기능 구현](https://github.com/thinkySide/poporazzi/pull/51)|VersionService 구현, 최신 버전 아닐 시 AppStore 이동 Alert 추가|
 |[#53 1.2.0 배포](https://github.com/thinkySide/poporazzi/pull/53)|1.2.0 배포 완료|
+|[#55 1.2.1 Minor 업데이트](https://github.com/thinkySide/poporazzi/pull/55)|Live Activity 업데이트, AppStore 업데이트 Alert 로직 업데이트|
+
+#### v1.3.0 / 25.05.04 ~
+> 앨범 기록 중 특정 사진을 제외하거나 삭제하는 기능이 필요하다는 정보를 얻었다. 바로 추가해보자!
+
+|PR 제목|주요 구현 내용|
+|:--|:--|
+|||
