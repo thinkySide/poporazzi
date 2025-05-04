@@ -75,7 +75,6 @@ extension TitleInputViewController {
         output.alertPresented
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, alert in
-                owner.scene.titleTextField.action(.dismissKeyboard)
                 owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
