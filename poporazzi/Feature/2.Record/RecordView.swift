@@ -197,7 +197,12 @@ extension RecordView {
             emptyLabel.flex.display(display)
             
         case let .toggleSelectMode(bool):
-            if bool { toolBar.action(.updateTitle("기록 선택")) }
+            if bool {
+                toolBar.action(.updateTitle("기록 선택"))
+                albumCollectionView.contentInset.bottom = 56
+            } else {
+                albumCollectionView.contentInset.bottom = 0
+            }
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
         }
