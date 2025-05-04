@@ -36,6 +36,8 @@ extension RecordViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        let selectButtonTapped: Signal<Void>
+        let selectCancelButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
     
@@ -44,6 +46,7 @@ extension RecordViewModel {
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
+        let switchSelectMode = PublishRelay<Bool>()
         let alertPresented = PublishRelay<AlertModel>()
     }
     
@@ -90,6 +93,16 @@ extension RecordViewModel {
                     totalCount: mediaList.count
                 )
             }
+            .disposed(by: disposeBag)
+        
+        input.selectButtonTapped
+            .map { true }
+            .emit(to: output.switchSelectMode)
+            .disposed(by: disposeBag)
+        
+        input.selectCancelButtonTapped
+            .map { false }
+            .emit(to: output.switchSelectMode)
             .disposed(by: disposeBag)
         
         input.finishButtonTapped

@@ -39,6 +39,13 @@ final class RecordView: CodeBaseUI {
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
     
+    /// 선택 취소 버튼
+    let selectCancelButton: NavigationButton = {
+        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
+        button.isHidden = true
+        return button
+    }()
+    
     /// 앨범 제목 라벨
     private let albumTitleLabel: UILabel = {
         let label = UILabel()
@@ -152,6 +159,7 @@ extension RecordView {
         case setAlbumTitleLabel(String)
         case setTrackingStartDateLabel(String)
         case setTotalImageCountLabel(Int)
+        case toggleSelectMode(Bool)
     }
     
     func action(_ action: Action) {
@@ -171,6 +179,10 @@ extension RecordView {
             let display: Flex.Display = count > 0 ? .none : .flex
             appIconImageView.flex.display(display)
             emptyLabel.flex.display(display)
+            
+        case let .toggleSelectMode(bool):
+            [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
+            selectCancelButton.isHidden = !bool
         }
     }
 }
@@ -207,6 +219,7 @@ extension RecordView {
             flex.addItem(seemoreButton)
             flex.addItem(selectButton).marginLeft(8)
             flex.addItem(finishRecordButton).marginLeft(8)
+            flex.addItem(selectCancelButton).position(.absolute).right(0)
         }
     }
 }

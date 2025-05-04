@@ -42,6 +42,8 @@ extension RecordViewController {
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
+            selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
+            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -73,6 +75,12 @@ extension RecordViewController {
         output.setupSeeMoreMenu
             .bind(with: self) { owner, menus in
                 owner.scene.seemoreButton.button.menu = menus.toUIMenu
+            }
+            .disposed(by: disposeBag)
+        
+        output.switchSelectMode
+            .bind(with: self) { owner, bool in
+                owner.scene.action(.toggleSelectMode(bool))
             }
             .disposed(by: disposeBag)
         

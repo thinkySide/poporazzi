@@ -62,19 +62,6 @@ final class MomentEditView: CodeBaseUI {
     }
 }
 
-// MARK: - Action
-
-extension MomentEditView {
-    
-    enum Action {
-        
-    }
-    
-    func action(_ action: Action) {
-        
-    }
-}
-
 // MARK: - Layout
 
 extension MomentEditView {
