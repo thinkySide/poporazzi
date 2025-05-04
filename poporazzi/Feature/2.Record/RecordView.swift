@@ -70,16 +70,16 @@ final class RecordView: CodeBaseUI {
         return label
     }()
     
-    /// 트래킹 시작 날짜 라벨
-    private let trackingStartDateLabel: UILabel = {
+    /// 시작 날짜 라벨
+    private let startDateLabel: UILabel = {
         let label = UILabel()
         label.font = .setDovemayo(16)
         label.textColor = .subLabel
         return label
     }()
     
-    /// 총 사진 개수 라벨
-    private let totalPhotoCountLabel: UILabel = {
+    /// 총 기록 개수 라벨
+    private let totalRecordCountLabel: UILabel = {
         let label = UILabel()
         label.font = .setDovemayo(16)
         label.textColor = .subLabel
@@ -104,8 +104,8 @@ final class RecordView: CodeBaseUI {
         return label
     }()
     
-    /// 앨범 컬렉션 뷰
-    lazy var albumCollectionView: UICollectionView = {
+    /// 기록 컬렉션 뷰
+    lazy var recordCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: compositionalLayout
@@ -173,7 +173,7 @@ extension RecordView {
     
     enum Action {
         case setAlbumTitleLabel(String)
-        case setTrackingStartDateLabel(String)
+        case setStartDateLabel(String)
         case setTotalImageCountLabel(Int)
         case toggleSelectMode(Bool)
     }
@@ -185,13 +185,13 @@ extension RecordView {
             albumTitleLabel.text = title
             albumTitleLabel.flex.markDirty()
             
-        case let .setTrackingStartDateLabel(text):
-            trackingStartDateLabel.text = text
-            trackingStartDateLabel.flex.markDirty()
+        case let .setStartDateLabel(text):
+            startDateLabel.text = text
+            startDateLabel.flex.markDirty()
             
         case let .setTotalImageCountLabel(count):
-            totalPhotoCountLabel.text = count > 0 ? "총 \(count)장" : ""
-            totalPhotoCountLabel.flex.markDirty()
+            totalRecordCountLabel.text = count > 0 ? "총 \(count)장" : ""
+            totalRecordCountLabel.flex.markDirty()
             let display: Flex.Display = count > 0 ? .none : .flex
             appIconImageView.flex.display(display)
             emptyLabel.flex.display(display)
@@ -199,9 +199,9 @@ extension RecordView {
         case let .toggleSelectMode(bool):
             if bool {
                 toolBar.action(.updateTitle("기록 선택"))
-                albumCollectionView.contentInset.bottom = 56
+                recordCollectionView.contentInset.bottom = 56
             } else {
-                albumCollectionView.contentInset.bottom = 0
+                recordCollectionView.contentInset.bottom = 0
             }
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
@@ -221,14 +221,14 @@ extension RecordView {
                 flex.addItem(albumTitleLabel)
                 
                 flex.addItem().direction(.row).marginTop(10).define { flex in
-                    flex.addItem(trackingStartDateLabel)
+                    flex.addItem(startDateLabel)
                     flex.addItem().grow(1)
-                    flex.addItem(totalPhotoCountLabel)
+                    flex.addItem(totalRecordCountLabel)
                 }
             }
             
             flex.addItem().grow(1).marginTop(24).define { flex in
-                flex.addItem(albumCollectionView).position(.absolute).all(0)
+                flex.addItem(recordCollectionView).position(.absolute).all(0)
                 
                 flex.addItem().direction(.column).position(.absolute).alignSelf(.center).alignItems(.center).top(30%).define { flex in
                     flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))

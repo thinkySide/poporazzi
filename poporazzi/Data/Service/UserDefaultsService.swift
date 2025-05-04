@@ -20,9 +20,9 @@ struct UserDefaultsService {
     @UserDefault(key: "trackingStartDate", defaultValue: .now)
     static var trackingStartDate: Date
     
-    static var record: Record {
+    static var record: Album {
         get {
-            Record(title: albumTitle, trackingStartDate: trackingStartDate)
+            Album(title: albumTitle, trackingStartDate: trackingStartDate)
         } set {
             albumTitle = newValue.title
             trackingStartDate = newValue.trackingStartDate

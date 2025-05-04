@@ -42,7 +42,7 @@ extension RecordViewModel {
     }
     
     struct Output {
-        let record: BehaviorRelay<Record>
+        let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
@@ -52,11 +52,11 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case pushEdit(Record)
+        case pushEdit(Album)
     }
     
     enum Delegate {
-        case momentDidEdited(Record)
+        case momentDidEdited(Album)
     }
     
     enum Alert {
@@ -88,8 +88,8 @@ extension RecordViewModel {
             .bind(with: self) { owner, mediaList in
                 owner.output.mediaList.accept(mediaList)
                 owner.liveActivityService.update(
-                    albumTitle: owner.output.record.value.title,
-                    startDate: owner.output.record.value.trackingStartDate,
+                    albumTitle: owner.output.album.value.title,
+                    startDate: owner.output.album.value.trackingStartDate,
                     totalCount: mediaList.count
                 )
             }
@@ -135,8 +135,8 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .edit:
-                    let record = owner.output.record.value
-                    owner.navigation.accept(.pushEdit(record))
+                    let album = owner.output.album.value
+                    owner.navigation.accept(.pushEdit(album))
                 }
             }
             .disposed(by: disposeBag)
@@ -145,7 +145,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case .momentDidEdited(let record):
-                    owner.output.record.accept(record)
+                    owner.output.album.accept(record)
                     owner.output.viewDidRefresh.accept(())
                 }
             }
@@ -161,13 +161,13 @@ extension RecordViewModel {
     
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
-        let trackingStartDate = output.record.value.trackingStartDate
+        let trackingStartDate = output.album.value.trackingStartDate
         return photoKitService.fetchPhotos(date: trackingStartDate)
     }
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        let title = output.record.value.title
+        let title = output.album.value.title
         try photoKitService.saveAlbum(title: title)
     }
 }
@@ -178,7 +178,7 @@ extension RecordViewModel {
     
     /// 기록 종료 확인 Alert
     private var finishConfirmAlert: AlertModel {
-        let title = output.record.value.title
+        let title = output.album.value.title
         let totalCount = output.mediaList.value.count
         let message = output.mediaList.value.isEmpty
         ? "촬영된 기록이 없어 앨범 저장 없이 종료돼요"
@@ -198,7 +198,7 @@ extension RecordViewModel {
     
     /// 앨범 저장 완료 Alert
     private var saveCompleteAlert: AlertModel {
-        let title = output.record.value.title
+        let title = output.album.value.title
         return AlertModel(
             title: "기록이 종료되었습니다!",
             message: "'\(title)' 앨범을 확인해보세요!",

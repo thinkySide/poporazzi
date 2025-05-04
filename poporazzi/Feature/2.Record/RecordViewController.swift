@@ -48,15 +48,15 @@ extension RecordViewController {
         )
         let output = viewModel.transform(input)
         
-        output.record
-            .bind(with: self) { owner, record in
-                owner.scene.action(.setAlbumTitleLabel(record.title))
-                owner.scene.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
+        output.album
+            .bind(with: self) { owner, album in
+                owner.scene.action(.setAlbumTitleLabel(album.title))
+                owner.scene.action(.setStartDateLabel(album.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
         output.mediaList
-            .bind(to: scene.albumCollectionView.rx.items(
+            .bind(to: scene.recordCollectionView.rx.items(
                 cellIdentifier: MomentRecordCell.identifier,
                 cellType: MomentRecordCell.self
             )) { index, media, cell in
