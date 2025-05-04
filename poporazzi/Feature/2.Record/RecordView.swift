@@ -46,6 +46,22 @@ final class RecordView: CodeBaseUI {
         return button
     }()
     
+    /// ToolBar
+    lazy var toolBar: ToolBar = {
+        let toolBar = ToolBar(
+            leading: excludeButton,
+            trailing: removeButton
+        )
+        toolBar.isHidden = true
+        return toolBar
+    }()
+    
+    /// 앨범에서 제외 버튼
+    let excludeButton = ToolBarButton(title: "앨범에서 제외")
+    
+    /// 삭제 버튼
+    let removeButton = ToolBarButton(title: "삭제")
+    
     /// 앨범 제목 라벨
     private let albumTitleLabel: UILabel = {
         let label = UILabel()
@@ -181,8 +197,9 @@ extension RecordView {
             emptyLabel.flex.display(display)
             
         case let .toggleSelectMode(bool):
+            if bool { toolBar.action(.updateTitle("기록 선택")) }
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
-            selectCancelButton.isHidden = !bool
+            [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
         }
     }
 }
@@ -213,6 +230,8 @@ extension RecordView {
                     flex.addItem(emptyLabel).marginTop(16)
                 }
             }
+            
+            flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
