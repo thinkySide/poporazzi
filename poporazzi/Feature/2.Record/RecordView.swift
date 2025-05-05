@@ -13,6 +13,9 @@ final class RecordView: CodeBaseUI {
     
     var containerView = UIView()
     
+    /// 로딩 인디케이터
+    private let loadingIndicator = LoadingIndicator()
+    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         trailing: navigationTrailingButtons
@@ -153,6 +156,7 @@ final class RecordView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        loadingIndicator.isHidden = true
     }
     
     required init?(coder: NSCoder) {
@@ -162,7 +166,10 @@ final class RecordView: CodeBaseUI {
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.top(pin.safeArea).left().right().bottom()
+        addSubview(loadingIndicator)
+        loadingIndicator.pin.all()
         containerView.flex.layout()
+        loadingIndicator.flex.layout()
     }
 }
 
@@ -176,6 +183,7 @@ extension RecordView {
         case setTotalImageCountLabel(Int)
         case toggleSelectMode(Bool)
         case updateSelectedCountLabel(Int)
+        case toggleLoading(Bool)
     }
     
     func action(_ action: Action) {
@@ -218,6 +226,10 @@ extension RecordView {
                     $0.isUserInteractionEnabled = true
                 }
             }
+            
+        case let .toggleLoading(isActive):
+            loadingIndicator.isHidden = !isActive
+            loadingIndicator.action(isActive ? .start : .stop)
         }
     }
 }

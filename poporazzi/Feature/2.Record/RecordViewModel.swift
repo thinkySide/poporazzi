@@ -55,6 +55,7 @@ extension RecordViewModel {
         let switchSelectMode = PublishRelay<Bool>()
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
+        let toggleLoading = PublishRelay<Bool>()
     }
     
     enum Navigation {
@@ -170,10 +171,16 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .remove:
+                    owner.output.toggleLoading.accept(true)
                     let assetIdentifiers = owner.output.selectedRecordCells.value.map { $0.id }
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
                         .bind(with: self) { owner, isSuccess in
-                            owner.output.selectedRecordCells.accept([])
+                            if isSuccess {
+                                owner.output.selectedRecordCells.accept([])
+                            } else {
+                                owner.output.alertPresented.accept(owner.removeFailedAlert)
+                            }
+                            owner.output.toggleLoading.accept(false)
                         }
                         .disposed(by: owner.disposeBag)
                 }
@@ -257,6 +264,15 @@ extension RecordViewModel {
                     self?.alertAction.accept(.popToHome)
                 }
             )
+        )
+    }
+    
+    /// 기록 삭제 실패 Alert
+    private var removeFailedAlert: AlertModel {
+        AlertModel(
+            title: "사진을 삭제할 수 없어요",
+            message: "사진 라이브러리 권한을 확인해주세요",
+            eventButton: .init(title: "확인")
         )
     }
 }
