@@ -114,12 +114,18 @@ final class ExcludeRecordView: CodeBaseUI {
 extension ExcludeRecordView {
     
     enum Action {
+        case setTotalImageCountLabel(Int)
         case toggleSelectMode(Bool)
         case updateSelectedCountLabel(Int)
     }
     
     func action(_ action: Action) {
         switch action {
+        case let .setTotalImageCountLabel(count):
+            totalCountLabel.text = count > 0 ? "총 \(count)장" : ""
+            totalCountLabel.flex.markDirty()
+            emptyLabel.isHidden = count > 0
+            
         case let .toggleSelectMode(bool):
             recordCollectionView.contentInset.bottom = bool ? 56 : 0
             recordCollectionView.allowsSelection = bool

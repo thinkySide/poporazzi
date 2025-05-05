@@ -95,6 +95,45 @@ extension PhotoKitService {
         }
     }
     
+    /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
+    func fetchPhotos(from assetIdentifiers: [String]) -> Observable<[Media]> {
+        Observable.create { observer in
+            let fetchResult = PHAsset.fetchAssets(
+                withLocalIdentifiers: assetIdentifiers,
+                options: nil
+            )
+            
+            var newMedias = [Media]()
+            let imageManager = PHImageManager.default()
+            let requestOptions = PHImageRequestOptions()
+            requestOptions.isSynchronous = true
+            requestOptions.deliveryMode = .highQualityFormat
+            
+            fetchResult.enumerateObjects { asset , _, _ in
+                imageManager.requestImage(
+                    for: asset,
+                    targetSize: .init(width: 360, height: 360),
+                    contentMode: .aspectFill,
+                    options: requestOptions,
+                    resultHandler: { image, _ in
+                        if let image = image {
+                            let media = Media(
+                                id: asset.localIdentifier,
+                                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+                                thumbnail: image
+                            )
+                            newMedias.append(media)
+                        }
+                    }
+                )
+            }
+            
+            observer.onNext(newMedias)
+            observer.onCompleted()
+            return Disposables.create()
+        }
+    }
+    
     /// 앨범에 기록을 저장합니다.
     func saveAlbum(title: String) throws {
         guard let assets = fetchResult else { throw PhotoKitError.emptyAssets }

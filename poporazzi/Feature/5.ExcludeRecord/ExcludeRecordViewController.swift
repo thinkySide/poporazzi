@@ -41,12 +41,34 @@ extension ExcludeRecordViewController {
     
     func bind() {
         let input = ExcludeRecordViewModel.Input(
+            viewDidLoad: .just(()),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
-            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal()
-            
+            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
+            recordCellSelected: scene.recordCollectionView.rx.modelSelected(Media.self).asSignal(),
+            recordCellDeselected: scene.recordCollectionView.rx.modelDeselected(Media.self).asSignal(),
+            recoverButtonTapped: scene.recoverButton.button.rx.tap.asSignal(),
+            removeButtonTapped: scene.removeButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
+        
+        output.mediaList
+            .observe(on: MainScheduler.instance)
+            .bind(to: scene.recordCollectionView.rx.items(
+                cellIdentifier: RecordCell.identifier,
+                cellType: RecordCell.self
+            )) { index, media, cell in
+                cell.action(.setImage(media.thumbnail))
+                cell.action(.setMediaType(media.mediaType))
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, medias in
+                owner.scene.action(.setTotalImageCountLabel(medias.count))
+            }
+            .disposed(by: disposeBag)
         
         output.selectedRecordCells
             .observe(on: MainScheduler.instance)
@@ -58,6 +80,13 @@ extension ExcludeRecordViewController {
         output.switchSelectMode
             .bind(with: self) { owner, bool in
                 owner.scene.action(.toggleSelectMode(bool))
+            }
+            .disposed(by: disposeBag)
+        
+        output.actionSheetPresented
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, actionSheet in
+                owner.showActionSheet(actionSheet)
             }
             .disposed(by: disposeBag)
     }
