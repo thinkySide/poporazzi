@@ -41,8 +41,24 @@ extension ExcludeRecordViewController {
     
     func bind() {
         let input = ExcludeRecordViewModel.Input(
-            backButtonTapped: scene.backButton.button.rx.tap.asSignal()
+            backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
+            selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
+            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal()
+            
         )
         let output = viewModel.transform(input)
+        
+        output.selectedRecordCells
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, selectedMedias in
+                owner.scene.action(.updateSelectedCountLabel(selectedMedias.count))
+            }
+            .disposed(by: disposeBag)
+        
+        output.switchSelectMode
+            .bind(with: self) { owner, bool in
+                owner.scene.action(.toggleSelectMode(bool))
+            }
+            .disposed(by: disposeBag)
     }
 }
