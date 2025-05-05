@@ -45,6 +45,7 @@ extension RecordViewController {
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
             recordCellTapped: scene.recordCollectionView.rx.itemSelected.asSignal(),
+            removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -94,6 +95,12 @@ extension RecordViewController {
         output.alertPresented
             .bind(with: self) { owner, alert in
                 owner.showAlert(alert)
+            }
+            .disposed(by: disposeBag)
+        
+        output.actionSheetPresented
+            .bind(with: self) { owner, actionSheet in
+                owner.showActionSheet(actionSheet)
             }
             .disposed(by: disposeBag)
     }

@@ -114,6 +114,16 @@ extension PhotoKitService {
             }
         }
     }
+    
+    /// 주어진 ID의 사진을 삭제합니다.
+    func deletePhotos(from assetIdentifiers: [String]) throws {
+        let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+        PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest.deleteAssets(assets)
+        } completionHandler: { isSuccess, error in
+            print("사진 삭제: \(isSuccess)")
+        }
+    }
 }
 
 // MARK: - Helper

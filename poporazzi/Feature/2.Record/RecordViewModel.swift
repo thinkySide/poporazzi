@@ -19,8 +19,9 @@ final class RecordViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
-    let alert = PublishRelay<Alert>()
-    let menu = PublishRelay<Menu>()
+    let alertAction = PublishRelay<AlertAction>()
+    let actionSheetAction = PublishRelay<ActionSheetAction>()
+    let menuAction = PublishRelay<MenuAction>()
     
     init(output: Output) {
         self.output = output
@@ -40,6 +41,7 @@ extension RecordViewModel {
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
         let recordCellTapped: Signal<IndexPath>
+        let removeButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
     
@@ -51,6 +53,7 @@ extension RecordViewModel {
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
         let alertPresented = PublishRelay<AlertModel>()
+        let actionSheetPresented = PublishRelay<ActionSheetModel>()
     }
     
     enum Navigation {
@@ -62,12 +65,16 @@ extension RecordViewModel {
         case momentDidEdited(Album)
     }
     
-    enum Alert {
+    enum AlertAction {
         case save
         case popToHome
     }
     
-    enum Menu {
+    enum ActionSheetAction {
+        case remove
+    }
+    
+    enum MenuAction {
         case edit
     }
 }
@@ -122,13 +129,19 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.removeButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.actionSheetPresented.accept(owner.removeActionSheet)
+            }
+            .disposed(by: disposeBag)
+        
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.alertPresented.accept(owner.finishConfirmAlert)
             }
             .disposed(by: disposeBag)
         
-        alert
+        alertAction
             .bind(with: self) { owner, action in
                 switch action {
                 case .save:
@@ -148,7 +161,17 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        menu
+        actionSheetAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case .remove:
+                    let assetIdentifiers = owner.output.mediaList.value.map { $0.id }
+                    try? owner.photoKitService.deletePhotos(from: assetIdentifiers)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        menuAction
             .bind(with: self) { owner, action in
                 switch action {
                 case .edit:
@@ -206,7 +229,7 @@ extension RecordViewModel {
             eventButton: .init(
                 title: "종료",
                 action: { [weak self] in
-                    self?.alert.accept(.save)
+                    self?.alertAction.accept(.save)
                 }
             ),
             cancelButton: .init(title: "취소")
@@ -222,9 +245,28 @@ extension RecordViewModel {
             eventButton: .init(
                 title: "홈으로 돌아가기",
                 action: { [weak self] in
-                    self?.alert.accept(.popToHome)
+                    self?.alertAction.accept(.popToHome)
                 }
             )
+        )
+    }
+}
+
+// MARK: - Action Sheet
+
+extension RecordViewModel {
+    
+    /// 기록 삭제 Action Sheet
+    private var removeActionSheet: ActionSheetModel {
+        let selectedCount = output.selectedRecordCells.value.count
+        return ActionSheetModel(
+            message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
+            buttons: [
+                .init(title: "\(selectedCount)장의 기록 삭제", style: .destructive) { [weak self] in
+                    self?.actionSheetAction.accept(.remove)
+                },
+                .init(title: "취소", style: .cancel)
+            ]
         )
     }
 }
@@ -236,7 +278,7 @@ extension RecordViewModel {
     /// 더보기 Menu
     private var seemoreMenu: [MenuModel] {
         let edit = MenuModel(symbol: .edit, title: "기록 수정") { [weak self] in
-            self?.menu.accept(.edit)
+            self?.menuAction.accept(.edit)
         }
         return [edit]
     }
