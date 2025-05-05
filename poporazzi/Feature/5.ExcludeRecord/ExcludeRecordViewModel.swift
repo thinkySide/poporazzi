@@ -49,7 +49,9 @@ extension ExcludeRecordViewModel {
         let selectedRecordCells = BehaviorRelay<[Media]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
         let viewDidRefresh = PublishRelay<Void>()
+        let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
+        let toggleLoading = PublishRelay<Bool>()
     }
     
     enum Navigation {
@@ -134,7 +136,22 @@ extension ExcludeRecordViewModel {
                     }
                     
                 case .remove:
-                    break
+                    owner.output.toggleLoading.accept(true)
+                    let assetIdentifiers = owner.output.selectedRecordCells.value.map { $0.id }
+                    owner.photoKitService.deletePhotos(from: assetIdentifiers)
+                        .bind(with: self) { owner, isSuccess in
+                            if isSuccess {
+                                owner.output.selectedRecordCells.value.forEach { media in
+                                    UserDefaultsService.excludeAssets.removeAll { media.id == $0 }
+                                    owner.output.viewDidRefresh.accept(())
+                                    owner.output.selectedRecordCells.accept([])
+                                }
+                            } else {
+                                owner.output.alertPresented.accept(owner.removeFailedAlert)
+                            }
+                            owner.output.toggleLoading.accept(false)
+                        }
+                        .disposed(by: owner.disposeBag)
                 }
             }
             .disposed(by: disposeBag)
@@ -151,6 +168,20 @@ extension ExcludeRecordViewModel {
     private func fetchExcludePhotos() -> Observable<[Media]> {
         let assetIdentifiers = UserDefaultsService.excludeAssets
         return photoKitService.fetchPhotos(from: assetIdentifiers)
+    }
+}
+
+// MARK: - Alert
+
+extension ExcludeRecordViewModel {
+    
+    /// 기록 삭제 실패 Alert
+    private var removeFailedAlert: AlertModel {
+        AlertModel(
+            title: "사진을 삭제할 수 없어요",
+            message: "사진 라이브러리 권한을 확인해주세요",
+            eventButton: .init(title: "확인")
+        )
     }
 }
 

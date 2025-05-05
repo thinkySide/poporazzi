@@ -123,7 +123,7 @@ final class RecordView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
-        loadingIndicator.isHidden = true
+        addSubview(loadingIndicator)
     }
     
     required init?(coder: NSCoder) {
@@ -133,7 +133,6 @@ final class RecordView: CodeBaseUI {
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.top(pin.safeArea).left().right().bottom()
-        addSubview(loadingIndicator)
         loadingIndicator.pin.all()
         containerView.flex.layout()
         loadingIndicator.flex.layout()
