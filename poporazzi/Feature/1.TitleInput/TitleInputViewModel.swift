@@ -75,7 +75,7 @@ extension TitleInputViewModel {
                     albumTitle: album.title,
                     startDate: album.trackingStartDate
                 )
-                UserDefaultsService.record = album
+                UserDefaultsService.album = album
                 UserDefaultsService.isTracking = true
             }
             .disposed(by: disposeBag)

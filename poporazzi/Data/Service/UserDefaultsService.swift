@@ -20,7 +20,15 @@ struct UserDefaultsService {
     @UserDefault(key: "trackingStartDate", defaultValue: .now)
     static var trackingStartDate: Date
     
-    static var record: Album {
+    @UserDefault(key: "excludeAssets", defaultValue: [])
+    static var excludeAssets: [String]
+}
+
+// MARK: - Syntax Sugar
+
+extension UserDefaultsService {
+    
+    static var album: Album {
         get {
             Album(title: albumTitle, trackingStartDate: trackingStartDate)
         } set {

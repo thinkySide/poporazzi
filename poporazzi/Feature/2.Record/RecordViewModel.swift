@@ -42,6 +42,7 @@ extension RecordViewModel {
         let selectCancelButtonTapped: Signal<Void>
         let recordCellSelected: Signal<Media>
         let recordCellDeselected: Signal<Media>
+        let excludeButtonTapped: Signal<Void>
         let removeButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
@@ -73,6 +74,7 @@ extension RecordViewModel {
     }
     
     enum ActionSheetAction {
+        case exclude
         case remove
     }
     
@@ -97,6 +99,10 @@ extension RecordViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
+            .map { $0.filter {
+                let excluedAssets = Set(UserDefaultsService.excludeAssets)
+                return !excluedAssets.contains($0.id)
+            }}
             .bind(with: self) { owner, mediaList in
                 owner.output.mediaList.accept(mediaList)
                 owner.liveActivityService.update(
@@ -135,6 +141,12 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.excludeButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.actionSheetPresented.accept(owner.excludeActionSheet)
+            }
+            .disposed(by: disposeBag)
+        
         input.removeButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.actionSheetPresented.accept(owner.removeActionSheet)
@@ -170,6 +182,14 @@ extension RecordViewModel {
         actionSheetAction
             .bind(with: self) { owner, action in
                 switch action {
+                case .exclude:
+                    owner.output.selectedRecordCells.value.forEach {
+                        UserDefaultsService.excludeAssets.append($0.id)
+                        owner.output.viewDidRefresh.accept(())
+                        owner.output.selectedRecordCells.accept([])
+                    }
+                    break
+                    
                 case .remove:
                     owner.output.toggleLoading.accept(true)
                     let assetIdentifiers = owner.output.selectedRecordCells.value.map { $0.id }
@@ -280,6 +300,21 @@ extension RecordViewModel {
 // MARK: - Action Sheet
 
 extension RecordViewModel {
+    
+    /// 앨범 제외 Action Sheet
+    private var excludeActionSheet: ActionSheetModel {
+        let title = output.album.value.title
+        let selectedCount = output.selectedRecordCells.value.count
+        return ActionSheetModel(
+            message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
+            buttons: [
+                .init(title: "\(selectedCount)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                    self?.actionSheetAction.accept(.exclude)
+                },
+                .init(title: "취소", style: .cancel)
+            ]
+        )
+    }
     
     /// 기록 삭제 Action Sheet
     private var removeActionSheet: ActionSheetModel {

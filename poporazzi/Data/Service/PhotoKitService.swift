@@ -119,15 +119,6 @@ extension PhotoKitService {
     /// 주어진 ID의 사진을 삭제합니다.
     func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
         Observable.create { observer in
-            
-//            let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-//            
-//            // 권한 체크
-//            guard status == .authorized || status == .limited else {
-//                observer.onError(PhotoKitError.noPermission)
-//                return Disposables.create()
-//            }
-            
             let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
             PHPhotoLibrary.shared().performChanges {
                 PHAssetChangeRequest.deleteAssets(assets)

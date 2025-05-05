@@ -35,7 +35,7 @@ final class Coordinator {
             .disposed(by: titleInputVC.disposeBag)
         
         if UserDefaultsService.isTracking {
-            let album = UserDefaultsService.record
+            let album = UserDefaultsService.album
             titleInputVM.navigation.accept(.pushRecord(album))
         }
         
@@ -60,8 +60,8 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .pushEdit(record):
-                    owner.presentEdit(recordVM, record)
+                case let .pushEdit(album):
+                    owner.presentEdit(recordVM, album)
                 }
             }
             .disposed(by: recordVC.disposeBag)

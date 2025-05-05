@@ -89,7 +89,7 @@ extension AlbumEditViewModel {
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
                 let record = (Album(title: albumTitle, trackingStartDate: owner.output.startDate.value))
                 owner.navigation.accept(.dismiss(record))
-                UserDefaultsService.record = record
+                UserDefaultsService.album = record
             }
             .disposed(by: disposeBag)
         

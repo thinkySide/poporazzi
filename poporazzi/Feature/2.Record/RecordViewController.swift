@@ -46,6 +46,7 @@ extension RecordViewController {
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
             recordCellSelected: scene.recordCollectionView.rx.modelSelected(Media.self).asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.modelDeselected(Media.self).asSignal(),
+            excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
@@ -94,7 +95,7 @@ extension RecordViewController {
                 owner.scene.action(.toggleSelectMode(bool))
             }
             .disposed(by: disposeBag)
-        
+    
         output.alertPresented
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, alert in
