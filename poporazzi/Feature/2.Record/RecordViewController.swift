@@ -44,7 +44,8 @@ extension RecordViewController {
             viewDidLoad: .just(()),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
-            recordCellTapped: scene.recordCollectionView.rx.itemSelected.asSignal(),
+            recordCellSelected: scene.recordCollectionView.rx.modelSelected(Media.self).asSignal(),
+            recordCellDeselected: scene.recordCollectionView.rx.modelDeselected(Media.self).asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
@@ -58,6 +59,7 @@ extension RecordViewController {
             .disposed(by: disposeBag)
         
         output.mediaList
+            .observe(on: MainScheduler.instance)
             .bind(to: scene.recordCollectionView.rx.items(
                 cellIdentifier: RecordCell.identifier,
                 cellType: RecordCell.self
@@ -75,8 +77,9 @@ extension RecordViewController {
             .disposed(by: disposeBag)
         
         output.selectedRecordCells
-            .bind(with: self) { owner, indexPaths in
-                owner.scene.toolBar.action(.updateTitle("\(indexPaths.count)장의 기록이 선택됨"))
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, selectedMedias in
+                owner.scene.action(.updateSelectedCountLabel(selectedMedias.count))
             }
             .disposed(by: disposeBag)
         

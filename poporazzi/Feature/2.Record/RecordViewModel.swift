@@ -40,7 +40,8 @@ extension RecordViewModel {
         let viewDidLoad: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
-        let recordCellTapped: Signal<IndexPath>
+        let recordCellSelected: Signal<Media>
+        let recordCellDeselected: Signal<Media>
         let removeButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
@@ -48,7 +49,7 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
+        let selectedRecordCells = BehaviorRelay<[Media]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
@@ -117,14 +118,18 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.recordCellTapped
-            .emit(with: self) { owner, indexPath in
+        input.recordCellSelected
+            .emit(with: self) { owner, media in
                 var currentCells = owner.output.selectedRecordCells.value
-                if let index = currentCells.firstIndex(of: indexPath) {
-                    currentCells.remove(at: index)
-                } else {
-                    currentCells.append(indexPath)
-                }
+                currentCells.append(media)
+                owner.output.selectedRecordCells.accept(currentCells)
+            }
+            .disposed(by: disposeBag)
+        
+        input.recordCellDeselected
+            .emit(with: self) { owner, media in
+                var currentCells = owner.output.selectedRecordCells.value
+                currentCells.removeAll(where: { $0.id == media.id })
                 owner.output.selectedRecordCells.accept(currentCells)
             }
             .disposed(by: disposeBag)
@@ -165,8 +170,12 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .remove:
-                    let assetIdentifiers = owner.output.mediaList.value.map { $0.id }
-                    try? owner.photoKitService.deletePhotos(from: assetIdentifiers)
+                    let assetIdentifiers = owner.output.selectedRecordCells.value.map { $0.id }
+                    owner.photoKitService.deletePhotos(from: assetIdentifiers)
+                        .bind(with: self) { owner, isSuccess in
+                            owner.output.selectedRecordCells.accept([])
+                        }
+                        .disposed(by: owner.disposeBag)
                 }
             }
             .disposed(by: disposeBag)

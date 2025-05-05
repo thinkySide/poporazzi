@@ -175,6 +175,7 @@ extension RecordView {
         case setStartDateLabel(String)
         case setTotalImageCountLabel(Int)
         case toggleSelectMode(Bool)
+        case updateSelectedCountLabel(Int)
     }
     
     func action(_ action: Action) {
@@ -202,6 +203,21 @@ extension RecordView {
             recordCollectionView.allowsMultipleSelection = bool
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
+            
+        case let .updateSelectedCountLabel(count):
+            if count == 0 {
+                toolBar.action(.updateTitle("기록 선택"))
+                [excludeButton, removeButton].forEach {
+                    $0.alpha = 0.3
+                    $0.isUserInteractionEnabled = false
+                }
+            } else {
+                toolBar.action(.updateTitle("\(count)장의 기록이 선택됨"))
+                [excludeButton, removeButton].forEach {
+                    $0.alpha = 1
+                    $0.isUserInteractionEnabled = true
+                }
+            }
         }
     }
 }
