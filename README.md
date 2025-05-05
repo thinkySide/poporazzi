@@ -63,4 +63,5 @@
 
 |PR 제목|주요 구현 내용|
 |:--|:--|
-|||
+|[#57 기록 선택 모드 기능 구현](https://github.com/thinkySide/poporazzi/pull/57)|앨범에서 제외 및 삭제 기능 구현, ToolBar 및 LoadingIndicator UI Component 구현, ActionSheet Model 구현|
+|[#59 ExcludeRecord 화면 구현](https://github.com/thinkySide/poporazzi/pull/59)|ExcludeRecord UI 구현|
