@@ -95,7 +95,7 @@ extension RecordViewController {
                 owner.scene.action(.toggleSelectMode(bool))
             }
             .disposed(by: disposeBag)
-    
+        
         output.alertPresented
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, alert in

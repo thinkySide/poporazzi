@@ -61,7 +61,8 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case pushEdit(Album)
+        case presentAlbumEdit(Album)
+        case presentExcludeRecord
     }
     
     enum Delegate {
@@ -79,7 +80,8 @@ extension RecordViewModel {
     }
     
     enum MenuAction {
-        case edit
+        case editAlbum
+        case excludeRecord
     }
 }
 
@@ -212,9 +214,12 @@ extension RecordViewModel {
         menuAction
             .bind(with: self) { owner, action in
                 switch action {
-                case .edit:
+                case .editAlbum:
                     let album = owner.output.album.value
-                    owner.navigation.accept(.pushEdit(album))
+                    owner.navigation.accept(.presentAlbumEdit(album))
+                    
+                case .excludeRecord:
+                    owner.navigation.accept(.presentExcludeRecord)
                 }
             }
             .disposed(by: disposeBag)
@@ -339,9 +344,12 @@ extension RecordViewModel {
     
     /// 더보기 Menu
     private var seemoreMenu: [MenuModel] {
-        let edit = MenuModel(symbol: .edit, title: "기록 수정") { [weak self] in
-            self?.menuAction.accept(.edit)
+        let editAlbum = MenuModel(symbol: .edit, title: "앨범 수정") { [weak self] in
+            self?.menuAction.accept(.editAlbum)
         }
-        return [edit]
+        let excludeRecord = MenuModel(symbol: .exclude, title: "제외된 기록") { [weak self] in
+            self?.menuAction.accept(.excludeRecord)
+        }
+        return [editAlbum, excludeRecord]
     }
 }

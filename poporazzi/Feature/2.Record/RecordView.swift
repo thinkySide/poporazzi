@@ -106,10 +106,10 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 기록 컬렉션 뷰
-    lazy var recordCollectionView: UICollectionView = {
+    let recordCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: compositionalLayout
+            collectionViewLayout: CollectionViewLayout.threeColumns
         )
         collectionView.backgroundColor = .white
         collectionView.allowsSelection = false
@@ -118,39 +118,6 @@ final class RecordView: CodeBaseUI {
             forCellWithReuseIdentifier: RecordCell.identifier
         )
         return collectionView
-    }()
-    
-    private let compositionalLayout: UICollectionViewCompositionalLayout = {
-        
-        // 1. 기본값 변수 저장
-        let numberOfRows: CGFloat = 3
-        let itemInset: CGFloat = 2
-        
-        // 2. 아이템(Cell) 설정
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalHeight(1),
-            heightDimension: .fractionalHeight(1)
-        )
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: itemInset)
-        let lastItem = NSCollectionLayoutItem(layoutSize: itemSize)
-        lastItem.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: 0)
-        
-        // 3. 그룹 설정
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1),
-            heightDimension: .fractionalWidth(1 / numberOfRows)
-        )
-        let group = NSCollectionLayoutGroup.horizontal(
-            layoutSize: groupSize,
-            subitems: [item, item, lastItem]
-        )
-        
-        // 4. 섹션 설정
-        let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0)
-        
-        return UICollectionViewCompositionalLayout(section: section)
     }()
     
     init() {
@@ -205,7 +172,6 @@ extension RecordView {
             emptyLabel.flex.display(display)
             
         case let .toggleSelectMode(bool):
-            toolBar.action(.updateTitle("기록 선택"))
             recordCollectionView.contentInset.bottom = bool ? 56 : 0
             recordCollectionView.allowsSelection = bool
             recordCollectionView.allowsMultipleSelection = bool
@@ -254,14 +220,14 @@ extension RecordView {
             
             flex.addItem().grow(1).marginTop(24).define { flex in
                 flex.addItem(recordCollectionView).position(.absolute).all(0)
-                
-                flex.addItem().direction(.column)
-                    .position(.absolute).alignSelf(.center).alignItems(.center).top(30%)
-                    .define { flex in
-                        flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
-                        flex.addItem(emptyLabel).marginTop(16)
-                    }
             }
+            
+            flex.addItem().direction(.column)
+                .position(.absolute).alignSelf(.center).alignItems(.center).top(40%)
+                .define { flex in
+                    flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
+                    flex.addItem(emptyLabel).marginTop(16)
+                }
             
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
         }
