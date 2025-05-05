@@ -66,7 +66,8 @@ extension RecordViewModel {
     }
     
     enum Delegate {
-        case momentDidEdited(Album)
+        case albumDidEdited(Album)
+        case updateExcludeRecord
     }
     
     enum AlertAction {
@@ -192,7 +193,6 @@ extension RecordViewModel {
                         owner.output.viewDidRefresh.accept(())
                         owner.output.selectedRecordCells.accept([])
                     }
-                    break
                     
                 case .remove:
                     owner.output.toggleLoading.accept(true)
@@ -227,8 +227,11 @@ extension RecordViewModel {
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
-                case .momentDidEdited(let record):
+                case .albumDidEdited(let record):
                     owner.output.album.accept(record)
+                    owner.output.viewDidRefresh.accept(())
+                    
+                case .updateExcludeRecord:
                     owner.output.viewDidRefresh.accept(())
                 }
             }

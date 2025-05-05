@@ -95,7 +95,7 @@ extension Coordinator {
                     owner.presentDatePickerModal(editVC, editVM, startDate: date)
                     
                 case .dismiss(let album):
-                    recordVM.delegate.accept(.momentDidEdited(album))
+                    recordVM.delegate.accept(.albumDidEdited(album))
                     editVC?.dismiss(animated: true)
                 }
             }
@@ -113,6 +113,7 @@ extension Coordinator {
             .bind(with: self) { [weak excludeRecordVC] owner, path in
                 switch path {
                 case .dismiss:
+                    recordVM.delegate.accept(.updateExcludeRecord)
                     excludeRecordVC?.dismiss(animated: true)
                 }
             }

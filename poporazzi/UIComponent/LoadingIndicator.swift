@@ -23,6 +23,7 @@ final class LoadingIndicator: CodeBaseUI {
         setup()
         backgroundColor = .black.withAlphaComponent(0.3)
         containerView.backgroundColor = .clear
+        isHidden = true
     }
     
     required init?(coder: NSCoder) {

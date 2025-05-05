@@ -13,6 +13,9 @@ final class ExcludeRecordView: CodeBaseUI {
     
     var containerView = UIView()
     
+    /// 로딩 인디케이터
+    private let loadingIndicator = LoadingIndicator()
+    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         title: "제외된 기록",
@@ -96,6 +99,7 @@ final class ExcludeRecordView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        addSubview(loadingIndicator)
     }
     
     required init?(coder: NSCoder) {
@@ -105,7 +109,9 @@ final class ExcludeRecordView: CodeBaseUI {
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.top(pin.safeArea).left().right().bottom()
+        loadingIndicator.pin.all()
         containerView.flex.layout()
+        loadingIndicator.flex.layout()
     }
 }
 
@@ -114,12 +120,19 @@ final class ExcludeRecordView: CodeBaseUI {
 extension ExcludeRecordView {
     
     enum Action {
+        case setTotalImageCountLabel(Int)
         case toggleSelectMode(Bool)
         case updateSelectedCountLabel(Int)
+        case toggleLoading(Bool)
     }
     
     func action(_ action: Action) {
         switch action {
+        case let .setTotalImageCountLabel(count):
+            totalCountLabel.text = count > 0 ? "총 \(count)장" : ""
+            totalCountLabel.flex.markDirty()
+            emptyLabel.isHidden = count > 0
+            
         case let .toggleSelectMode(bool):
             recordCollectionView.contentInset.bottom = bool ? 56 : 0
             recordCollectionView.allowsSelection = bool
@@ -141,6 +154,10 @@ extension ExcludeRecordView {
                     $0.isUserInteractionEnabled = true
                 }
             }
+            
+        case let .toggleLoading(isActive):
+            loadingIndicator.isHidden = !isActive
+            loadingIndicator.action(isActive ? .start : .stop)
         }
     }
 }
