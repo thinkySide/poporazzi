@@ -28,15 +28,15 @@ final class Coordinator {
         titleInputVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
-                case .pushRecord(let record):
-                    owner.pushRecord(titleInputVM, record)
+                case .pushRecord(let album):
+                    owner.pushRecord(titleInputVM, album)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
         
         if UserDefaultsService.isTracking {
-            let record = UserDefaultsService.record
-            titleInputVM.navigation.accept(.pushRecord(record))
+            let album = UserDefaultsService.album
+            titleInputVM.navigation.accept(.pushRecord(album))
         }
         
         window?.rootViewController = navigationController
@@ -49,8 +49,8 @@ final class Coordinator {
 extension Coordinator {
     
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ record: Record) {
-        let recordVM = RecordViewModel(output: .init(record: .init(value: record)))
+    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ album: Album) {
+        let recordVM = RecordViewModel(output: .init(album: .init(value: album)))
         let recordVC = RecordViewController(viewModel: recordVM)
         self.navigationController.pushViewController(recordVC, animated: true)
         
@@ -60,8 +60,8 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .pushEdit(record):
-                    owner.presentEdit(recordVM, record)
+                case let .pushEdit(album):
+                    owner.presentEdit(recordVM, album)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -73,15 +73,15 @@ extension Coordinator {
 extension Coordinator {
     
     /// 기록 수정 화면을 Present 합니다.
-    private func presentEdit(_ recordVM: RecordViewModel, _ record: Record) {
-        let editVM = MomentEditViewModel(
+    private func presentEdit(_ recordVM: RecordViewModel, _ album: Album) {
+        let editVM = AlbumEditViewModel(
             output: .init(
-                record: .init(value: record),
-                titleText: .init(value: record.title),
-                startDate: .init(value: record.trackingStartDate)
+                record: .init(value: album),
+                titleText: .init(value: album.title),
+                startDate: .init(value: album.trackingStartDate)
             )
         )
-        let editVC = MomentEditViewController(viewModel: editVM)
+        let editVC = AlbumEditViewController(viewModel: editVM)
         editVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(editVC, animated: true)
         
@@ -91,8 +91,8 @@ extension Coordinator {
                 case .presentStartDatePicker(let date):
                     owner.presentDatePickerModal(editVC, editVM, startDate: date)
                     
-                case .dismiss(let record):
-                    recordVM.delegate.accept(.momentDidEdited(record))
+                case .dismiss(let album):
+                    recordVM.delegate.accept(.momentDidEdited(album))
                     editVC?.dismiss(animated: true)
                 }
             }
@@ -100,7 +100,7 @@ extension Coordinator {
     }
     
     /// 날짜 선택 모달을 Present합니다.
-    private func presentDatePickerModal(_ editVC: MomentEditViewController?, _ editVM: MomentEditViewModel, startDate: Date) {
+    private func presentDatePickerModal(_ editVC: AlbumEditViewController?, _ editVM: AlbumEditViewModel, startDate: Date) {
         let datePickerVM = DatePickerModalViewModel(output: .init(selectedDate: .init(value: startDate)))
         let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)
         datePickerVC.sheetPresentationController?.preferredCornerRadius = 20

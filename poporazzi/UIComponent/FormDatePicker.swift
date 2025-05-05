@@ -35,6 +35,7 @@ final class FormDatePicker: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        addGestureRecognizer(tapGesture)
         action(.updateDate(.now))
     }
     

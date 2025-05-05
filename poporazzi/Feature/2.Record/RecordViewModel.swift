@@ -5,6 +5,7 @@
 //  Created by 김민준 on 4/5/25.
 //
 
+import Foundation
 import RxSwift
 import RxCocoa
 
@@ -18,8 +19,9 @@ final class RecordViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
-    let alert = PublishRelay<Alert>()
-    let menu = PublishRelay<Menu>()
+    let alertAction = PublishRelay<AlertAction>()
+    let actionSheetAction = PublishRelay<ActionSheetAction>()
+    let menuAction = PublishRelay<MenuAction>()
     
     init(output: Output) {
         self.output = output
@@ -36,32 +38,47 @@ extension RecordViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        let selectButtonTapped: Signal<Void>
+        let selectCancelButtonTapped: Signal<Void>
+        let recordCellSelected: Signal<Media>
+        let recordCellDeselected: Signal<Media>
+        let excludeButtonTapped: Signal<Void>
+        let removeButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
     
     struct Output {
-        let record: BehaviorRelay<Record>
+        let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
+        let selectedRecordCells = BehaviorRelay<[Media]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
+        let switchSelectMode = PublishRelay<Bool>()
         let alertPresented = PublishRelay<AlertModel>()
+        let actionSheetPresented = PublishRelay<ActionSheetModel>()
+        let toggleLoading = PublishRelay<Bool>()
     }
     
     enum Navigation {
         case pop
-        case pushEdit(Record)
+        case pushEdit(Album)
     }
     
     enum Delegate {
-        case momentDidEdited(Record)
+        case momentDidEdited(Album)
     }
     
-    enum Alert {
+    enum AlertAction {
         case save
         case popToHome
     }
     
-    enum Menu {
+    enum ActionSheetAction {
+        case exclude
+        case remove
+    }
+    
+    enum MenuAction {
         case edit
     }
 }
@@ -82,13 +99,57 @@ extension RecordViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, _ in owner.fetchCurrentPhotos() }
+            .map { $0.filter {
+                let excluedAssets = Set(UserDefaultsService.excludeAssets)
+                return !excluedAssets.contains($0.id)
+            }}
             .bind(with: self) { owner, mediaList in
                 owner.output.mediaList.accept(mediaList)
                 owner.liveActivityService.update(
-                    albumTitle: owner.output.record.value.title,
-                    startDate: owner.output.record.value.trackingStartDate,
+                    albumTitle: owner.output.album.value.title,
+                    startDate: owner.output.album.value.trackingStartDate,
                     totalCount: mediaList.count
                 )
+            }
+            .disposed(by: disposeBag)
+        
+        input.selectButtonTapped
+            .map { true }
+            .emit(to: output.switchSelectMode)
+            .disposed(by: disposeBag)
+        
+        input.selectCancelButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.selectedRecordCells.accept([])
+                owner.output.switchSelectMode.accept(false)
+            }
+            .disposed(by: disposeBag)
+        
+        input.recordCellSelected
+            .emit(with: self) { owner, media in
+                var currentCells = owner.output.selectedRecordCells.value
+                currentCells.append(media)
+                owner.output.selectedRecordCells.accept(currentCells)
+            }
+            .disposed(by: disposeBag)
+        
+        input.recordCellDeselected
+            .emit(with: self) { owner, media in
+                var currentCells = owner.output.selectedRecordCells.value
+                currentCells.removeAll(where: { $0.id == media.id })
+                owner.output.selectedRecordCells.accept(currentCells)
+            }
+            .disposed(by: disposeBag)
+        
+        input.excludeButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.actionSheetPresented.accept(owner.excludeActionSheet)
+            }
+            .disposed(by: disposeBag)
+        
+        input.removeButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.actionSheetPresented.accept(owner.removeActionSheet)
             }
             .disposed(by: disposeBag)
         
@@ -98,12 +159,13 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        alert
+        alertAction
             .bind(with: self) { owner, action in
                 switch action {
                 case .save:
                     if owner.output.mediaList.value.isEmpty {
                         owner.navigation.accept(.pop)
+                        UserDefaultsService.excludeAssets.removeAll()
                     } else {
                         try? owner.saveToAlbums()
                         owner.output.alertPresented.accept(owner.saveCompleteAlert)
@@ -114,16 +176,45 @@ extension RecordViewModel {
                     
                 case .popToHome:
                     owner.navigation.accept(.pop)
+                    UserDefaultsService.excludeAssets.removeAll()
                 }
             }
             .disposed(by: disposeBag)
         
-        menu
+        actionSheetAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case .exclude:
+                    owner.output.selectedRecordCells.value.forEach {
+                        UserDefaultsService.excludeAssets.append($0.id)
+                        owner.output.viewDidRefresh.accept(())
+                        owner.output.selectedRecordCells.accept([])
+                    }
+                    break
+                    
+                case .remove:
+                    owner.output.toggleLoading.accept(true)
+                    let assetIdentifiers = owner.output.selectedRecordCells.value.map { $0.id }
+                    owner.photoKitService.deletePhotos(from: assetIdentifiers)
+                        .bind(with: self) { owner, isSuccess in
+                            if isSuccess {
+                                owner.output.selectedRecordCells.accept([])
+                            } else {
+                                owner.output.alertPresented.accept(owner.removeFailedAlert)
+                            }
+                            owner.output.toggleLoading.accept(false)
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        menuAction
             .bind(with: self) { owner, action in
                 switch action {
                 case .edit:
-                    let record = owner.output.record.value
-                    owner.navigation.accept(.pushEdit(record))
+                    let album = owner.output.album.value
+                    owner.navigation.accept(.pushEdit(album))
                 }
             }
             .disposed(by: disposeBag)
@@ -132,7 +223,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case .momentDidEdited(let record):
-                    owner.output.record.accept(record)
+                    owner.output.album.accept(record)
                     owner.output.viewDidRefresh.accept(())
                 }
             }
@@ -148,13 +239,13 @@ extension RecordViewModel {
     
     /// 현재 사진 리스트를 반환합니다.
     private func fetchCurrentPhotos() -> Observable<[Media]> {
-        let trackingStartDate = output.record.value.trackingStartDate
+        let trackingStartDate = output.album.value.trackingStartDate
         return photoKitService.fetchPhotos(date: trackingStartDate)
     }
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        let title = output.record.value.title
+        let title = output.album.value.title
         try photoKitService.saveAlbum(title: title)
     }
 }
@@ -165,7 +256,7 @@ extension RecordViewModel {
     
     /// 기록 종료 확인 Alert
     private var finishConfirmAlert: AlertModel {
-        let title = output.record.value.title
+        let title = output.album.value.title
         let totalCount = output.mediaList.value.count
         let message = output.mediaList.value.isEmpty
         ? "촬영된 기록이 없어 앨범 저장 없이 종료돼요"
@@ -176,7 +267,7 @@ extension RecordViewModel {
             eventButton: .init(
                 title: "종료",
                 action: { [weak self] in
-                    self?.alert.accept(.save)
+                    self?.alertAction.accept(.save)
                 }
             ),
             cancelButton: .init(title: "취소")
@@ -185,16 +276,59 @@ extension RecordViewModel {
     
     /// 앨범 저장 완료 Alert
     private var saveCompleteAlert: AlertModel {
-        let title = output.record.value.title
+        let title = output.album.value.title
         return AlertModel(
             title: "기록이 종료되었습니다!",
             message: "'\(title)' 앨범을 확인해보세요!",
             eventButton: .init(
                 title: "홈으로 돌아가기",
                 action: { [weak self] in
-                    self?.alert.accept(.popToHome)
+                    self?.alertAction.accept(.popToHome)
                 }
             )
+        )
+    }
+    
+    /// 기록 삭제 실패 Alert
+    private var removeFailedAlert: AlertModel {
+        AlertModel(
+            title: "사진을 삭제할 수 없어요",
+            message: "사진 라이브러리 권한을 확인해주세요",
+            eventButton: .init(title: "확인")
+        )
+    }
+}
+
+// MARK: - Action Sheet
+
+extension RecordViewModel {
+    
+    /// 앨범 제외 Action Sheet
+    private var excludeActionSheet: ActionSheetModel {
+        let title = output.album.value.title
+        let selectedCount = output.selectedRecordCells.value.count
+        return ActionSheetModel(
+            message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
+            buttons: [
+                .init(title: "\(selectedCount)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                    self?.actionSheetAction.accept(.exclude)
+                },
+                .init(title: "취소", style: .cancel)
+            ]
+        )
+    }
+    
+    /// 기록 삭제 Action Sheet
+    private var removeActionSheet: ActionSheetModel {
+        let selectedCount = output.selectedRecordCells.value.count
+        return ActionSheetModel(
+            message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
+            buttons: [
+                .init(title: "\(selectedCount)장의 기록 삭제", style: .destructive) { [weak self] in
+                    self?.actionSheetAction.accept(.remove)
+                },
+                .init(title: "취소", style: .cancel)
+            ]
         )
     }
 }
@@ -206,7 +340,7 @@ extension RecordViewModel {
     /// 더보기 Menu
     private var seemoreMenu: [MenuModel] {
         let edit = MenuModel(symbol: .edit, title: "기록 수정") { [weak self] in
-            self?.menu.accept(.edit)
+            self?.menuAction.accept(.edit)
         }
         return [edit]
     }

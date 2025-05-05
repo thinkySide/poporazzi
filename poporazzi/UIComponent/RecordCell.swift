@@ -1,5 +1,5 @@
 //
-//  MomentRecordCell.swift
+//  RecordCell.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/7/25.
@@ -9,14 +9,22 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentRecordCell: UICollectionViewCell {
+final class RecordCell: UICollectionViewCell {
     
-    static let identifier = "MomentRecordCell"
+    static let identifier = "RecordCell"
     
     var containerView = UIView()
     
     /// 영상 전용 오버레이
     private let videoOverlay = UIView()
+    
+    /// 선택 전용 오버레이
+    private let selectOverlay: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white.withAlphaComponent(0.4)
+        view.isHidden = true
+        return view
+    }()
     
     /// 미디어 썸네일
     private let thumbnail: UIImageView = {
@@ -44,21 +52,45 @@ final class MomentRecordCell: UICollectionViewCell {
         return label
     }()
     
+    /// 셀 선택 아이콘
+    private let checkIcon: UIImageView = {
+        let imageView = UIImageView(image: .checkIcon)
+        imageView.isHidden = true
+        return imageView
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.addSubview(containerView)
         contentView.addSubview(videoOverlay)
+        contentView.addSubview(selectOverlay)
         videoOverlay.layer.addSublayer(videoGradientLayer)
         configLayout()
+        [containerView, videoOverlay, selectOverlay, thumbnail, videoDurationLabel]
+            .forEach { $0.isUserInteractionEnabled = false }
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.all()
         videoOverlay.pin.all()
+        selectOverlay.pin.all()
         videoGradientLayer.frame = videoOverlay.bounds
         containerView.flex.layout()
         videoOverlay.flex.layout()
+        selectOverlay.flex.layout()
+    }
+    
+    override var isSelected: Bool {
+        didSet {
+            if isSelected {
+                selectOverlay.isHidden = false
+                checkIcon.isHidden = false
+            } else {
+                selectOverlay.isHidden = true
+                checkIcon.isHidden = true
+            }
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -68,7 +100,7 @@ final class MomentRecordCell: UICollectionViewCell {
 
 // MARK: - Action
 
-extension MomentRecordCell {
+extension RecordCell {
     
     enum Action {
         case setImage(UIImage)
@@ -98,11 +130,12 @@ extension MomentRecordCell {
 
 // MARK: - Layout
 
-extension MomentRecordCell {
+extension RecordCell {
     
     func configLayout() {
         containerView.flex.define { flex in
             flex.addItem(thumbnail)
+            flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }
         
         videoOverlay.flex.define { flex in

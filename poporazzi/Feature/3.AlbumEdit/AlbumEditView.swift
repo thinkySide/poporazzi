@@ -1,5 +1,5 @@
 //
-//  MomentEditView.swift
+//  AlbumEditView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/17/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MomentEditView: CodeBaseUI {
+final class AlbumEditView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -49,6 +49,7 @@ final class MomentEditView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        addGestureRecognizer(tapGesture)
     }
     
     required init?(coder: NSCoder) {
@@ -62,22 +63,9 @@ final class MomentEditView: CodeBaseUI {
     }
 }
 
-// MARK: - Action
-
-extension MomentEditView {
-    
-    enum Action {
-        
-    }
-    
-    func action(_ action: Action) {
-        
-    }
-}
-
 // MARK: - Layout
 
-extension MomentEditView {
+extension AlbumEditView {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in

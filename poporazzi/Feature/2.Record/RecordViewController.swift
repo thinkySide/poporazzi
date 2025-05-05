@@ -42,21 +42,28 @@ extension RecordViewController {
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
+            selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
+            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
+            recordCellSelected: scene.recordCollectionView.rx.modelSelected(Media.self).asSignal(),
+            recordCellDeselected: scene.recordCollectionView.rx.modelDeselected(Media.self).asSignal(),
+            excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
+            removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
-        output.record
-            .bind(with: self) { owner, record in
-                owner.scene.action(.setAlbumTitleLabel(record.title))
-                owner.scene.action(.setTrackingStartDateLabel(record.trackingStartDate.startDateFormat))
+        output.album
+            .bind(with: self) { owner, album in
+                owner.scene.action(.setAlbumTitleLabel(album.title))
+                owner.scene.action(.setStartDateLabel(album.trackingStartDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
         output.mediaList
-            .bind(to: scene.albumCollectionView.rx.items(
-                cellIdentifier: MomentRecordCell.identifier,
-                cellType: MomentRecordCell.self
+            .observe(on: MainScheduler.instance)
+            .bind(to: scene.recordCollectionView.rx.items(
+                cellIdentifier: RecordCell.identifier,
+                cellType: RecordCell.self
             )) { index, media, cell in
                 cell.action(.setImage(media.thumbnail))
                 cell.action(.setMediaType(media.mediaType))
@@ -70,15 +77,43 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
+        output.selectedRecordCells
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, selectedMedias in
+                owner.scene.action(.updateSelectedCountLabel(selectedMedias.count))
+            }
+            .disposed(by: disposeBag)
+        
         output.setupSeeMoreMenu
             .bind(with: self) { owner, menus in
                 owner.scene.seemoreButton.button.menu = menus.toUIMenu
             }
             .disposed(by: disposeBag)
         
+        output.switchSelectMode
+            .bind(with: self) { owner, bool in
+                owner.scene.action(.toggleSelectMode(bool))
+            }
+            .disposed(by: disposeBag)
+    
         output.alertPresented
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, alert in
                 owner.showAlert(alert)
+            }
+            .disposed(by: disposeBag)
+        
+        output.actionSheetPresented
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, actionSheet in
+                owner.showActionSheet(actionSheet)
+            }
+            .disposed(by: disposeBag)
+        
+        output.toggleLoading
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isActive in
+                owner.scene.action(.toggleLoading(isActive))
             }
             .disposed(by: disposeBag)
     }

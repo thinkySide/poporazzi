@@ -21,6 +21,7 @@ final class PhotoKitService: NSObject {
     
     /// PhotoKit에서 발생할 수 있는 에러
     enum PhotoKitError: Error {
+        case noPermission
         case emptyAssets
     }
     
@@ -112,6 +113,20 @@ extension PhotoKitService {
                 guard let album = fetchAlbum(title: title) else { return }
                 appendToAlbum(assets: assets, to: album)
             }
+        }
+    }
+    
+    /// 주어진 ID의 사진을 삭제합니다.
+    func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
+        Observable.create { observer in
+            let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+            PHPhotoLibrary.shared().performChanges {
+                PHAssetChangeRequest.deleteAssets(assets)
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            return Disposables.create()
         }
     }
 }

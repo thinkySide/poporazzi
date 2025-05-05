@@ -20,11 +20,13 @@ final class NavigationButton: CodeBaseUI {
     enum Variation {
         case primary
         case secondary
+        case tertiary
         
         var backgroundColor: UIColor {
             switch self {
             case .primary: .brandPrimary
             case .secondary: .brandSecondary
+            case .tertiary: .brandTertiary
             }
         }
         
@@ -32,6 +34,7 @@ final class NavigationButton: CodeBaseUI {
             switch self {
             case .primary: .white
             case .secondary: .subLabel
+            case .tertiary: .subLabel
             }
         }
     }
@@ -98,7 +101,7 @@ extension NavigationButton {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(button).paddingHorizontal(10).height(28).cornerRadius(14)
+            flex.addItem(button).paddingHorizontal(12).height(28).cornerRadius(14)
         }
     }
 }

@@ -45,7 +45,7 @@ extension TitleInputViewModel {
     }
     
     enum Navigation {
-        case pushRecord(Record)
+        case pushRecord(Album)
     }
     
     enum Alert {
@@ -69,13 +69,13 @@ extension TitleInputViewModel {
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
-                let record = Record(title: owner.output.titleText.value, trackingStartDate: .now)
-                owner.navigation.accept(.pushRecord(record))
+                let album = Album(title: owner.output.titleText.value, trackingStartDate: .now)
+                owner.navigation.accept(.pushRecord(album))
                 owner.liveActivityService.start(
-                    albumTitle: record.title,
-                    startDate: record.trackingStartDate
+                    albumTitle: album.title,
+                    startDate: album.trackingStartDate
                 )
-                UserDefaultsService.record = record
+                UserDefaultsService.album = album
                 UserDefaultsService.isTracking = true
             }
             .disposed(by: disposeBag)
@@ -89,6 +89,7 @@ extension TitleInputViewModel {
             }
             .disposed(by: disposeBag)
         
+#if !DEBUG
         versionService.appStoreAppVersion
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, appStoreVersion in
@@ -97,6 +98,7 @@ extension TitleInputViewModel {
                 }
             }
             .disposed(by: disposeBag)
+#endif
         
         return output
     }
