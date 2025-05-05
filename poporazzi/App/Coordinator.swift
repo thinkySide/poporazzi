@@ -60,8 +60,11 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .pushEdit(album):
-                    owner.presentEdit(recordVM, album)
+                case let .presentAlbumEdit(album):
+                    owner.presentAlbumEdit(recordVM, album)
+                    
+                case .presentExcludeRecord:
+                    owner.presentExcludeRecord(recordVM)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -72,8 +75,8 @@ extension Coordinator {
 
 extension Coordinator {
     
-    /// 기록 수정 화면을 Present 합니다.
-    private func presentEdit(_ recordVM: RecordViewModel, _ album: Album) {
+    /// 앨범 수정 화면을 Present 합니다.
+    private func presentAlbumEdit(_ recordVM: RecordViewModel, _ album: Album) {
         let editVM = AlbumEditViewModel(
             output: .init(
                 record: .init(value: album),
@@ -99,7 +102,24 @@ extension Coordinator {
             .disposed(by: editVC.disposeBag)
     }
     
-    /// 날짜 선택 모달을 Present합니다.
+    /// 제외된 기록 화면을 Present 합니다.
+    private func presentExcludeRecord(_ recordVM: RecordViewModel) {
+        let excludeRecordVM = ExcludeRecordViewModel(output: .init())
+        let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
+        excludeRecordVC.modalPresentationStyle = .overFullScreen
+        self.navigationController.present(excludeRecordVC, animated: true)
+        
+        excludeRecordVM.navigation
+            .bind(with: self) { [weak excludeRecordVC] owner, path in
+                switch path {
+                case .dismiss:
+                    excludeRecordVC?.dismiss(animated: true)
+                }
+            }
+            .disposed(by: excludeRecordVC.disposeBag)
+    }
+    
+    /// 날짜 선택 모달을 Present 합니다.
     private func presentDatePickerModal(_ editVC: AlbumEditViewController?, _ editVM: AlbumEditViewModel, startDate: Date) {
         let datePickerVM = DatePickerModalViewModel(output: .init(selectedDate: .init(value: startDate)))
         let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)

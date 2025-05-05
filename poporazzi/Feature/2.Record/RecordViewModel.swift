@@ -61,7 +61,8 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case pushEdit(Album)
+        case presentAlbumEdit(Album)
+        case presentExcludeRecord
     }
     
     enum Delegate {
@@ -215,10 +216,10 @@ extension RecordViewModel {
                 switch action {
                 case .editAlbum:
                     let album = owner.output.album.value
-                    owner.navigation.accept(.pushEdit(album))
+                    owner.navigation.accept(.presentAlbumEdit(album))
                     
                 case .excludeRecord:
-                    break
+                    owner.navigation.accept(.presentExcludeRecord)
                 }
             }
             .disposed(by: disposeBag)
