@@ -21,7 +21,8 @@ final class RecordCell: UICollectionViewCell {
     /// 선택 전용 오버레이
     private let selectOverlay: UIView = {
         let view = UIView()
-        view.backgroundColor = .red
+        view.backgroundColor = .white.withAlphaComponent(0.4)
+        view.isHidden = true
         return view
     }()
     

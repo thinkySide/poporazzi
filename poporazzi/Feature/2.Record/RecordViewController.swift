@@ -73,6 +73,12 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
+        output.selectedRecordCells
+            .bind(with: self) { owner, indexPaths in
+                owner.scene.toolBar.action(.updateTitle("\(indexPaths.count)장의 기록이 선택됨"))
+            }
+            .disposed(by: disposeBag)
+        
         output.setupSeeMoreMenu
             .bind(with: self) { owner, menus in
                 owner.scene.seemoreButton.button.menu = menus.toUIMenu

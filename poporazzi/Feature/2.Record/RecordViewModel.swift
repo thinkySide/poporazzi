@@ -46,6 +46,7 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
+        let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
@@ -103,13 +104,21 @@ extension RecordViewModel {
             .disposed(by: disposeBag)
         
         input.selectCancelButtonTapped
-            .map { false }
-            .emit(to: output.switchSelectMode)
+            .emit(with: self) { owner, _ in
+                owner.output.selectedRecordCells.accept([])
+                owner.output.switchSelectMode.accept(false)
+            }
             .disposed(by: disposeBag)
         
         input.recordCellTapped
             .emit(with: self) { owner, indexPath in
-                print(indexPath)
+                var currentCells = owner.output.selectedRecordCells.value
+                if let index = currentCells.firstIndex(of: indexPath) {
+                    currentCells.remove(at: index)
+                } else {
+                    currentCells.append(indexPath)
+                }
+                owner.output.selectedRecordCells.accept(currentCells)
             }
             .disposed(by: disposeBag)
         

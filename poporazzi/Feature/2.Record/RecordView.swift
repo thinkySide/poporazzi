@@ -199,7 +199,7 @@ extension RecordView {
             toolBar.action(.updateTitle("기록 선택"))
             recordCollectionView.contentInset.bottom = bool ? 56 : 0
             recordCollectionView.allowsSelection = bool
-            recordCollectionView.allowsMultipleSelection = true
+            recordCollectionView.allowsMultipleSelection = bool
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
         }

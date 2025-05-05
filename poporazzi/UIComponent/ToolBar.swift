@@ -20,6 +20,7 @@ final class ToolBar: CodeBaseUI {
         let label = UILabel()
         label.font = .setDovemayo(16)
         label.textColor = .mainLabel
+        label.textAlignment = .center
         return label
     }()
     
@@ -60,8 +61,8 @@ extension ToolBar {
     func action(_ action: Action) {
         switch action {
         case .updateTitle(let title):
-            titleLabel.text = title
             titleLabel.flex.markDirty()
+            titleLabel.text = title
         }
     }
 }
@@ -80,7 +81,7 @@ extension ToolBar {
             .backgroundColor(.brandTertiary)
             .define { flex in
                 flex.addItem()
-                flex.addItem(titleLabel).position(.absolute).alignSelf(.center).top(topPadding)
+                flex.addItem(titleLabel).position(.absolute).alignSelf(.center).top(topPadding).horizontally(32)
                 flex.addItem(leadingView)
                 flex.addItem().grow(1)
                 flex.addItem(trailingView)
