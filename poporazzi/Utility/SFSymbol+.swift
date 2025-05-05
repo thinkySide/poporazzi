@@ -16,6 +16,7 @@ enum SFSymbol: String {
     case down = "chevron.down"
     case left = "chevron.left"
     case right = "chevron.right"
+    case exclude = "nosign"
 }
 
 // MARK: - initializer

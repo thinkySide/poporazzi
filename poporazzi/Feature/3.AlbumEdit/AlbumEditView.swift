@@ -17,7 +17,7 @@ final class AlbumEditView: CodeBaseUI {
     
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
-        title: "기록 수정",
+        title: "앨범 수정",
         leading: backButton,
         trailing: saveButton
     )
