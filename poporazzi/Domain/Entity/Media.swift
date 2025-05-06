@@ -8,14 +8,14 @@
 import UIKit
 
 /// 미디어
-struct Media {
+struct Media: Hashable {
     var id: String
     var mediaType: MediaType
     var thumbnail: UIImage
 }
 
 /// 미디어 타입
-enum MediaType {
+enum MediaType: Hashable {
     case photo
     case video(duration: TimeInterval)
 }

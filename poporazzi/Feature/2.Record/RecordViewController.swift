@@ -15,6 +15,12 @@ final class RecordViewController: ViewController {
     private let scene = RecordView()
     private let viewModel: RecordViewModel
     
+    enum Section {
+        case main
+    }
+    
+    private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: RecordViewModel) {
@@ -28,6 +34,7 @@ final class RecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDataSource()
         bind()
     }
     
@@ -40,13 +47,28 @@ final class RecordViewController: ViewController {
 
 extension RecordViewController {
     
+    func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
+            (collectionView, indexPath, media) -> UICollectionViewCell? in
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: RecordCell.identifier,
+                for: indexPath
+            ) as? RecordCell else { return nil }
+            
+            cell.action(.setImage(media.thumbnail))
+            cell.action(.setMediaType(media.mediaType))
+            
+            return cell
+        }
+    }
+    
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
-            recordCellSelected: scene.recordCollectionView.rx.modelSelected(Media.self).asSignal(),
-            recordCellDeselected: scene.recordCollectionView.rx.modelDeselected(Media.self).asSignal(),
+            recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
+            recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
             excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
@@ -62,12 +84,11 @@ extension RecordViewController {
         
         output.mediaList
             .observe(on: MainScheduler.instance)
-            .bind(to: scene.recordCollectionView.rx.items(
-                cellIdentifier: RecordCell.identifier,
-                cellType: RecordCell.self
-            )) { index, media, cell in
-                cell.action(.setImage(media.thumbnail))
-                cell.action(.setMediaType(media.mediaType))
+            .bind(with: self) { owner, medias in
+                var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
+                snapshot.appendSections([.main])
+                snapshot.appendItems(medias, toSection: .main)
+                owner.dataSource.apply(snapshot, animatingDifferences: true)
             }
             .disposed(by: disposeBag)
         
