@@ -65,3 +65,5 @@
 |:--|:--|
 |[#57 기록 선택 모드 기능 구현](https://github.com/thinkySide/poporazzi/pull/57)|앨범에서 제외 및 삭제 기능 구현, ToolBar 및 LoadingIndicator UI Component 구현, ActionSheet Model 구현|
 |[#59 ExcludeRecord 화면 구현](https://github.com/thinkySide/poporazzi/pull/59)|ExcludeRecord UI 구현|
+|[#61 ExcludeRecord 기능 구현](https://github.com/thinkySide/poporazzi/pull/61)|제외된 화면 내 기록 복구 및 기록 삭제 기능 구현|
+|[#63 PhotoKit 및 RecordCollectionView 사진 로드 속도 개선하기](https://github.com/thinkySide/poporazzi/pull/63)|RecordCollectionView 이미지 로드 속도 개선(페이지네이션), PhotoKitService 병렬 처리 구현, UICollectionViewDiffableDataSource 도입|
