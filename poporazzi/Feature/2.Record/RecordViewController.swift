@@ -8,7 +8,6 @@
 import UIKit
 import RxSwift
 import RxCocoa
-import RxDataSources
 
 final class RecordViewController: ViewController {
     
@@ -20,6 +19,7 @@ final class RecordViewController: ViewController {
     }
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
+    private let visibleIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
     
     let disposeBag = DisposeBag()
     
@@ -43,11 +43,12 @@ final class RecordViewController: ViewController {
     }
 }
 
-// MARK: - Binding
+// MARK: - UICollectionViewDiffableDataSource
 
 extension RecordViewController {
     
-    func setupDataSource() {
+    /// DataSource를 설정합니다.
+    private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
             (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let cell = collectionView.dequeueReusableCell(
@@ -62,11 +63,29 @@ extension RecordViewController {
         }
     }
     
+    /// DataSource를 업데이트합니다.
+    private func updateDataSource(to medias: [Media]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(medias, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
+            guard let self else { return }
+            let visibleIndexPaths = self.scene.recordCollectionView.indexPathsForVisibleItems
+            self.visibleIndexPaths.accept(visibleIndexPaths)
+        }
+    }
+}
+
+// MARK: - Binding
+
+extension RecordViewController {
+    
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
+            recordCollectionViewWillUpdate: visibleIndexPaths,
             recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
             excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
@@ -74,6 +93,18 @@ extension RecordViewController {
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
+        
+        scene.recordCollectionView.rx.contentOffset
+            .map { [weak self] _ -> [IndexPath] in
+                guard let self else { return [] }
+                return self.scene.recordCollectionView.indexPathsForVisibleItems
+            }
+            .distinctUntilChanged()
+            .throttle(.milliseconds(100), scheduler: MainScheduler.instance)
+            .bind(with: self) { owner, indexPaths in
+                owner.visibleIndexPaths.accept(indexPaths)
+            }
+            .disposed(by: disposeBag)
         
         output.album
             .bind(with: self) { owner, album in
@@ -85,17 +116,8 @@ extension RecordViewController {
         output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
-                var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
-                snapshot.appendSections([.main])
-                snapshot.appendItems(medias, toSection: .main)
-                owner.dataSource.apply(snapshot, animatingDifferences: true)
-            }
-            .disposed(by: disposeBag)
-        
-        output.mediaList
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
+                owner.updateDataSource(to: medias)
             }
             .disposed(by: disposeBag)
         

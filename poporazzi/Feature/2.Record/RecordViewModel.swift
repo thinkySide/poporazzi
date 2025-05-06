@@ -40,6 +40,7 @@ extension RecordViewModel {
         let viewDidLoad: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
+        let recordCollectionViewWillUpdate: BehaviorRelay<[IndexPath]>
         let recordCellSelected: Signal<IndexPath>
         let recordCellDeselected: Signal<IndexPath>
         let excludeButtonTapped: Signal<Void>
@@ -91,23 +92,33 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
+        
+        // 1. 화면 진입 시 전체 이미지 개수 받기
         input.viewDidLoad
             .emit(with: self) { owner, _ in
+                owner.output.mediaList.accept(owner.fetchMediasWithNoThumbnail())
                 owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
             }
             .disposed(by: disposeBag)
         
+        // 2. 현재 IndexPath의 이미지 업데이트
+        input.recordCollectionViewWillUpdate
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, indexPaths in
+                print("ViewModel: \(indexPaths)")
+            }
+            .disposed(by: disposeBag)
+        
+        // 3. 리프레쉬 및 라이브러리 변경 감지
         Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .withUnretained(self)
-            .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .map { $0.filter {
-                let excluedAssets = Set(UserDefaultsService.excludeAssets)
-                return !excluedAssets.contains($0.id)
-            }}
+            .bind(with: self) { owner, _ in
+                owner.output.mediaList.accept(owner.fetchMediasWithNoThumbnail())
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaList
             .bind(with: self) { owner, mediaList in
-                owner.output.mediaList.accept(mediaList)
                 owner.liveActivityService.update(
                     albumTitle: owner.output.album.value.title,
                     startDate: owner.output.album.value.trackingStartDate,
@@ -249,10 +260,15 @@ extension RecordViewModel {
 
 extension RecordViewModel {
     
-    /// 현재 사진 리스트를 반환합니다.
-    private func fetchCurrentPhotos() -> Observable<[Media]> {
+    /// 썸네일 없이 전체 Media 리스트를 반환합니다.
+    ///
+    /// - 제외된 사진을 필터링합니다.
+    private func fetchMediasWithNoThumbnail() -> [Media] {
         let trackingStartDate = output.album.value.trackingStartDate
-        return photoKitService.fetchPhotos(date: trackingStartDate)
+        return photoKitService.fetchPhotosWithNoThumbnail(date: trackingStartDate)
+            .filter { media in
+                !Set(UserDefaultsService.excludeAssets).contains(media.id)
+            }
     }
     
     /// 앨범에 저장합니다.

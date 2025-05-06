@@ -11,7 +11,7 @@ import UIKit
 struct Media: Hashable {
     var id: String
     var mediaType: MediaType
-    var thumbnail: UIImage
+    var thumbnail: UIImage?
 }
 
 /// 미디어 타입

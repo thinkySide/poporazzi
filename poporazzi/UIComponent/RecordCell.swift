@@ -103,14 +103,18 @@ final class RecordCell: UICollectionViewCell {
 extension RecordCell {
     
     enum Action {
-        case setImage(UIImage)
+        case setImage(UIImage?)
         case setMediaType(MediaType)
     }
     
     func action(_ action: Action) {
         switch action {
         case let .setImage(image):
-            self.thumbnail.image = image
+            if let image {
+                self.thumbnail.image = image
+            } else {
+                self.backgroundColor = .brandTertiary
+            }
             
         case let .setMediaType(mediaType):
             switch mediaType {

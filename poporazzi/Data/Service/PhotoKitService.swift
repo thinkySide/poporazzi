@@ -25,6 +25,14 @@ final class PhotoKitService: NSObject {
         case emptyAssets
     }
     
+    /// 기본 이미지 요청 옵션
+    private var defaultImageRequestOptions: PHImageRequestOptions = {
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.isSynchronous = true
+        requestOptions.deliveryMode = .highQualityFormat
+        return requestOptions
+    }()
+    
     /// 가장 최근의 FetchResult를 저장하는 변수
     private var fetchResult: PHFetchResult<PHAsset>?
     
@@ -53,6 +61,32 @@ extension PhotoKitService {
         }
     }
     
+    /// 썸네일 없이 기록을 반환합니다.
+    func fetchPhotosWithNoThumbnail(
+        mediaFetchType: MediaFetchType = .all,
+        date: Date,
+        ascending: Bool = true
+    ) -> [Media] {
+        var newMedias = [Media]()
+        
+        let fetchAssetResult = self.fetchAssetResult(
+            mediaFetchType: mediaFetchType,
+            date: date,
+            ascending: ascending
+        )
+        fetchResult = fetchAssetResult
+        
+        fetchResult?.enumerateObjects { asset, _, _ in
+            let media = Media(
+                id: asset.localIdentifier,
+                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+                thumbnail: nil
+            )
+            newMedias.append(media)
+        }
+        return newMedias
+    }
+    
     /// 기록을 반환합니다.
     func fetchPhotos(
         mediaFetchType: MediaFetchType = .all,
@@ -63,30 +97,34 @@ extension PhotoKitService {
             guard let self else { return Disposables.create() }
             
             var newMedias = [Media]()
-            let imageManager = PHImageManager.default()
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.isSynchronous = true
-            requestOptions.deliveryMode = .highQualityFormat
             
             fetchResult = fetchAssetResult(mediaFetchType: mediaFetchType, date: date, ascending: ascending)
             
             fetchResult?.enumerateObjects { asset, _, _ in
-                imageManager.requestImage(
-                    for: asset,
-                    targetSize: .init(width: 360, height: 360),
-                    contentMode: .aspectFill,
-                    options: requestOptions,
-                    resultHandler: { image, _ in
-                        if let image = image {
-                            let media = Media(
-                                id: asset.localIdentifier,
-                                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
-                                thumbnail: image
-                            )
-                            newMedias.append(media)
-                        }
-                    }
+                let media = Media(
+                    id: asset.localIdentifier,
+                    mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+                    thumbnail: nil
                 )
+                newMedias.append(media)
+                
+                
+//                PHImageManager.default().requestImage(
+//                    for: asset,
+//                    targetSize: .init(width: 360, height: 360),
+//                    contentMode: .aspectFill,
+//                    options: self.defaultImageRequestOptions,
+//                    resultHandler: { image, _ in
+//                        if let image = image {
+//                            let media = Media(
+//                                id: asset.localIdentifier,
+//                                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+//                                thumbnail: image
+//                            )
+//                            newMedias.append(media)
+//                        }
+//                    }
+//                )
             }
             
             observer.onNext(newMedias)
@@ -97,24 +135,22 @@ extension PhotoKitService {
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
     func fetchPhotos(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        Observable.create { observer in
+        Observable.create { [weak self] observer in
+            guard let self else { return Disposables.create() }
+            
             let fetchResult = PHAsset.fetchAssets(
                 withLocalIdentifiers: assetIdentifiers,
                 options: nil
             )
             
             var newMedias = [Media]()
-            let imageManager = PHImageManager.default()
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.isSynchronous = true
-            requestOptions.deliveryMode = .highQualityFormat
             
             fetchResult.enumerateObjects { asset , _, _ in
-                imageManager.requestImage(
+                PHImageManager.default().requestImage(
                     for: asset,
                     targetSize: .init(width: 360, height: 360),
                     contentMode: .aspectFill,
-                    options: requestOptions,
+                    options: self.defaultImageRequestOptions,
                     resultHandler: { image, _ in
                         if let image = image {
                             let media = Media(
