@@ -135,19 +135,6 @@ extension PhotoKitService {
         }
     }
     
-    private func requestImage(for asset: PHAsset) async -> UIImage? {
-        await withCheckedContinuation { continuation in
-            PHImageManager.default().requestImage(
-                for: asset,
-                targetSize: CGSize(width: 360, height: 360),
-                contentMode: .aspectFill,
-                options: self.defaultImageRequestOptions
-            ) { image, _ in
-                continuation.resume(returning: image)
-            }
-        }
-    }
-    
     /// 앨범에 기록을 저장합니다.
     func saveAlbum(title: String) throws {
         guard let assets = fetchResult else { throw PhotoKitError.emptyAssets }
@@ -224,6 +211,20 @@ extension PhotoKitService {
                 PHAssetMediaType.video.rawValue,
                 date as NSDate
             )
+        }
+    }
+    
+    /// 이미지를 비동기로 요청합니다.
+    private func requestImage(for asset: PHAsset) async -> UIImage? {
+        await withCheckedContinuation { continuation in
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: CGSize(width: 360, height: 360),
+                contentMode: .aspectFill,
+                options: self.defaultImageRequestOptions
+            ) { image, _ in
+                continuation.resume(returning: image)
+            }
         }
     }
     

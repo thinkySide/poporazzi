@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		821302402DC9C1D800378618 /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = 8213023F2DC9C1D800378618 /* Differentiator */; };
-		821302422DC9C1D800378618 /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = 821302412DC9C1D800378618 /* RxDataSources */; };
 		8221E34A2DC3668F0092469D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8221E3492DC3668F0092469D /* WidgetKit.framework */; };
 		8221E34C2DC3668F0092469D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8221E34B2DC3668F0092469D /* SwiftUI.framework */; };
 		8221E35D2DC366900092469D /* poporazziWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8221E3472DC3668F0092469D /* poporazziWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -122,9 +120,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8273A7342D9FC590008DD144 /* RxCocoa in Frameworks */,
-				821302402DC9C1D800378618 /* Differentiator in Frameworks */,
 				8273A72E2D9FC4F4008DD144 /* PinLayout in Frameworks */,
-				821302422DC9C1D800378618 /* RxDataSources in Frameworks */,
 				8273A7362D9FC590008DD144 /* RxSwift in Frameworks */,
 				8273A7312D9FC4FE008DD144 /* FlexLayout in Frameworks */,
 			);
@@ -209,8 +205,6 @@
 				8273A7302D9FC4FE008DD144 /* FlexLayout */,
 				8273A7332D9FC590008DD144 /* RxCocoa */,
 				8273A7352D9FC590008DD144 /* RxSwift */,
-				8213023F2DC9C1D800378618 /* Differentiator */,
-				821302412DC9C1D800378618 /* RxDataSources */,
 			);
 			productName = poporazzi;
 			productReference = 8232593C2D9FBF4800CFC860 /* poporazzi.app */;
@@ -247,7 +241,6 @@
 				8273A72C2D9FC4F4008DD144 /* XCRemoteSwiftPackageReference "PinLayout" */,
 				8273A72F2D9FC4FE008DD144 /* XCRemoteSwiftPackageReference "FlexLayout" */,
 				8273A7322D9FC590008DD144 /* XCRemoteSwiftPackageReference "RxSwift" */,
-				8213023E2DC9C1D800378618 /* XCRemoteSwiftPackageReference "RxDataSources" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8232593D2D9FBF4800CFC860 /* Products */;
@@ -583,14 +576,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		8213023E2DC9C1D800378618 /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RxSwiftCommunity/RxDataSources.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.2;
-			};
-		};
 		8273A72C2D9FC4F4008DD144 /* XCRemoteSwiftPackageReference "PinLayout" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/layoutBox/PinLayout.git";
@@ -618,16 +603,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8213023F2DC9C1D800378618 /* Differentiator */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8213023E2DC9C1D800378618 /* XCRemoteSwiftPackageReference "RxDataSources" */;
-			productName = Differentiator;
-		};
-		821302412DC9C1D800378618 /* RxDataSources */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8213023E2DC9C1D800378618 /* XCRemoteSwiftPackageReference "RxDataSources" */;
-			productName = RxDataSources;
-		};
 		8273A72D2D9FC4F4008DD144 /* PinLayout */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8273A72C2D9FC4F4008DD144 /* XCRemoteSwiftPackageReference "PinLayout" */;
