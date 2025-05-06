@@ -19,6 +19,9 @@ final class RecordViewModel: ViewModel {
     private let disposeBag = DisposeBag()
     private let output: Output
     
+    private var currentChunk = 0
+    private let chunkSize = 100
+    
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
     let alertAction = PublishRelay<AlertAction>()
@@ -42,7 +45,7 @@ extension RecordViewModel {
         let viewDidLoad: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
-        let recordCollectionViewWillUpdate: BehaviorRelay<[IndexPath]>
+        let recentIndexPath: BehaviorRelay<IndexPath>
         let recordCellSelected: Signal<IndexPath>
         let recordCellDeselected: Signal<IndexPath>
         let excludeButtonTapped: Signal<Void>
@@ -54,7 +57,7 @@ extension RecordViewModel {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
         
-        let updateIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
+        let currentIndex = BehaviorRelay<[Int]>(value: [])
         let totalIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
         
         let updateRecordCells = BehaviorRelay<[OrderedMedia]>(value: [])
@@ -95,57 +98,92 @@ extension RecordViewModel {
     }
 }
 
+// MARK: - Chunk
+
+extension RecordViewModel {
+    
+    /// 현재 청크를 기준으로 에셋 ID 배열을 반환합니다.
+    private var chunkAssetIdentifiers: [String] {
+        let chunkStrart = currentChunk
+        let chunkEnd = min(chunkSize + chunkStrart, output.mediaList.value.count)
+        return output.mediaList.value[chunkStrart..<chunkEnd].map { $0.id }
+    }
+    
+    /// 다음 청크로 업데이트합니다.
+    private func updateChunk() {
+        currentChunk += chunkSize
+    }
+    
+    /// 청크를 초기화합니다.
+    private func resetChunk() {
+        currentChunk = 0
+        output.updateRecordCells.accept([])
+    }
+}
+
 // MARK: - Transform
 
 extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
         
-        // 1. 화면 진입 시 전체 이미지 개수 받기
+        // 1. 화면 진입 시 기본 이미지 로드
         input.viewDidLoad
-            .emit(with: self) { owner, _ in
-                owner.output.mediaList.accept(owner.fetchMediasWithNoThumbnail())
+            .asObservable()
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, _ in
                 owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
+                owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
+                
+                let assetIdentifiers = owner.chunkAssetIdentifiers
+                owner.requestImages(from: assetIdentifiers)
+                    .bind(with: self) { owner, orderedMediaList in
+                        owner.output.updateRecordCells.accept(orderedMediaList)
+                    }
+                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
         
-        // 2. 새롭게 업데이트 할 것만
-        input.recordCollectionViewWillUpdate
-            .bind(with: self) { owner, indexPaths in
-                let currentIndexPaths = owner.output.totalIndexPaths.value
-                var newIndexPaths: [IndexPath] = []
-                for indexPath in indexPaths {
-                    if !currentIndexPaths.contains(indexPath) {
-                        newIndexPaths.append(indexPath)
-                    }
-                }
+        // 2. 업데이트
+        input.recentIndexPath
+            .filter { !$0.isEmpty }
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, indexPath in
+                guard indexPath.row <= owner.output.mediaList.value.count else { return }
                 
-                owner.output.totalIndexPaths.accept(currentIndexPaths + newIndexPaths)
-                owner.output.updateIndexPaths.accept(newIndexPaths)
+                // 마지막 셀이 나타나기 전에 업데이트
+                if indexPath.row >= (owner.currentChunk + owner.chunkSize - 10) {
+                    owner.updateChunk()
+                    let assetIdentifiers = owner.chunkAssetIdentifiers
+                    
+                    owner.requestImages(from: assetIdentifiers)
+                        .bind(with: self) { owner, orderedMediaList in
+                            let indexPathMediaList = orderedMediaList.map { (index, media) in
+                                OrderedMedia(
+                                    index: owner.currentChunk + index,
+                                    media: media
+                                )
+                            }
+                            
+                            owner.output.updateRecordCells.accept(indexPathMediaList)
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
             }
             .disposed(by: disposeBag)
         
         // 3. 리프레쉬 및 라이브러리 변경 감지
         Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, _ in
-                owner.output.mediaList.accept(owner.fetchMediasWithNoThumbnail())
-            }
-            .disposed(by: disposeBag)
-        
-        // 4. 현재 IndexPath의 이미지 업데이트
-        output.updateIndexPaths
-            .filter { !$0.isEmpty }
-            .bind(with: self) { owner, indexPaths in
-                owner.requestImages(from: indexPaths)
+                owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
+                owner.resetChunk()
+                
+                let assetIdentifiers = owner.chunkAssetIdentifiers
+                owner.requestImages(from: assetIdentifiers)
                     .bind(with: self) { owner, orderedMediaList in
-                        
-                        var ordered = orderedMediaList
-                        for i in orderedMediaList.indices {
-                            ordered[i].0 = indexPaths[i].row
-                        }
-                        
-                        owner.output.updateRecordCells.accept(ordered)
+                        owner.output.updateRecordCells.accept(orderedMediaList)
                     }
                     .disposed(by: owner.disposeBag)
             }
@@ -304,7 +342,7 @@ extension RecordViewModel {
     /// 썸네일 없이 전체 Media 리스트를 반환합니다.
     ///
     /// - 제외된 사진을 필터링합니다.
-    private func fetchMediasWithNoThumbnail() -> [Media] {
+    private func fetchAllMediaListWithNoThumbnail() -> [Media] {
         let trackingStartDate = output.album.value.trackingStartDate
         return photoKitService.fetchPhotosWithNoThumbnail(date: trackingStartDate)
             .filter { media in
@@ -312,9 +350,9 @@ extension RecordViewModel {
             }
     }
     
-    /// IndexPath에 대응되는 Media 스트림을 반환합니다.
-    private func requestImages(from indexPaths: [IndexPath]) -> Observable<[OrderedMedia]> {
-        photoKitService.fetchPhotos(from: assetIdentifiers(at: indexPaths))
+    /// Asset Identifiers에 대응되는 Media 스트림을 반환합니다.
+    private func requestImages(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
+        photoKitService.fetchPhotos(from: assetIdentifiers)
     }
     
     /// 앨범에 저장합니다.
