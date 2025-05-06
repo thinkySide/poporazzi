@@ -104,7 +104,7 @@ extension RecordViewModel {
     
     /// 현재 청크를 기준으로 에셋 ID 배열을 반환합니다.
     private var chunkAssetIdentifiers: [String] {
-        let chunkStrart = currentChunk
+        let chunkStrart = min(currentChunk, output.mediaList.value.count)
         let chunkEnd = min(chunkSize + chunkStrart, output.mediaList.value.count)
         return output.mediaList.value[chunkStrart..<chunkEnd].map { $0.id }
     }
@@ -138,7 +138,6 @@ extension RecordViewModel {
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
                     .bind(with: self) { owner, orderedMediaList in
-                        print(orderedMediaList)
                         owner.output.updateRecordCells.accept(orderedMediaList)
                     }
                     .disposed(by: owner.disposeBag)
@@ -150,26 +149,26 @@ extension RecordViewModel {
             .filter { !$0.isEmpty }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, indexPath in
-//                guard indexPath.row <= owner.output.mediaList.value.count else { return }
-//                
-//                // 마지막 셀이 나타나기 전에 업데이트
-//                if indexPath.row >= (owner.currentChunk + owner.chunkSize - 10) {
-//                    owner.updateChunk()
-//                    let assetIdentifiers = owner.chunkAssetIdentifiers
-//                    
-//                    owner.requestImages(from: assetIdentifiers)
-//                        .bind(with: self) { owner, orderedMediaList in
-//                            let indexPathMediaList = orderedMediaList.map { (index, media) in
-//                                OrderedMedia(
-//                                    index: owner.currentChunk + index,
-//                                    media: media
-//                                )
-//                            }
-//                            
-//                            owner.output.updateRecordCells.accept(indexPathMediaList)
-//                        }
-//                        .disposed(by: owner.disposeBag)
-//                }
+                guard indexPath.row <= owner.output.mediaList.value.count else { return }
+                
+                // 마지막 셀이 나타나기 전에 업데이트
+                if indexPath.row >= (owner.currentChunk + owner.chunkSize - 10) {
+                    owner.updateChunk()
+                    let assetIdentifiers = owner.chunkAssetIdentifiers
+                    
+                    owner.requestImages(from: assetIdentifiers)
+                        .bind(with: self) { owner, orderedMediaList in
+                            let indexPathMediaList = orderedMediaList.map { (index, media) in
+                                OrderedMedia(
+                                    index: owner.currentChunk + index,
+                                    media: media
+                                )
+                            }
+                            
+                            owner.output.updateRecordCells.accept(indexPathMediaList)
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
             }
             .disposed(by: disposeBag)
         

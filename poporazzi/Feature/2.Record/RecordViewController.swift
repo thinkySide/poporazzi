@@ -78,7 +78,6 @@ extension RecordViewController {
     /// 페이지네이션 된 DataSource를 업데이트합니다.
     private func updatePaginationDataSource(to medias: [OrderedMedia]) {
         guard !medias.isEmpty else {
-            cache.removeAll()
             return
         }
         
