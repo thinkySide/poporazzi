@@ -25,6 +25,14 @@ final class PhotoKitService: NSObject {
         case emptyAssets
     }
     
+    /// 기본 이미지 요청 옵션
+    private var defaultImageRequestOptions: PHImageRequestOptions = {
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.isSynchronous = false
+        requestOptions.deliveryMode = .highQualityFormat
+        return requestOptions
+    }()
+    
     /// 가장 최근의 FetchResult를 저장하는 변수
     private var fetchResult: PHFetchResult<PHAsset>?
     
@@ -53,83 +61,76 @@ extension PhotoKitService {
         }
     }
     
-    /// 기록을 반환합니다.
-    func fetchPhotos(
+    /// 썸네일 없이 기록을 반환합니다.
+    func fetchPhotosWithNoThumbnail(
         mediaFetchType: MediaFetchType = .all,
         date: Date,
         ascending: Bool = true
-    ) -> Observable<[Media]> {
-        return Observable.create { [weak self] observer in
-            guard let self else { return Disposables.create() }
-            
-            var newMedias = [Media]()
-            let imageManager = PHImageManager.default()
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.isSynchronous = true
-            requestOptions.deliveryMode = .highQualityFormat
-            
-            fetchResult = fetchAssetResult(mediaFetchType: mediaFetchType, date: date, ascending: ascending)
-            
-            fetchResult?.enumerateObjects { asset, _, _ in
-                imageManager.requestImage(
-                    for: asset,
-                    targetSize: .init(width: 360, height: 360),
-                    contentMode: .aspectFill,
-                    options: requestOptions,
-                    resultHandler: { image, _ in
-                        if let image = image {
-                            let media = Media(
-                                id: asset.localIdentifier,
-                                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
-                                thumbnail: image
-                            )
-                            newMedias.append(media)
-                        }
-                    }
-                )
-            }
-            
-            observer.onNext(newMedias)
-            observer.onCompleted()
-            return Disposables.create()
+    ) -> [Media] {
+        var newMedias = [Media]()
+        
+        let fetchAssetResult = self.fetchAssetResult(
+            mediaFetchType: mediaFetchType,
+            date: date,
+            ascending: ascending
+        )
+        fetchResult = fetchAssetResult
+        
+        fetchResult?.enumerateObjects { asset, _, _ in
+            let media = Media(
+                id: asset.localIdentifier,
+                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+                thumbnail: nil
+            )
+            newMedias.append(media)
         }
+        return newMedias
     }
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
-    func fetchPhotos(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        Observable.create { observer in
-            let fetchResult = PHAsset.fetchAssets(
-                withLocalIdentifiers: assetIdentifiers,
-                options: nil
-            )
+    func fetchPhotos(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
+        return Observable.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
             
-            var newMedias = [Media]()
-            let imageManager = PHImageManager.default()
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.isSynchronous = true
-            requestOptions.deliveryMode = .highQualityFormat
-            
-            fetchResult.enumerateObjects { asset , _, _ in
-                imageManager.requestImage(
-                    for: asset,
-                    targetSize: .init(width: 360, height: 360),
-                    contentMode: .aspectFill,
-                    options: requestOptions,
-                    resultHandler: { image, _ in
-                        if let image = image {
-                            let media = Media(
+            Task {
+                let fetchResult = PHAsset.fetchAssets(
+                    withLocalIdentifiers: assetIdentifiers,
+                    options: nil
+                )
+                
+                var assetMap = [String: PHAsset]()
+                fetchResult.enumerateObjects { asset, _, _ in
+                    assetMap[asset.localIdentifier] = asset
+                }
+
+                let orderedAsset = assetIdentifiers.compactMap { assetMap[$0] }
+                
+                let medias: [OrderedMedia] = await withTaskGroup(of: OrderedMedia.self) { group in
+                    for (i, asset) in orderedAsset.enumerated() {
+                        group.addTask {
+                            let image = await self.requestImage(for: asset)
+                            return (i, Media(
                                 id: asset.localIdentifier,
                                 mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
                                 thumbnail: image
-                            )
-                            newMedias.append(media)
+                            ))
                         }
                     }
-                )
+                    var array: [OrderedMedia] = []
+                    for await i in group {
+                        array.append(i)
+                    }
+                    
+                    return array.sorted { $0.0 < $1.0 }
+                }
+                
+                observer.onNext(medias)
+                observer.onCompleted()
             }
             
-            observer.onNext(newMedias)
-            observer.onCompleted()
             return Disposables.create()
         }
     }
@@ -210,6 +211,20 @@ extension PhotoKitService {
                 PHAssetMediaType.video.rawValue,
                 date as NSDate
             )
+        }
+    }
+    
+    /// 이미지를 비동기로 요청합니다.
+    private func requestImage(for asset: PHAsset) async -> UIImage? {
+        await withCheckedContinuation { continuation in
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: CGSize(width: 360, height: 360),
+                contentMode: .aspectFill,
+                options: self.defaultImageRequestOptions
+            ) { image, _ in
+                continuation.resume(returning: image)
+            }
         }
     }
     

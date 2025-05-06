@@ -14,6 +14,14 @@ final class RecordViewController: ViewController {
     private let scene = RecordView()
     private let viewModel: RecordViewModel
     
+    enum Section {
+        case main
+    }
+    
+    private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
+    private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
+    private var cache = [IndexPath: UIImage?]()
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: RecordViewModel) {
@@ -27,11 +35,56 @@ final class RecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDataSource()
         bind()
     }
     
     deinit {
         Log.print(#file, .deinit)
+    }
+}
+
+// MARK: - UICollectionViewDiffableDataSource
+
+extension RecordViewController {
+    
+    /// DataSource를 설정합니다.
+    private func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
+            (collectionView, indexPath, media) -> UICollectionViewCell? in
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: RecordCell.identifier,
+                for: indexPath
+            ) as? RecordCell else { return nil }
+            
+            if let cacheThumbnail = self.cache[indexPath] {
+                cell.action(.setImage(cacheThumbnail))
+            }
+            
+            cell.action(.setMediaType(media.mediaType))
+            
+            return cell
+        }
+    }
+    
+    /// 기본 DataSource를 업데이트합니다.
+    private func updateInitialDataSource(to medias: [Media]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(medias, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    /// 페이지네이션 된 DataSource를 업데이트합니다.
+    private func updatePaginationDataSource(to medias: [OrderedMedia]) {
+        guard !medias.isEmpty else {
+            return
+        }
+        
+        medias.forEach { cache.updateValue($1.thumbnail, forKey: .init(row: $0, section: 0)) }
+        var snapshot = dataSource.snapshot()
+        snapshot.reloadItems(medias.map { $0.1 })
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
@@ -44,13 +97,21 @@ extension RecordViewController {
             viewDidLoad: .just(()),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
-            recordCellSelected: scene.recordCollectionView.rx.modelSelected(Media.self).asSignal(),
-            recordCellDeselected: scene.recordCollectionView.rx.modelDeselected(Media.self).asSignal(),
+            recentIndexPath: recentIndexPath,
+            recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
+            recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
             excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
+        
+        scene.recordCollectionView.rx.willDisplayCell
+            .bind(with: self) { owner, cell in
+                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
+                owner.recentIndexPath.accept(indexPath)
+            }
+            .disposed(by: disposeBag)
         
         output.album
             .bind(with: self) { owner, album in
@@ -61,19 +122,16 @@ extension RecordViewController {
         
         output.mediaList
             .observe(on: MainScheduler.instance)
-            .bind(to: scene.recordCollectionView.rx.items(
-                cellIdentifier: RecordCell.identifier,
-                cellType: RecordCell.self
-            )) { index, media, cell in
-                cell.action(.setImage(media.thumbnail))
-                cell.action(.setMediaType(media.mediaType))
+            .bind(with: self) { owner, medias in
+                owner.scene.action(.setTotalImageCountLabel(medias.count))
+                owner.updateInitialDataSource(to: medias)
             }
             .disposed(by: disposeBag)
         
-        output.mediaList
+        output.updateRecordCells
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, medias in
-                owner.scene.action(.setTotalImageCountLabel(medias.count))
+            .bind(with: self) { owner, orderedMediaList in
+                owner.updatePaginationDataSource(to: orderedMediaList)
             }
             .disposed(by: disposeBag)
         

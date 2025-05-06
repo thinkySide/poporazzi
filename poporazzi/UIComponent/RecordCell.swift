@@ -81,6 +81,11 @@ final class RecordCell: UICollectionViewCell {
         selectOverlay.flex.layout()
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        thumbnail.image = nil
+    }
+    
     override var isSelected: Bool {
         didSet {
             if isSelected {
@@ -103,14 +108,18 @@ final class RecordCell: UICollectionViewCell {
 extension RecordCell {
     
     enum Action {
-        case setImage(UIImage)
+        case setImage(UIImage?)
         case setMediaType(MediaType)
     }
     
     func action(_ action: Action) {
         switch action {
         case let .setImage(image):
-            self.thumbnail.image = image
+            if let image {
+                self.thumbnail.image = image
+            } else {
+                self.backgroundColor = .brandTertiary
+            }
             
         case let .setMediaType(mediaType):
             switch mediaType {
@@ -134,7 +143,7 @@ extension RecordCell {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(thumbnail)
+            flex.addItem(thumbnail).grow(1)
             flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }
         

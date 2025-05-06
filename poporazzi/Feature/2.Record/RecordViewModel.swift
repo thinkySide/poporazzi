@@ -9,6 +9,8 @@ import Foundation
 import RxSwift
 import RxCocoa
 
+typealias OrderedMedia = (Int, Media)
+
 final class RecordViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
@@ -16,6 +18,9 @@ final class RecordViewModel: ViewModel {
     
     private let disposeBag = DisposeBag()
     private let output: Output
+    
+    private var currentChunk = 0
+    private let chunkSize = 100
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
@@ -40,8 +45,9 @@ extension RecordViewModel {
         let viewDidLoad: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
-        let recordCellSelected: Signal<Media>
-        let recordCellDeselected: Signal<Media>
+        let recentIndexPath: BehaviorRelay<IndexPath>
+        let recordCellSelected: Signal<IndexPath>
+        let recordCellDeselected: Signal<IndexPath>
         let excludeButtonTapped: Signal<Void>
         let removeButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
@@ -50,7 +56,13 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let selectedRecordCells = BehaviorRelay<[Media]>(value: [])
+        
+        let currentIndex = BehaviorRelay<[Int]>(value: [])
+        let totalIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
+        
+        let updateRecordCells = BehaviorRelay<[OrderedMedia]>(value: [])
+        
+        let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
@@ -86,28 +98,99 @@ extension RecordViewModel {
     }
 }
 
+// MARK: - Chunk
+
+extension RecordViewModel {
+    
+    /// 현재 청크를 기준으로 에셋 ID 배열을 반환합니다.
+    private var chunkAssetIdentifiers: [String] {
+        let chunkStrart = min(currentChunk, output.mediaList.value.count)
+        let chunkEnd = min(chunkSize + chunkStrart, output.mediaList.value.count)
+        return output.mediaList.value[chunkStrart..<chunkEnd].map { $0.id }
+    }
+    
+    /// 다음 청크로 업데이트합니다.
+    private func updateChunk() {
+        currentChunk += chunkSize
+    }
+    
+    /// 청크를 초기화합니다.
+    private func resetChunk() {
+        currentChunk = 0
+        output.updateRecordCells.accept([])
+    }
+}
+
 // MARK: - Transform
 
 extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
+        
+        // 1. 화면 진입 시 기본 이미지 로드
         input.viewDidLoad
-            .emit(with: self) { owner, _ in
+            .asObservable()
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, _ in
                 owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
+                owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
+                
+                let assetIdentifiers = owner.chunkAssetIdentifiers
+                owner.requestImages(from: assetIdentifiers)
+                    .bind(with: self) { owner, orderedMediaList in
+                        owner.output.updateRecordCells.accept(orderedMediaList)
+                    }
+                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
         
+        // 2. 업데이트
+        input.recentIndexPath
+            .filter { !$0.isEmpty }
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, indexPath in
+                guard indexPath.row <= owner.output.mediaList.value.count else { return }
+                
+                // 마지막 셀이 나타나기 전에 업데이트
+                if indexPath.row >= (owner.currentChunk + owner.chunkSize - 10) {
+                    owner.updateChunk()
+                    let assetIdentifiers = owner.chunkAssetIdentifiers
+                    
+                    owner.requestImages(from: assetIdentifiers)
+                        .bind(with: self) { owner, orderedMediaList in
+                            let indexPathMediaList = orderedMediaList.map { (index, media) in
+                                OrderedMedia(
+                                    index: owner.currentChunk + index,
+                                    media: media
+                                )
+                            }
+                            
+                            owner.output.updateRecordCells.accept(indexPathMediaList)
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        // 3. 리프레쉬 및 라이브러리 변경 감지
         Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .withUnretained(self)
-            .flatMap { owner, _ in owner.fetchCurrentPhotos() }
-            .map { $0.filter {
-                let excluedAssets = Set(UserDefaultsService.excludeAssets)
-                return !excluedAssets.contains($0.id)
-            }}
+            .bind(with: self) { owner, _ in
+                owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
+                owner.resetChunk()
+                
+                let assetIdentifiers = owner.chunkAssetIdentifiers
+                owner.requestImages(from: assetIdentifiers)
+                    .bind(with: self) { owner, orderedMediaList in
+                        owner.output.updateRecordCells.accept(orderedMediaList)
+                    }
+                    .disposed(by: owner.disposeBag)
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaList
             .bind(with: self) { owner, mediaList in
-                owner.output.mediaList.accept(mediaList)
                 owner.liveActivityService.update(
                     albumTitle: owner.output.album.value.title,
                     startDate: owner.output.album.value.trackingStartDate,
@@ -129,17 +212,17 @@ extension RecordViewModel {
             .disposed(by: disposeBag)
         
         input.recordCellSelected
-            .emit(with: self) { owner, media in
+            .emit(with: self) { owner, indexPath in
                 var currentCells = owner.output.selectedRecordCells.value
-                currentCells.append(media)
+                currentCells.append(indexPath)
                 owner.output.selectedRecordCells.accept(currentCells)
             }
             .disposed(by: disposeBag)
         
         input.recordCellDeselected
-            .emit(with: self) { owner, media in
+            .emit(with: self) { owner, indexPath in
                 var currentCells = owner.output.selectedRecordCells.value
-                currentCells.removeAll(where: { $0.id == media.id })
+                currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
             }
             .disposed(by: disposeBag)
@@ -188,15 +271,14 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .exclude:
-                    owner.output.selectedRecordCells.value.forEach {
-                        UserDefaultsService.excludeAssets.append($0.id)
-                        owner.output.viewDidRefresh.accept(())
-                        owner.output.selectedRecordCells.accept([])
-                    }
+                    let assetIdentifiers = owner.selectedAssetIdentifiers()
+                    UserDefaultsService.excludeAssets.append(contentsOf: assetIdentifiers)
+                    owner.output.viewDidRefresh.accept(())
+                    owner.output.selectedRecordCells.accept([])
                     
                 case .remove:
                     owner.output.toggleLoading.accept(true)
-                    let assetIdentifiers = owner.output.selectedRecordCells.value.map { $0.id }
+                    let assetIdentifiers = owner.selectedAssetIdentifiers()
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
                         .bind(with: self) { owner, isSuccess in
                             if isSuccess {
@@ -241,14 +323,34 @@ extension RecordViewModel {
     }
 }
 
+// MARK: - Helper
+
+extension RecordViewModel {
+
+    /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
+    private func selectedAssetIdentifiers() -> [String] {
+        output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }
+    }
+}
+
 // MARK: - Album Logic
 
 extension RecordViewModel {
     
-    /// 현재 사진 리스트를 반환합니다.
-    private func fetchCurrentPhotos() -> Observable<[Media]> {
+    /// 썸네일 없이 전체 Media 리스트를 반환합니다.
+    ///
+    /// - 제외된 사진을 필터링합니다.
+    private func fetchAllMediaListWithNoThumbnail() -> [Media] {
         let trackingStartDate = output.album.value.trackingStartDate
-        return photoKitService.fetchPhotos(date: trackingStartDate)
+        return photoKitService.fetchPhotosWithNoThumbnail(date: trackingStartDate)
+            .filter { media in
+                !Set(UserDefaultsService.excludeAssets).contains(media.id)
+            }
+    }
+    
+    /// Asset Identifiers에 대응되는 Media 스트림을 반환합니다.
+    private func requestImages(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
+        photoKitService.fetchPhotos(from: assetIdentifiers)
     }
     
     /// 앨범에 저장합니다.
