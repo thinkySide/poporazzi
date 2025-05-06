@@ -167,7 +167,8 @@ extension ExcludeRecordViewModel {
     /// 제외된 사진을 반환합니다.
     private func fetchExcludePhotos() -> Observable<[Media]> {
         let assetIdentifiers = UserDefaultsService.excludeAssets
-        return photoKitService.fetchPhotos(from: assetIdentifiers)
+        return .just([])
+        // return photoKitService.fetchPhotos(from: assetIdentifiers)
     }
 }
 

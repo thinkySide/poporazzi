@@ -9,6 +9,8 @@ import Foundation
 import RxSwift
 import RxCocoa
 
+typealias OrderedMedia = (Int, Media)
+
 final class RecordViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
@@ -51,6 +53,12 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
+        
+        let updateIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
+        let totalIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
+        
+        let updateRecordCells = BehaviorRelay<[OrderedMedia]>(value: [])
+        
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
@@ -101,11 +109,19 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        // 2. 현재 IndexPath의 이미지 업데이트
+        // 2. 새롭게 업데이트 할 것만
         input.recordCollectionViewWillUpdate
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, indexPaths in
-                print("ViewModel: \(indexPaths)")
+                let currentIndexPaths = owner.output.totalIndexPaths.value
+                var newIndexPaths: [IndexPath] = []
+                for indexPath in indexPaths {
+                    if !currentIndexPaths.contains(indexPath) {
+                        newIndexPaths.append(indexPath)
+                    }
+                }
+                
+                owner.output.totalIndexPaths.accept(currentIndexPaths + newIndexPaths)
+                owner.output.updateIndexPaths.accept(newIndexPaths)
             }
             .disposed(by: disposeBag)
         
@@ -114,6 +130,24 @@ extension RecordViewModel {
             .asObservable()
             .bind(with: self) { owner, _ in
                 owner.output.mediaList.accept(owner.fetchMediasWithNoThumbnail())
+            }
+            .disposed(by: disposeBag)
+        
+        // 4. 현재 IndexPath의 이미지 업데이트
+        output.updateIndexPaths
+            .filter { !$0.isEmpty }
+            .bind(with: self) { owner, indexPaths in
+                owner.requestImages(from: indexPaths)
+                    .bind(with: self) { owner, orderedMediaList in
+                        
+                        var ordered = orderedMediaList
+                        for i in orderedMediaList.indices {
+                            ordered[i].0 = indexPaths[i].row
+                        }
+                        
+                        owner.output.updateRecordCells.accept(ordered)
+                    }
+                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
         
@@ -208,10 +242,7 @@ extension RecordViewModel {
                     
                 case .remove:
                     owner.output.toggleLoading.accept(true)
-                    let indexPaths = owner.output.selectedRecordCells.value.map { $0.row }
-                    let assetIdentifiers = indexPaths.compactMap {
-                        owner.output.mediaList.value[$0].id
-                    }
+                    let assetIdentifiers = owner.assetIdentifiers(at: owner.output.selectedRecordCells.value)
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
                         .bind(with: self) { owner, isSuccess in
                             if isSuccess {
@@ -256,6 +287,16 @@ extension RecordViewModel {
     }
 }
 
+// MARK: - Helper
+
+extension RecordViewModel {
+
+    /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
+    private func assetIdentifiers(at indexPaths: [IndexPath]) -> [String] {
+        return indexPaths.sorted(by: <).compactMap { output.mediaList.value[$0.row].id }
+    }
+}
+
 // MARK: - Album Logic
 
 extension RecordViewModel {
@@ -269,6 +310,11 @@ extension RecordViewModel {
             .filter { media in
                 !Set(UserDefaultsService.excludeAssets).contains(media.id)
             }
+    }
+    
+    /// IndexPath에 대응되는 Media 스트림을 반환합니다.
+    private func requestImages(from indexPaths: [IndexPath]) -> Observable<[OrderedMedia]> {
+        photoKitService.fetchPhotos(from: assetIdentifiers(at: indexPaths))
     }
     
     /// 앨범에 저장합니다.

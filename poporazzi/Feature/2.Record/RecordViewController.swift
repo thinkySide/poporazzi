@@ -21,6 +21,8 @@ final class RecordViewController: ViewController {
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
     private let visibleIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
     
+    private var cache = [IndexPath: UIImage?]()
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: RecordViewModel) {
@@ -56,7 +58,12 @@ extension RecordViewController {
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            cell.action(.setImage(media.thumbnail))
+            if let cacheThumbnail = self.cache[indexPath] {
+                cell.action(.setImage(cacheThumbnail))
+            } else {
+                cell.action(.setImage(media.thumbnail))
+            }
+            
             cell.action(.setMediaType(media.mediaType))
             
             return cell
@@ -73,6 +80,15 @@ extension RecordViewController {
             let visibleIndexPaths = self.scene.recordCollectionView.indexPathsForVisibleItems
             self.visibleIndexPaths.accept(visibleIndexPaths)
         }
+    }
+    
+    private func updateVisibleDataSource(to medias: [OrderedMedia]) {
+        for (index, media) in medias {
+            cache.updateValue(media.thumbnail, forKey: .init(row: index, section: 0))
+        }
+        var snapshot = dataSource.snapshot()
+        snapshot.reloadItems(medias.map { $0.1 })
+        dataSource.apply(snapshot)
     }
 }
 
@@ -94,13 +110,12 @@ extension RecordViewController {
         )
         let output = viewModel.transform(input)
         
-        scene.recordCollectionView.rx.contentOffset
+        scene.recordCollectionView.rx.didEndDisplayingCell
             .map { [weak self] _ -> [IndexPath] in
                 guard let self else { return [] }
                 return self.scene.recordCollectionView.indexPathsForVisibleItems
             }
             .distinctUntilChanged()
-            .throttle(.milliseconds(100), scheduler: MainScheduler.instance)
             .bind(with: self) { owner, indexPaths in
                 owner.visibleIndexPaths.accept(indexPaths)
             }
@@ -118,6 +133,13 @@ extension RecordViewController {
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
                 owner.updateDataSource(to: medias)
+            }
+            .disposed(by: disposeBag)
+        
+        output.updateRecordCells
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, orderedMediaList in
+                owner.updateVisibleDataSource(to: orderedMediaList)
             }
             .disposed(by: disposeBag)
         

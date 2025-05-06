@@ -81,6 +81,11 @@ final class RecordCell: UICollectionViewCell {
         selectOverlay.flex.layout()
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        thumbnail.image = nil
+    }
+    
     override var isSelected: Bool {
         didSet {
             if isSelected {
@@ -138,7 +143,7 @@ extension RecordCell {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(thumbnail)
+            flex.addItem(thumbnail).grow(1)
             flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }
         
