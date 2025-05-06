@@ -101,9 +101,15 @@ extension PhotoKitService {
                     options: nil
                 )
                 
+                var assetMap = [String: PHAsset]()
+                fetchResult.enumerateObjects { asset, _, _ in
+                    assetMap[asset.localIdentifier] = asset
+                }
+
+                let orderedAsset = assetIdentifiers.compactMap { assetMap[$0] }
+                
                 let medias: [OrderedMedia] = await withTaskGroup(of: OrderedMedia.self) { group in
-                    for i in 0..<fetchResult.count {
-                        let asset = fetchResult.object(at: i)
+                    for (i, asset) in orderedAsset.enumerated() {
                         group.addTask {
                             let image = await self.requestImage(for: asset)
                             return (i, Media(

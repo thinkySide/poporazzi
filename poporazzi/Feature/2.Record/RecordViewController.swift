@@ -20,7 +20,6 @@ final class RecordViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    
     private var cache = [IndexPath: UIImage?]()
     
     let disposeBag = DisposeBag()
@@ -68,23 +67,22 @@ extension RecordViewController {
         }
     }
     
-    /// DataSource를 업데이트합니다.
-    private func updateDataSource(to medias: [Media]) {
+    /// 기본 DataSource를 업데이트합니다.
+    private func updateInitialDataSource(to medias: [Media]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
         snapshot.appendSections([.main])
         snapshot.appendItems(medias, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    private func updateVisibleDataSource(to medias: [OrderedMedia]) {
+    /// 페이지네이션 된 DataSource를 업데이트합니다.
+    private func updatePaginationDataSource(to medias: [OrderedMedia]) {
         guard !medias.isEmpty else {
             cache.removeAll()
             return
         }
         
-        for (index, media) in medias {
-            cache.updateValue(media.thumbnail, forKey: .init(row: index, section: 0))
-        }
+        medias.forEach { cache.updateValue($1.thumbnail, forKey: .init(row: $0, section: 0)) }
         var snapshot = dataSource.snapshot()
         snapshot.reloadItems(medias.map { $0.1 })
         dataSource.apply(snapshot, animatingDifferences: true)
@@ -127,14 +125,14 @@ extension RecordViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
-                owner.updateDataSource(to: medias)
+                owner.updateInitialDataSource(to: medias)
             }
             .disposed(by: disposeBag)
         
         output.updateRecordCells
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, orderedMediaList in
-                owner.updateVisibleDataSource(to: orderedMediaList)
+                owner.updatePaginationDataSource(to: orderedMediaList)
             }
             .disposed(by: disposeBag)
         

@@ -138,6 +138,7 @@ extension RecordViewModel {
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
                     .bind(with: self) { owner, orderedMediaList in
+                        print(orderedMediaList)
                         owner.output.updateRecordCells.accept(orderedMediaList)
                     }
                     .disposed(by: owner.disposeBag)
@@ -149,26 +150,26 @@ extension RecordViewModel {
             .filter { !$0.isEmpty }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, indexPath in
-                guard indexPath.row <= owner.output.mediaList.value.count else { return }
-                
-                // 마지막 셀이 나타나기 전에 업데이트
-                if indexPath.row >= (owner.currentChunk + owner.chunkSize - 10) {
-                    owner.updateChunk()
-                    let assetIdentifiers = owner.chunkAssetIdentifiers
-                    
-                    owner.requestImages(from: assetIdentifiers)
-                        .bind(with: self) { owner, orderedMediaList in
-                            let indexPathMediaList = orderedMediaList.map { (index, media) in
-                                OrderedMedia(
-                                    index: owner.currentChunk + index,
-                                    media: media
-                                )
-                            }
-                            
-                            owner.output.updateRecordCells.accept(indexPathMediaList)
-                        }
-                        .disposed(by: owner.disposeBag)
-                }
+//                guard indexPath.row <= owner.output.mediaList.value.count else { return }
+//                
+//                // 마지막 셀이 나타나기 전에 업데이트
+//                if indexPath.row >= (owner.currentChunk + owner.chunkSize - 10) {
+//                    owner.updateChunk()
+//                    let assetIdentifiers = owner.chunkAssetIdentifiers
+//                    
+//                    owner.requestImages(from: assetIdentifiers)
+//                        .bind(with: self) { owner, orderedMediaList in
+//                            let indexPathMediaList = orderedMediaList.map { (index, media) in
+//                                OrderedMedia(
+//                                    index: owner.currentChunk + index,
+//                                    media: media
+//                                )
+//                            }
+//                            
+//                            owner.output.updateRecordCells.accept(indexPathMediaList)
+//                        }
+//                        .disposed(by: owner.disposeBag)
+//                }
             }
             .disposed(by: disposeBag)
         
@@ -271,16 +272,14 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .exclude:
-                    owner.output.selectedRecordCells.value.forEach {
-                        let assetIdentifier = owner.output.mediaList.value[$0.row].id
-                        UserDefaultsService.excludeAssets.append(assetIdentifier)
-                        owner.output.viewDidRefresh.accept(())
-                        owner.output.selectedRecordCells.accept([])
-                    }
+                    let assetIdentifiers = owner.selectedAssetIdentifiers()
+                    UserDefaultsService.excludeAssets.append(contentsOf: assetIdentifiers)
+                    owner.output.viewDidRefresh.accept(())
+                    owner.output.selectedRecordCells.accept([])
                     
                 case .remove:
                     owner.output.toggleLoading.accept(true)
-                    let assetIdentifiers = owner.assetIdentifiers(at: owner.output.selectedRecordCells.value)
+                    let assetIdentifiers = owner.selectedAssetIdentifiers()
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
                         .bind(with: self) { owner, isSuccess in
                             if isSuccess {
@@ -330,8 +329,8 @@ extension RecordViewModel {
 extension RecordViewModel {
 
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
-    private func assetIdentifiers(at indexPaths: [IndexPath]) -> [String] {
-        return indexPaths.sorted(by: <).compactMap { output.mediaList.value[$0.row].id }
+    private func selectedAssetIdentifiers() -> [String] {
+        output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }
     }
 }
 
