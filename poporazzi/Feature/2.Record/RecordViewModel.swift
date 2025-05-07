@@ -101,9 +101,9 @@ extension RecordViewModel {
     
     /// 현재 청크를 기준으로 에셋 ID 배열을 반환합니다.
     private var chunkAssetIdentifiers: [String] {
-        let chunkStrart = min(currentChunk, output.mediaList.value.count)
-        let chunkEnd = min(chunkSize + chunkStrart, output.mediaList.value.count)
-        return output.mediaList.value[chunkStrart..<chunkEnd].map { $0.id }
+        let chunkStart = min(currentChunk, output.mediaList.value.count)
+        let chunkEnd = min(chunkSize + chunkStart, output.mediaList.value.count)
+        return output.mediaList.value[chunkStart..<chunkEnd].map { $0.id }
     }
     
     /// 다음 청크로 업데이트합니다.
@@ -134,7 +134,7 @@ extension RecordViewModel {
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
-                    .bind(with: self) { owner, orderedMediaList in
+                    .bind { orderedMediaList in
                         owner.output.updateRecordCells.accept(orderedMediaList)
                     }
                     .disposed(by: owner.disposeBag)
@@ -154,7 +154,7 @@ extension RecordViewModel {
                     let assetIdentifiers = owner.chunkAssetIdentifiers
                     
                     owner.requestImages(from: assetIdentifiers)
-                        .bind(with: self) { owner, orderedMediaList in
+                        .bind { orderedMediaList in
                             let indexPathMediaList = orderedMediaList.map { (index, media) in
                                 OrderedMedia(
                                     index: owner.currentChunk + index,
@@ -179,7 +179,7 @@ extension RecordViewModel {
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
-                    .bind(with: self) { owner, orderedMediaList in
+                    .bind { orderedMediaList in
                         owner.output.updateRecordCells.accept(orderedMediaList)
                     }
                     .disposed(by: owner.disposeBag)
@@ -284,7 +284,7 @@ extension RecordViewModel {
                     owner.output.toggleLoading.accept(true)
                     let assetIdentifiers = owner.selectedAssetIdentifiers()
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
-                        .bind(with: self) { owner, isSuccess in
+                        .bind { isSuccess in
                             if isSuccess {
                                 owner.output.selectedRecordCells.accept([])
                             } else {

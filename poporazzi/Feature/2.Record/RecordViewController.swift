@@ -51,8 +51,8 @@ extension RecordViewController {
     /// DataSource를 설정합니다.
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
-            (collectionView, indexPath, media) -> UICollectionViewCell? in
-            guard let cell = collectionView.dequeueReusableCell(
+            [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
+            guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
                 for: indexPath
             ) as? RecordCell else { return nil }

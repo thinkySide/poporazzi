@@ -55,7 +55,7 @@ extension Coordinator {
         self.navigationController.pushViewController(recordVC, animated: true)
         
         recordVM.navigation
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak recordVM] owner, path in
                 switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
@@ -76,7 +76,7 @@ extension Coordinator {
 extension Coordinator {
     
     /// 앨범 수정 화면을 Present 합니다.
-    private func presentAlbumEdit(_ recordVM: RecordViewModel, _ album: Album) {
+    private func presentAlbumEdit(_ recordVM: RecordViewModel?, _ album: Album) {
         let editVM = AlbumEditViewModel(
             output: .init(
                 record: .init(value: album),
@@ -95,7 +95,7 @@ extension Coordinator {
                     owner.presentDatePickerModal(editVC, editVM, startDate: date)
                     
                 case .dismiss(let album):
-                    recordVM.delegate.accept(.albumDidEdited(album))
+                    recordVM?.delegate.accept(.albumDidEdited(album))
                     editVC?.dismiss(animated: true)
                 }
             }
@@ -103,7 +103,7 @@ extension Coordinator {
     }
     
     /// 제외된 기록 화면을 Present 합니다.
-    private func presentExcludeRecord(_ recordVM: RecordViewModel) {
+    private func presentExcludeRecord(_ recordVM: RecordViewModel?) {
         let excludeRecordVM = ExcludeRecordViewModel(output: .init())
         let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
         excludeRecordVC.modalPresentationStyle = .overFullScreen
@@ -113,7 +113,7 @@ extension Coordinator {
             .bind(with: self) { [weak excludeRecordVC] owner, path in
                 switch path {
                 case .dismiss:
-                    recordVM.delegate.accept(.updateExcludeRecord)
+                    recordVM?.delegate.accept(.updateExcludeRecord)
                     excludeRecordVC?.dismiss(animated: true)
                 }
             }

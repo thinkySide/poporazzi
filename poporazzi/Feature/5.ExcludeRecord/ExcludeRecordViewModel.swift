@@ -138,7 +138,7 @@ extension ExcludeRecordViewModel {
                     owner.output.toggleLoading.accept(true)
                     let assetIdentifiers = owner.selectedAssetIdentifiers()
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
-                        .bind(with: self) { owner, isSuccess in
+                        .bind { isSuccess in
                             if isSuccess {
                                 UserDefaultsService.excludeAssets.removeAll { assetIdentifiers.contains($0) }
                                 owner.output.viewDidRefresh.accept(())

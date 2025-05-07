@@ -90,12 +90,12 @@ extension PhotoKitService {
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
     func fetchPhotos(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
         return Observable.create { [weak self] observer in
-            guard let self else {
-                observer.onCompleted()
-                return Disposables.create()
-            }
-            
-            Task {
+            Task.detached { [weak self] in
+                guard let self else {
+                    observer.onCompleted()
+                    return
+                }
+                
                 let fetchResult = PHAsset.fetchAssets(
                     withLocalIdentifiers: assetIdentifiers,
                     options: nil
@@ -105,7 +105,7 @@ extension PhotoKitService {
                 fetchResult.enumerateObjects { asset, _, _ in
                     assetMap[asset.localIdentifier] = asset
                 }
-
+                
                 let orderedAsset = assetIdentifiers.compactMap { assetMap[$0] }
                 
                 let medias: [OrderedMedia] = await withTaskGroup(of: OrderedMedia.self) { group in
@@ -158,7 +158,7 @@ extension PhotoKitService {
     
     /// 주어진 ID의 사진을 삭제합니다.
     func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
-        Observable.create { observer in
+        return Observable.create { observer in
             let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
             PHPhotoLibrary.shared().performChanges {
                 PHAssetChangeRequest.deleteAssets(assets)
