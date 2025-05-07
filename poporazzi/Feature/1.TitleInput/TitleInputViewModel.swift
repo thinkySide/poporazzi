@@ -11,7 +11,7 @@ import RxCocoa
 
 final class TitleInputViewModel: ViewModel {
     
-    @Dependency(\.liveActivityService) private var liveActivityService
+    @Dependency(\.liveActivityService) var liveActivityService
     
     private let disposeBag = DisposeBag()
     private let output: Output
@@ -70,10 +70,7 @@ extension TitleInputViewModel {
             .emit(with: self) { owner, _ in
                 let album = Album(title: owner.output.titleText.value, trackingStartDate: .now)
                 owner.navigation.accept(.pushRecord(album))
-                owner.liveActivityService.start(
-                    albumTitle: album.title,
-                    startDate: album.trackingStartDate
-                )
+                owner.liveActivityService.start(to: album)
                 HapticManager.notification(type: .success)
                 UserDefaultsService.album = album
                 UserDefaultsService.isTracking = true

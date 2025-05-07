@@ -67,6 +67,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Service/LiveActivityService.swift,
+				Domain/Entity/Album.swift,
+				Domain/Interface/LiveActivityInterface.swift,
 				Resource/Colors.xcassets,
 				Resource/Font/DovemayoGothic/Dovemayo_gothic.ttf,
 				Resource/Images.xcassets,

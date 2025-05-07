@@ -189,8 +189,7 @@ extension RecordViewModel {
         output.mediaList
             .bind(with: self) { owner, mediaList in
                 owner.liveActivityService.update(
-                    albumTitle: owner.output.album.value.title,
-                    startDate: owner.output.album.value.trackingStartDate,
+                    to: owner.output.album.value,
                     totalCount: mediaList.count
                 )
             }
@@ -330,7 +329,7 @@ extension RecordViewModel {
 // MARK: - Helper
 
 extension RecordViewModel {
-
+    
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
         output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }

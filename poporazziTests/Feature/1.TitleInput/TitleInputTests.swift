@@ -16,6 +16,7 @@ final class TitleInputTests: XCTestCase {
     
     /// 각각의 Test Method를 실행하기 전에 모든 상태를 reset해주는 함수
     override func setUpWithError() throws {
+        DIContainer.shared.inject(.testValue)
         viewModel = TitleInputViewModel(output: .init())
         try super.setUpWithError()
     }
@@ -44,11 +45,23 @@ extension TitleInputTests {
         let (input, output) = makeInputOutput()
         
         // 2. when: 테스트 중인 코드 실행
-        input.titleTextChanged.accept("콜드플레이 내한 콘서트")
+        let testTitle = "콜드플레이 내한 콘서트"
+        input.titleTextChanged.accept(testTitle)
         
         // 3. then: 에상 결과 확인
-        XCTAssertEqual(output.titleText.value, "콜드플레이 내한 콘서트")
+        XCTAssertEqual(output.titleText.value, testTitle)
         XCTAssertTrue(output.isStartButtonEnabled.value)
+    }
+    
+    func test_라이브액티비티시작() throws {
+        
+        // 1. given: 필요한 모든 값 설정
+        let (input, output) = makeInputOutput()
+        
+        // 2. when: 테스트 중인 코드 실행
+        let testTitle = "콜드플레이 내한 콘서트"
+        input.titleTextChanged.accept(testTitle)
+        input.startButtonTapped.accept(())
     }
 }
 
