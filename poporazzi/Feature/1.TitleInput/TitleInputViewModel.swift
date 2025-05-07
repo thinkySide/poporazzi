@@ -75,6 +75,7 @@ extension TitleInputViewModel {
                     albumTitle: album.title,
                     startDate: album.trackingStartDate
                 )
+                HapticService.notification(type: .success)
                 UserDefaultsService.album = album
                 UserDefaultsService.isTracking = true
             }

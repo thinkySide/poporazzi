@@ -14,6 +14,12 @@ final class ExcludeRecordViewController: ViewController {
     private let scene = ExcludeRecordView()
     private let viewModel: ExcludeRecordViewModel
     
+    enum Section {
+        case main
+    }
+    
+    private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: ExcludeRecordViewModel) {
@@ -27,11 +33,41 @@ final class ExcludeRecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDataSource()
         bind()
     }
     
     deinit {
         Log.print(#file, .deinit)
+    }
+}
+
+// MARK: - UICollectionViewDiffableDataSource
+
+extension ExcludeRecordViewController {
+    
+    /// DataSource를 설정합니다.
+    private func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
+            (collectionView, indexPath, media) -> UICollectionViewCell? in
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: RecordCell.identifier,
+                for: indexPath
+            ) as? RecordCell else { return nil }
+            
+            cell.action(.setImage(media.thumbnail))
+            cell.action(.setMediaType(media.mediaType))
+            
+            return cell
+        }
+    }
+    
+    /// 기본 DataSource를 업데이트합니다.
+    private func updateInitialDataSource(to medias: [Media]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(medias, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
@@ -45,8 +81,8 @@ extension ExcludeRecordViewController {
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
-            recordCellSelected: scene.recordCollectionView.rx.modelSelected(Media.self).asSignal(),
-            recordCellDeselected: scene.recordCollectionView.rx.modelDeselected(Media.self).asSignal(),
+            recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
+            recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
             recoverButtonTapped: scene.recoverButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap.asSignal()
         )
@@ -54,19 +90,9 @@ extension ExcludeRecordViewController {
         
         output.mediaList
             .observe(on: MainScheduler.instance)
-            .bind(to: scene.recordCollectionView.rx.items(
-                cellIdentifier: RecordCell.identifier,
-                cellType: RecordCell.self
-            )) { index, media, cell in
-                cell.action(.setImage(media.thumbnail))
-                cell.action(.setMediaType(media.mediaType))
-            }
-            .disposed(by: disposeBag)
-        
-        output.mediaList
-            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
+                owner.updateInitialDataSource(to: medias)
             }
             .disposed(by: disposeBag)
         

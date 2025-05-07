@@ -5,6 +5,7 @@
 //  Created by 김민준 on 4/5/25.
 //
 
+import UIKit
 import Foundation
 import RxSwift
 import RxCocoa
@@ -56,12 +57,7 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        
-        let currentIndex = BehaviorRelay<[Int]>(value: [])
-        let totalIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
-        
         let updateRecordCells = BehaviorRelay<[OrderedMedia]>(value: [])
-        
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
@@ -84,6 +80,7 @@ extension RecordViewModel {
     
     enum AlertAction {
         case save
+        case linkToPhotoAlbum
         case popToHome
     }
     
@@ -104,9 +101,9 @@ extension RecordViewModel {
     
     /// 현재 청크를 기준으로 에셋 ID 배열을 반환합니다.
     private var chunkAssetIdentifiers: [String] {
-        let chunkStrart = min(currentChunk, output.mediaList.value.count)
-        let chunkEnd = min(chunkSize + chunkStrart, output.mediaList.value.count)
-        return output.mediaList.value[chunkStrart..<chunkEnd].map { $0.id }
+        let chunkStart = min(currentChunk, output.mediaList.value.count)
+        let chunkEnd = min(chunkSize + chunkStart, output.mediaList.value.count)
+        return output.mediaList.value[chunkStart..<chunkEnd].map { $0.id }
     }
     
     /// 다음 청크로 업데이트합니다.
@@ -137,7 +134,7 @@ extension RecordViewModel {
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
-                    .bind(with: self) { owner, orderedMediaList in
+                    .bind { orderedMediaList in
                         owner.output.updateRecordCells.accept(orderedMediaList)
                     }
                     .disposed(by: owner.disposeBag)
@@ -157,7 +154,7 @@ extension RecordViewModel {
                     let assetIdentifiers = owner.chunkAssetIdentifiers
                     
                     owner.requestImages(from: assetIdentifiers)
-                        .bind(with: self) { owner, orderedMediaList in
+                        .bind { orderedMediaList in
                             let indexPathMediaList = orderedMediaList.map { (index, media) in
                                 OrderedMedia(
                                     index: owner.currentChunk + index,
@@ -182,7 +179,7 @@ extension RecordViewModel {
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
-                    .bind(with: self) { owner, orderedMediaList in
+                    .bind { orderedMediaList in
                         owner.output.updateRecordCells.accept(orderedMediaList)
                     }
                     .disposed(by: owner.disposeBag)
@@ -255,10 +252,17 @@ extension RecordViewModel {
                     } else {
                         try? owner.saveToAlbums()
                         owner.output.alertPresented.accept(owner.saveCompleteAlert)
+                        HapticService.notification(type: .success)
                     }
                     
                     owner.liveActivityService.stop()
                     UserDefaultsService.isTracking = false
+                    
+                case .linkToPhotoAlbum:
+                    DeepLinkService.openPhotoAlbum()
+                    owner.navigation.accept(.pop)
+                    UserDefaultsService.excludeAssets.removeAll()
+                    break
                     
                 case .popToHome:
                     owner.navigation.accept(.pop)
@@ -280,7 +284,7 @@ extension RecordViewModel {
                     owner.output.toggleLoading.accept(true)
                     let assetIdentifiers = owner.selectedAssetIdentifiers()
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
-                        .bind(with: self) { owner, isSuccess in
+                        .bind { isSuccess in
                             if isSuccess {
                                 owner.output.selectedRecordCells.accept([])
                             } else {
@@ -370,7 +374,7 @@ extension RecordViewModel {
         let totalCount = output.mediaList.value.count
         let message = output.mediaList.value.isEmpty
         ? "촬영된 기록이 없어 앨범 저장 없이 종료돼요"
-        : "총 \(totalCount)장의 '\(title)' 기록이 종료 후 앨범에 저장돼요"
+        : "총 \(totalCount)장의 '\(title)' 기록이 종료 후 '사진' 앱 앨범에 저장돼요"
         return AlertModel(
             title: "기록을 종료할까요?",
             message: message,
@@ -389,8 +393,14 @@ extension RecordViewModel {
         let title = output.album.value.title
         return AlertModel(
             title: "기록이 종료되었습니다!",
-            message: "'\(title)' 앨범을 확인해보세요!",
+            message: "사진 앱 내 '\(title)' 앨범을 확인해보세요!",
             eventButton: .init(
+                title: "앨범 확인",
+                action: { [weak self] in
+                    self?.alertAction.accept(.linkToPhotoAlbum)
+                }
+            ),
+            cancelButton: .init(
                 title: "홈으로 돌아가기",
                 action: { [weak self] in
                     self?.alertAction.accept(.popToHome)

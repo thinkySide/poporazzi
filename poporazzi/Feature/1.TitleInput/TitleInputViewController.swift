@@ -60,6 +60,7 @@ extension TitleInputViewController {
         scene.titleTextField.textField.rx.text
             .subscribe(with: self) { owner, _ in
                 owner.scene.titleTextField.action(.toggleLine)
+                owner.scene.action(.updateTitleTextFieldSubLabel)
             }
             .disposed(by: disposeBag)
         

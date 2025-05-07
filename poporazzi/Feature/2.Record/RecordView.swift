@@ -97,7 +97,7 @@ final class RecordView: CodeBaseUI {
     /// 촬영된 사진이 없을 때 라벨
     private let emptyLabel: UILabel = {
         let label = UILabel()
-        label.text = "지금부터 촬영한 모든 사진과\n영상이 기록될 거에요!"
+        label.text = "지금부터 촬영한 모든 사진과\n영상을 포포라치가 기록할 거에요!"
         label.numberOfLines = 3
         label.setLine(alignment: .center, spacing: 8)
         label.font = .setDovemayo(16)
