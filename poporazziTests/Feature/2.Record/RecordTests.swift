@@ -15,6 +15,7 @@ final class RecordTests: XCTestCase {
     private var viewModel: RecordViewModel!
     
     override func setUpWithError() throws {
+        DIContainer.shared.inject(.testValue)
         viewModel = RecordViewModel(output: .init(album: .init(value: .initialValue)))
         try super.setUpWithError()
     }
@@ -41,14 +42,7 @@ final class RecordTests: XCTestCase {
 extension RecordTests {
     
     func test_앨범제목입력() throws {
-        
-        // 1. given: 필요한 모든 값 설정
         let (input, output) = makeInputOutput()
-        
-        // 2. when: 테스트 중인 코드 실행
-        
-        
-        // 3. then: 에상 결과 확인
         
     }
 }

@@ -19,7 +19,7 @@ final class DIContainer {
     /// 의존성 리스트
     struct Dependencies {
         let liveActivityService: LiveActivityInterface
-        let photoKitService: PhotoKitService
+        let photoKitService: PhotoKitInterface
     }
     
     /// 객체를 꺼내옵니다.
@@ -46,7 +46,7 @@ extension DIContainer {
             )
             case .testValue: .init(
                 liveActivityService: MockLiveActivityService(),
-                photoKitService: PhotoKitService()
+                photoKitService: MockPhotoKitService()
             )
             }
         }
