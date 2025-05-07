@@ -250,6 +250,7 @@ extension RecordViewModel {
                     } else {
                         try? owner.saveToAlbums()
                         owner.output.alertPresented.accept(owner.saveCompleteAlert)
+                        HapticService.notification(type: .success)
                     }
                     
                     owner.liveActivityService.stop()
