@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "B06C9849-A4D7-45B5-A797-4A94D5C5CDC4",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:poporazzi.xcodeproj",
+      "identifier" : "8232593B2D9FBF4800CFC860",
+      "name" : "poporazzi"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:poporazzi.xcodeproj",
+        "identifier" : "82D69E9A2DCB2990008C6AE5",
+        "name" : "poporazziTests"
+      }
+    }
+  ],
+  "version" : 1
+}
