@@ -245,7 +245,6 @@ extension RecordViewModel {
                 case .save:
                     if owner.output.mediaList.value.isEmpty {
                         owner.navigation.accept(.pop)
-                        UserDefaultsService.excludeAssets.removeAll()
                     } else {
                         try? owner.saveToAlbums()
                         owner.output.alertPresented.accept(owner.saveCompleteAlert)
@@ -253,17 +252,16 @@ extension RecordViewModel {
                     }
                     
                     owner.liveActivityService.stop()
+                    UserDefaultsService.excludeAssets.removeAll()
                     UserDefaultsService.isTracking = false
                     
                 case .linkToPhotoAlbum:
                     DeepLinkManager.openPhotoAlbum()
                     owner.navigation.accept(.pop)
-                    UserDefaultsService.excludeAssets.removeAll()
                     break
                     
                 case .popToHome:
                     owner.navigation.accept(.pop)
-                    UserDefaultsService.excludeAssets.removeAll()
                 }
             }
             .disposed(by: disposeBag)
