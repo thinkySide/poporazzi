@@ -1,5 +1,5 @@
 //
-//  DeepLinkService.swift
+//  DeepLinkManager.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/7/25.
@@ -7,7 +7,8 @@
 
 import UIKit
 
-struct DeepLinkService {
+/// DeepLink 관리용
+enum DeepLinkManager {
     
     /// 사진 앱의 앨범으로 딥링크합니다.
     static func openPhotoAlbum() {

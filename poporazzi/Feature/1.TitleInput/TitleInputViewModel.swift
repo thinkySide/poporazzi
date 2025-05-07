@@ -11,7 +11,6 @@ import RxCocoa
 
 final class TitleInputViewModel: ViewModel {
     
-    @Dependency(\.versionService) private var versionService
     @Dependency(\.liveActivityService) private var liveActivityService
     
     private let disposeBag = DisposeBag()
@@ -75,7 +74,7 @@ extension TitleInputViewModel {
                     albumTitle: album.title,
                     startDate: album.trackingStartDate
                 )
-                HapticService.notification(type: .success)
+                HapticManager.notification(type: .success)
                 UserDefaultsService.album = album
                 UserDefaultsService.isTracking = true
             }
@@ -85,16 +84,16 @@ extension TitleInputViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .openAppStore:
-                    owner.versionService.openAppStore()
+                    VersionManager.openAppStore()
                 }
             }
             .disposed(by: disposeBag)
         
 #if !DEBUG
-        versionService.appStoreAppVersion
+        VersionService.appStoreAppVersion
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, appStoreVersion in
-                if appStoreVersion != owner.versionService.deviceAppVersion {
+                if appStoreVersion != VersionService.deviceAppVersion {
                     owner.output.alertPresented.accept(owner.recommendUpdateAlert)
                 }
             }

@@ -252,14 +252,14 @@ extension RecordViewModel {
                     } else {
                         try? owner.saveToAlbums()
                         owner.output.alertPresented.accept(owner.saveCompleteAlert)
-                        HapticService.notification(type: .success)
+                        HapticManager.notification(type: .success)
                     }
                     
                     owner.liveActivityService.stop()
                     UserDefaultsService.isTracking = false
                     
                 case .linkToPhotoAlbum:
-                    DeepLinkService.openPhotoAlbum()
+                    DeepLinkManager.openPhotoAlbum()
                     owner.navigation.accept(.pop)
                     UserDefaultsService.excludeAssets.removeAll()
                     break
