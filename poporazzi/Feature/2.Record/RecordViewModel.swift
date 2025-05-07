@@ -5,6 +5,7 @@
 //  Created by 김민준 on 4/5/25.
 //
 
+import UIKit
 import Foundation
 import RxSwift
 import RxCocoa
@@ -79,6 +80,7 @@ extension RecordViewModel {
     
     enum AlertAction {
         case save
+        case linkToPhotoAlbum
         case popToHome
     }
     
@@ -256,6 +258,12 @@ extension RecordViewModel {
                     owner.liveActivityService.stop()
                     UserDefaultsService.isTracking = false
                     
+                case .linkToPhotoAlbum:
+                    DeepLinkService.openPhotoAlbum()
+                    owner.navigation.accept(.pop)
+                    UserDefaultsService.excludeAssets.removeAll()
+                    break
+                    
                 case .popToHome:
                     owner.navigation.accept(.pop)
                     UserDefaultsService.excludeAssets.removeAll()
@@ -366,7 +374,7 @@ extension RecordViewModel {
         let totalCount = output.mediaList.value.count
         let message = output.mediaList.value.isEmpty
         ? "촬영된 기록이 없어 앨범 저장 없이 종료돼요"
-        : "총 \(totalCount)장의 '\(title)' 기록이 종료 후 앨범에 저장돼요"
+        : "총 \(totalCount)장의 '\(title)' 기록이 종료 후 '사진' 앱 앨범에 저장돼요"
         return AlertModel(
             title: "기록을 종료할까요?",
             message: message,
@@ -385,8 +393,14 @@ extension RecordViewModel {
         let title = output.album.value.title
         return AlertModel(
             title: "기록이 종료되었습니다!",
-            message: "'\(title)' 앨범을 확인해보세요!",
+            message: "사진 앱 내 '\(title)' 앨범을 확인해보세요!",
             eventButton: .init(
+                title: "앨범 확인",
+                action: { [weak self] in
+                    self?.alertAction.accept(.linkToPhotoAlbum)
+                }
+            ),
+            cancelButton: .init(
                 title: "홈으로 돌아가기",
                 action: { [weak self] in
                     self?.alertAction.accept(.popToHome)
