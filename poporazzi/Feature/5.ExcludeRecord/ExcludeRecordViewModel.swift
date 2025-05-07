@@ -38,15 +38,15 @@ extension ExcludeRecordViewModel {
         let backButtonTapped: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
-        let recordCellSelected: Signal<Media>
-        let recordCellDeselected: Signal<Media>
+        let recordCellSelected: Signal<IndexPath>
+        let recordCellDeselected: Signal<IndexPath>
         let recoverButtonTapped: Signal<Void>
         let removeButtonTapped: Signal<Void>
     }
     
     struct Output {
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let selectedRecordCells = BehaviorRelay<[Media]>(value: [])
+        let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
         let viewDidRefresh = PublishRelay<Void>()
         let alertPresented = PublishRelay<AlertModel>()
@@ -98,17 +98,17 @@ extension ExcludeRecordViewModel {
             .disposed(by: disposeBag)
         
         input.recordCellSelected
-            .emit(with: self) { owner, media in
+            .emit(with: self) { owner, indexPath in
                 var currentCells = owner.output.selectedRecordCells.value
-                currentCells.append(media)
+                currentCells.append(indexPath)
                 owner.output.selectedRecordCells.accept(currentCells)
             }
             .disposed(by: disposeBag)
         
         input.recordCellDeselected
-            .emit(with: self) { owner, media in
+            .emit(with: self) { owner, indexPath in
                 var currentCells = owner.output.selectedRecordCells.value
-                currentCells.removeAll(where: { $0.id == media.id })
+                currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
             }
             .disposed(by: disposeBag)
@@ -129,23 +129,20 @@ extension ExcludeRecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .recover:
-                    owner.output.selectedRecordCells.value.forEach { media in
-                        UserDefaultsService.excludeAssets.removeAll { media.id == $0 }
-                        owner.output.viewDidRefresh.accept(())
-                        owner.output.selectedRecordCells.accept([])
-                    }
+                    let assetIdentifiers = owner.selectedAssetIdentifiers()
+                    UserDefaultsService.excludeAssets.removeAll { assetIdentifiers.contains($0) }
+                    owner.output.viewDidRefresh.accept(())
+                    owner.output.selectedRecordCells.accept([])
                     
                 case .remove:
                     owner.output.toggleLoading.accept(true)
-                    let assetIdentifiers = owner.output.selectedRecordCells.value.map { $0.id }
+                    let assetIdentifiers = owner.selectedAssetIdentifiers()
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
                         .bind(with: self) { owner, isSuccess in
                             if isSuccess {
-                                owner.output.selectedRecordCells.value.forEach { media in
-                                    UserDefaultsService.excludeAssets.removeAll { media.id == $0 }
-                                    owner.output.viewDidRefresh.accept(())
-                                    owner.output.selectedRecordCells.accept([])
-                                }
+                                UserDefaultsService.excludeAssets.removeAll { assetIdentifiers.contains($0) }
+                                owner.output.viewDidRefresh.accept(())
+                                owner.output.selectedRecordCells.accept([])
                             } else {
                                 owner.output.alertPresented.accept(owner.removeFailedAlert)
                             }
@@ -157,6 +154,16 @@ extension ExcludeRecordViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Helper
+
+extension ExcludeRecordViewModel {
+
+    /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
+    private func selectedAssetIdentifiers() -> [String] {
+        output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }
     }
 }
 

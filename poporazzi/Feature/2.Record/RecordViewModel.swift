@@ -56,12 +56,7 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        
-        let currentIndex = BehaviorRelay<[Int]>(value: [])
-        let totalIndexPaths = BehaviorRelay<[IndexPath]>(value: [])
-        
         let updateRecordCells = BehaviorRelay<[OrderedMedia]>(value: [])
-        
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
