@@ -30,7 +30,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:poporazzi.xctestplan"
+            reference = "container:poporazziTests/Feature/poporazzi.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>

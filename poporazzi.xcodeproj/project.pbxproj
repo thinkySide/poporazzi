@@ -89,7 +89,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				poporazzi.xctestplan,
 			);
 			target = 8232593B2D9FBF4800CFC860 /* poporazzi */;
 		};
