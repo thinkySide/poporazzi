@@ -359,7 +359,7 @@ extension RecordViewModel {
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
         let title = output.album.value.title
-        try photoKitService.saveAlbum(title: title)
+        try photoKitService.saveAlbum(title: title, excludeAssets: UserDefaultsService.excludeAssets)
     }
 }
 

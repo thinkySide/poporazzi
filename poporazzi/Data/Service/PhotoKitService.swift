@@ -129,23 +129,19 @@ extension PhotoKitService {
     }
     
     /// 앨범에 기록을 저장합니다.
-    func saveAlbum(title: String) throws {
-        guard let assets = fetchResult else { throw PhotoKitError.emptyAssets }
+    func saveAlbum(title: String, excludeAssets: [String]) throws {
+        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets) else { return }
         
-        // 기존 앨범에 추가
-        if let album = fetchAlbum(title: title) {
-            appendToAlbum(assets: assets, to: album)
-        }
+        var albumIdentifier: String?
         
-        // 앨범 새로 생성
-        else {
-            PHPhotoLibrary.shared().performChanges {
-                PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
-            } completionHandler: { [weak self] isSuccess, error in
-                guard let self else { return }
-                guard let album = fetchAlbum(title: title) else { return }
-                appendToAlbum(assets: assets, to: album)
-            }
+        PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
+            albumIdentifier = request.placeholderForCreatedAssetCollection.localIdentifier
+        } completionHandler: { [weak self] isSuccess, error in
+            guard let self else { return }
+            guard isSuccess, let albumIdentifier else { return }
+            guard let album = fetchAlbum(from: albumIdentifier) else { return }
+            appendToAlbum(filteredFetchResult, to: album)
         }
     }
     
@@ -221,22 +217,35 @@ extension PhotoKitService {
         }
     }
     
-    /// 앨범을 반환합니다.
-    private func fetchAlbum(title: String) -> PHAssetCollection? {
+    /// 현재 에셋을 필터링 후 반환합니다.
+    private func filterExcludeAssets(_ excludeAssets: [String]) throws -> PHFetchResult<PHAsset>? {
+        guard let fetchResult else { throw PhotoKitError.emptyAssets }
+        
+        let allAssets = (0..<fetchResult.count).compactMap { fetchResult.object(at: $0) }
+        
+        let filteredIdentifiers = allAssets
+            .filter { !Set(excludeAssets).contains($0.localIdentifier) }
+            .map { $0.localIdentifier }
+        
         let fetchOptions = PHFetchOptions()
-        fetchOptions.predicate = NSPredicate(format: "title = %@", title)
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        return PHAsset.fetchAssets(withLocalIdentifiers: filteredIdentifiers, options: fetchOptions)
+    }
+    
+    /// 앨범을 반환합니다.
+    private func fetchAlbum(from locaIdentifier: String) -> PHAssetCollection? {
         return PHAssetCollection.fetchAssetCollections(
-            with: .album,
-            subtype: .any,
-            options: fetchOptions
-        ).firstObject
+            withLocalIdentifiers: [locaIdentifier],
+            options: nil
+        )
+        .firstObject
     }
     
     /// 앨범에 추가합니다.
-    private func appendToAlbum(assets: PHFetchResult<PHAsset>, to album: PHAssetCollection) {
+    private func appendToAlbum(_ fetchResult: PHFetchResult<PHAsset>, to album: PHAssetCollection) {
         PHPhotoLibrary.shared().performChanges {
             let request = PHAssetCollectionChangeRequest(for: album)
-            request?.addAssets(assets)
+            request?.addAssets(fetchResult)
         }
     }
 }
