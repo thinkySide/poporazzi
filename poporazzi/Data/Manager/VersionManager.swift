@@ -1,5 +1,5 @@
 //
-//  VersionService.swift
+//  VersionManager.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/3/25.
@@ -8,7 +8,8 @@
 import UIKit
 import RxSwift
 
-struct VersionService {
+/// 버전 관리용
+enum VersionManager {
     
     /// 각 URLString을 저장하는 열거형
     enum URLString {
@@ -35,15 +36,15 @@ struct VersionService {
 
 // MARK: - Use Case
 
-extension VersionService {
+extension VersionManager {
     
     /// 현재 디바이스에 설치된 버전을 반환합니다.
-    var deviceAppVersion: String {
+    static var deviceAppVersion: String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as! String
     }
     
     /// 앱스토어 내 최신 버전을 반환합니다.
-    var appStoreAppVersion: Observable<String> {
+    static var appStoreAppVersion: Observable<String> {
         guard let url = URL(string: URLString.version.value) else { return .never() }
         
         return Observable.create { observer in
@@ -65,7 +66,7 @@ extension VersionService {
     }
     
     /// 앱스토어를 Open합니다.
-    func openAppStore() {
+    static func openAppStore() {
         guard let url = URL(string: URLString.appStore.value) else { return }
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)

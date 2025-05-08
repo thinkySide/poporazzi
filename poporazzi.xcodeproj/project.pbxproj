@@ -24,6 +24,13 @@
 			remoteGlobalIDString = 8221E3462DC3668F0092469D;
 			remoteInfo = poporazziWidgetExtension;
 		};
+		82D69E9F2DCB2990008C6AE5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 823259342D9FBF4800CFC860 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8232593B2D9FBF4800CFC860;
+			remoteInfo = poporazzi;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -45,6 +52,7 @@
 		8221E3492DC3668F0092469D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		8221E34B2DC3668F0092469D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		8232593C2D9FBF4800CFC860 /* poporazzi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = poporazzi.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		82D69E9B2DCB2990008C6AE5 /* poporazziTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = poporazziTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,6 +67,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Service/LiveActivityService.swift,
+				Domain/Entity/Album.swift,
+				Domain/Interface/LiveActivityInterface.swift,
 				Resource/Colors.xcassets,
 				Resource/Font/DovemayoGothic/Dovemayo_gothic.ttf,
 				Resource/Images.xcassets,
@@ -79,6 +89,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				poporazzi.xctestplan,
 			);
 			target = 8232593B2D9FBF4800CFC860 /* poporazzi */;
 		};
@@ -101,6 +112,11 @@
 				8221E3632DC366D50092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */,
 			);
 			path = poporazzi;
+			sourceTree = "<group>";
+		};
+		82D69E9C2DCB2990008C6AE5 /* poporazziTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = poporazziTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -126,6 +142,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		82D69E982DCB2990008C6AE5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -143,6 +166,7 @@
 			children = (
 				8232593E2D9FBF4800CFC860 /* poporazzi */,
 				8221E34D2DC3668F0092469D /* poporazziWidget */,
+				82D69E9C2DCB2990008C6AE5 /* poporazziTests */,
 				8221E3482DC3668F0092469D /* Frameworks */,
 				8232593D2D9FBF4800CFC860 /* Products */,
 			);
@@ -153,6 +177,7 @@
 			children = (
 				8232593C2D9FBF4800CFC860 /* poporazzi.app */,
 				8221E3472DC3668F0092469D /* poporazziWidgetExtension.appex */,
+				82D69E9B2DCB2990008C6AE5 /* poporazziTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -210,6 +235,29 @@
 			productReference = 8232593C2D9FBF4800CFC860 /* poporazzi.app */;
 			productType = "com.apple.product-type.application";
 		};
+		82D69E9A2DCB2990008C6AE5 /* poporazziTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 82D69EA12DCB2990008C6AE5 /* Build configuration list for PBXNativeTarget "poporazziTests" */;
+			buildPhases = (
+				82D69E972DCB2990008C6AE5 /* Sources */,
+				82D69E982DCB2990008C6AE5 /* Frameworks */,
+				82D69E992DCB2990008C6AE5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				82D69EA02DCB2990008C6AE5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				82D69E9C2DCB2990008C6AE5 /* poporazziTests */,
+			);
+			name = poporazziTests;
+			packageProductDependencies = (
+			);
+			productName = poporazziTests;
+			productReference = 82D69E9B2DCB2990008C6AE5 /* poporazziTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -225,6 +273,10 @@
 					};
 					8232593B2D9FBF4800CFC860 = {
 						CreatedOnToolsVersion = 16.2;
+					};
+					82D69E9A2DCB2990008C6AE5 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 8232593B2D9FBF4800CFC860;
 					};
 				};
 			};
@@ -249,6 +301,7 @@
 			targets = (
 				8232593B2D9FBF4800CFC860 /* poporazzi */,
 				8221E3462DC3668F0092469D /* poporazziWidgetExtension */,
+				82D69E9A2DCB2990008C6AE5 /* poporazziTests */,
 			);
 		};
 /* End PBXProject section */
@@ -262,6 +315,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		8232593A2D9FBF4800CFC860 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		82D69E992DCB2990008C6AE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -285,6 +345,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		82D69E972DCB2990008C6AE5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -292,6 +359,11 @@
 			isa = PBXTargetDependency;
 			target = 8221E3462DC3668F0092469D /* poporazziWidgetExtension */;
 			targetProxy = 8221E35B2DC366900092469D /* PBXContainerItemProxy */;
+		};
+		82D69EA02DCB2990008C6AE5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8232593B2D9FBF4800CFC860 /* poporazzi */;
+			targetProxy = 82D69E9F2DCB2990008C6AE5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -380,7 +452,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -416,7 +488,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -543,6 +615,42 @@
 			};
 			name = Release;
 		};
+		82D69EA22DCB2990008C6AE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9XG4S4XZWN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.thinkyside.poporazziTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/poporazzi.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/poporazzi";
+			};
+			name = Debug;
+		};
+		82D69EA32DCB2990008C6AE5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9XG4S4XZWN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.thinkyside.poporazziTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/poporazzi.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/poporazzi";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -569,6 +677,15 @@
 			buildConfigurations = (
 				823259502D9FBF4900CFC860 /* Debug */,
 				823259512D9FBF4900CFC860 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		82D69EA12DCB2990008C6AE5 /* Build configuration list for PBXNativeTarget "poporazziTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				82D69EA22DCB2990008C6AE5 /* Debug */,
+				82D69EA32DCB2990008C6AE5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

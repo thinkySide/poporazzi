@@ -24,8 +24,18 @@ struct Media: Hashable, Equatable {
     }
 }
 
+/// 순서 보장이 필요한 Media 튜플
+typealias OrderedMedia = (Int, Media)
+
 /// 미디어 타입
 enum MediaType: Hashable {
     case photo
     case video(duration: TimeInterval)
+}
+
+/// 미디어 검색 타입
+enum MediaFetchType {
+    case all
+    case image
+    case video
 }

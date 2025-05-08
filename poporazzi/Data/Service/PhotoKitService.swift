@@ -10,14 +10,7 @@ import RxSwift
 import RxCocoa
 import Photos
 
-final class PhotoKitService: NSObject {
-    
-    /// 미디어 검색 타입
-    enum MediaFetchType {
-        case all
-        case image
-        case video
-    }
+final class PhotoKitService: NSObject, PhotoKitInterface {
     
     /// PhotoKit에서 발생할 수 있는 에러
     enum PhotoKitError: Error {
@@ -62,7 +55,7 @@ extension PhotoKitService {
     }
     
     /// 썸네일 없이 기록을 반환합니다.
-    func fetchPhotosWithNoThumbnail(
+    func fetchMediasWithNoThumbnail(
         mediaFetchType: MediaFetchType = .all,
         date: Date,
         ascending: Bool = true
@@ -88,7 +81,7 @@ extension PhotoKitService {
     }
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
-    func fetchPhotos(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
+    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
         return Observable.create { [weak self] observer in
             Task.detached { [weak self] in
                 guard let self else {
