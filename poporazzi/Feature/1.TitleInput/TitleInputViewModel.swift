@@ -87,10 +87,10 @@ extension TitleInputViewModel {
             .disposed(by: disposeBag)
         
 #if !DEBUG
-        VersionService.appStoreAppVersion
+        VersionManager.appStoreAppVersion
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, appStoreVersion in
-                if appStoreVersion != VersionService.deviceAppVersion {
+                if appStoreVersion != VersionManager.deviceAppVersion {
                     owner.output.alertPresented.accept(owner.recommendUpdateAlert)
                 }
             }
