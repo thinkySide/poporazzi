@@ -3,7 +3,7 @@
 
 |상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.3.1)|
 |:--|:--|
-|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit|
+|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Xcode Cloud|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11)|
 |이메일 문의|eunlyuing@gmail.com|
 
