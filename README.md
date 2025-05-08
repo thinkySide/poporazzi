@@ -69,6 +69,5 @@
 |[#63 PhotoKit 및 RecordCollectionView 사진 로드 속도 개선하기](https://github.com/thinkySide/poporazzi/pull/63)|RecordCollectionView 이미지 로드 속도 개선(페이지네이션), PhotoKitService 병렬 처리 구현, UICollectionViewDiffableDataSource 도입|
 |[#65 1.3.0 배포](https://github.com/thinkySide/poporazzi/pull/65)|ExcludeView CollectionView 업데이트, 사진 앱 앨범 DeepLink 구현, 전반적인 순환참조 문제 해결|
 |[#65 1.3.0 배포](https://github.com/thinkySide/poporazzi/pull/65)|ExcludeView CollectionView 업데이트, 사진 앱 앨범 DeepLink 구현, 전반적인 순환참조 문제 해결|
-
 |[#67 유닛 테스트 환경 세팅 및 작성](https://github.com/thinkySide/poporazzi/pull/67)|Unit Test Target 추가, Live Activity 및 PhotoKit Service 인터페이스 구현 및 Mock 객체 생성, XCTest를 활용한 테스트 코드 작성|
 |[#69 앨범 저장 오류 해결](https://github.com/thinkySide/poporazzi/pull/69)|동일한 이름의 앨범 생성 시, 저장 후 덮어씌워지는 문제 해결, 제외된 기록이 추가되었음에도 종료 시 반영되지 않는 문제 해결|
