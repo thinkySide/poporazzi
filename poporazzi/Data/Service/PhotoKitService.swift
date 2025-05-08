@@ -132,20 +132,16 @@ extension PhotoKitService {
     func saveAlbum(title: String) throws {
         guard let assets = fetchResult else { throw PhotoKitError.emptyAssets }
         
-        // 기존 앨범에 추가
-        if let album = fetchAlbum(title: title) {
-            appendToAlbum(assets: assets, to: album)
-        }
+        var albumIdentifier: String?
         
-        // 앨범 새로 생성
-        else {
-            PHPhotoLibrary.shared().performChanges {
-                PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
-            } completionHandler: { [weak self] isSuccess, error in
-                guard let self else { return }
-                guard let album = fetchAlbum(title: title) else { return }
-                appendToAlbum(assets: assets, to: album)
-            }
+        PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
+            albumIdentifier = request.placeholderForCreatedAssetCollection.localIdentifier
+        } completionHandler: { [weak self] isSuccess, error in
+            guard let self else { return }
+            guard isSuccess, let albumIdentifier else { return }
+            guard let album = fetchAlbum(from: albumIdentifier) else { return }
+            appendToAlbum(assets: assets, to: album)
         }
     }
     
@@ -222,14 +218,12 @@ extension PhotoKitService {
     }
     
     /// 앨범을 반환합니다.
-    private func fetchAlbum(title: String) -> PHAssetCollection? {
-        let fetchOptions = PHFetchOptions()
-        fetchOptions.predicate = NSPredicate(format: "title = %@", title)
+    private func fetchAlbum(from locaIdentifier: String) -> PHAssetCollection? {
         return PHAssetCollection.fetchAssetCollections(
-            with: .album,
-            subtype: .any,
-            options: fetchOptions
-        ).firstObject
+            withLocalIdentifiers: [locaIdentifier],
+            options: nil
+        )
+        .firstObject
     }
     
     /// 앨범에 추가합니다.
