@@ -14,18 +14,47 @@ final class DIContainer {
     private init() {}
     
     /// 의존성이 담긴 객체
-    private let dependencies = Dependencies()
+    private var dependencies: Dependencies!
     
     /// 의존성 리스트
-    final class Dependencies {
-        let liveActivityService = LiveActivityService()
-        let photoKitService = PhotoKitService()
-        let versionService = VersionService()
+    struct Dependencies {
+        let liveActivityService: LiveActivityInterface
+        let photoKitService: PhotoKitInterface
     }
     
     /// 객체를 꺼내옵니다.
     fileprivate func resolve<T>(_ keyPath: KeyPath<Dependencies, T>) -> T {
         dependencies[keyPath: keyPath]
+    }
+}
+
+// MARK: - Inject
+
+extension DIContainer {
+    
+    /// 주입 할 객체를 반환합니다.
+    enum InjectObject {
+        case liveValue
+        case testValue
+        
+        /// 의존성 객체
+        var dependencies: Dependencies {
+            switch self {
+            case .liveValue: .init(
+                liveActivityService: LiveActivityService(),
+                photoKitService: PhotoKitService()
+            )
+            case .testValue: .init(
+                liveActivityService: MockLiveActivityService(),
+                photoKitService: MockPhotoKitService()
+            )
+            }
+        }
+    }
+    
+    /// 의존성을 주입합니다.
+    func inject(_ injectObject: InjectObject) {
+        dependencies = injectObject.dependencies
     }
 }
 

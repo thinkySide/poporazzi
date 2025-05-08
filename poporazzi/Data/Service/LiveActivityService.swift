@@ -8,7 +8,7 @@
 import Foundation
 import ActivityKit
 
-final class LiveActivityService {
+final class LiveActivityService: LiveActivityInterface {
     
     private var activity: Activity<PoporazziWidgetAttributes>?
 }
@@ -18,12 +18,12 @@ final class LiveActivityService {
 extension LiveActivityService {
     
     /// Live Activity를 시작합니다.
-    func start(albumTitle: String, startDate: Date) {
+    func start(to album: Album) {
         guard activity == nil else { return }
         let attributes = PoporazziWidgetAttributes()
         let contentState = PoporazziWidgetAttributes.ContentState(
-            albumTitle: albumTitle,
-            startDate: startDate,
+            albumTitle: album.title,
+            startDate: album.trackingStartDate,
             totalCount: 0
         )
         let content = ActivityContent(state: contentState, staleDate: nil)
@@ -40,12 +40,12 @@ extension LiveActivityService {
     }
     
     /// Live Activity를 업데이트합니다.
-    func update(albumTitle: String, startDate: Date, totalCount: Int) {
+    func update(to album: Album, totalCount: Int) {
         guard let activity = activity else { return }
         
         let contentState = PoporazziWidgetAttributes.ContentState(
-            albumTitle: albumTitle,
-            startDate: startDate,
+            albumTitle: album.title,
+            startDate: album.trackingStartDate,
             totalCount: totalCount
         )
         let content = ActivityContent(state: contentState, staleDate: nil)

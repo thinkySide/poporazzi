@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "877A252E-EE4B-4056-9D45-5C866AF17DF0",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:poporazzi.xcodeproj",
+        "identifier" : "82D69E9A2DCB2990008C6AE5",
+        "name" : "poporazziTests"
+      }
+    }
+  ],
+  "version" : 1
+}

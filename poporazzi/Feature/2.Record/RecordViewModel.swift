@@ -10,8 +10,6 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-typealias OrderedMedia = (Int, Media)
-
 final class RecordViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
@@ -189,8 +187,7 @@ extension RecordViewModel {
         output.mediaList
             .bind(with: self) { owner, mediaList in
                 owner.liveActivityService.update(
-                    albumTitle: owner.output.album.value.title,
-                    startDate: owner.output.album.value.trackingStartDate,
+                    to: owner.output.album.value,
                     totalCount: mediaList.count
                 )
             }
@@ -248,25 +245,23 @@ extension RecordViewModel {
                 case .save:
                     if owner.output.mediaList.value.isEmpty {
                         owner.navigation.accept(.pop)
-                        UserDefaultsService.excludeAssets.removeAll()
                     } else {
                         try? owner.saveToAlbums()
                         owner.output.alertPresented.accept(owner.saveCompleteAlert)
-                        HapticService.notification(type: .success)
+                        HapticManager.notification(type: .success)
                     }
                     
                     owner.liveActivityService.stop()
+                    UserDefaultsService.excludeAssets.removeAll()
                     UserDefaultsService.isTracking = false
                     
                 case .linkToPhotoAlbum:
-                    DeepLinkService.openPhotoAlbum()
+                    DeepLinkManager.openPhotoAlbum()
                     owner.navigation.accept(.pop)
-                    UserDefaultsService.excludeAssets.removeAll()
                     break
                     
                 case .popToHome:
                     owner.navigation.accept(.pop)
-                    UserDefaultsService.excludeAssets.removeAll()
                 }
             }
             .disposed(by: disposeBag)
@@ -330,7 +325,7 @@ extension RecordViewModel {
 // MARK: - Helper
 
 extension RecordViewModel {
-
+    
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
         output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }
@@ -346,21 +341,25 @@ extension RecordViewModel {
     /// - 제외된 사진을 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() -> [Media] {
         let trackingStartDate = output.album.value.trackingStartDate
-        return photoKitService.fetchPhotosWithNoThumbnail(date: trackingStartDate)
-            .filter { media in
-                !Set(UserDefaultsService.excludeAssets).contains(media.id)
-            }
+        return photoKitService.fetchMediasWithNoThumbnail(
+            mediaFetchType: .all,
+            date: trackingStartDate,
+            ascending: true
+        )
+        .filter { media in
+            !Set(UserDefaultsService.excludeAssets).contains(media.id)
+        }
     }
     
     /// Asset Identifiers에 대응되는 Media 스트림을 반환합니다.
     private func requestImages(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
-        photoKitService.fetchPhotos(from: assetIdentifiers)
+        photoKitService.fetchMedias(from: assetIdentifiers)
     }
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
         let title = output.album.value.title
-        try photoKitService.saveAlbum(title: title)
+        try photoKitService.saveAlbum(title: title, excludeAssets: UserDefaultsService.excludeAssets)
     }
 }
 
