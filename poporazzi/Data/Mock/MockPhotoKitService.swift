@@ -31,7 +31,7 @@ struct MockPhotoKitService: PhotoKitInterface {
         return .just(array)
     }
     
-    func saveAlbum(title: String) throws {
+    func saveAlbum(title: String, excludeAssets: [String]) throws {
         print("[앨범 저장 완료] - \(title)")
     }
     

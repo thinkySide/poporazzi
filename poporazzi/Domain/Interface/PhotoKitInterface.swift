@@ -28,7 +28,7 @@ protocol PhotoKitInterface {
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]>
     
     /// 현재 fetchResult를 기준으로 앨범을 저장합니다.
-    func saveAlbum(title: String) throws
+    func saveAlbum(title: String, excludeAssets: [String]) throws
     
     /// 사진을 삭제 후 결과 이벤트를 반환합니다.
     func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool>
