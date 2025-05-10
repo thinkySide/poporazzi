@@ -55,7 +55,7 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let updateRecordCells = BehaviorRelay<[OrderedMedia]>(value: [])
+        let updateRecordCells = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
@@ -132,8 +132,8 @@ extension RecordViewModel {
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
-                    .bind { orderedMediaList in
-                        owner.output.updateRecordCells.accept(orderedMediaList)
+                    .bind { mediaList in
+                        owner.output.updateRecordCells.accept(mediaList)
                     }
                     .disposed(by: owner.disposeBag)
             }
@@ -152,15 +152,8 @@ extension RecordViewModel {
                     let assetIdentifiers = owner.chunkAssetIdentifiers
                     
                     owner.requestImages(from: assetIdentifiers)
-                        .bind { orderedMediaList in
-                            let indexPathMediaList = orderedMediaList.map { (index, media) in
-                                OrderedMedia(
-                                    index: owner.currentChunk + index,
-                                    media: media
-                                )
-                            }
-                            
-                            owner.output.updateRecordCells.accept(indexPathMediaList)
+                        .bind { mediaList in
+                            owner.output.updateRecordCells.accept(mediaList)
                         }
                         .disposed(by: owner.disposeBag)
                 }
@@ -352,7 +345,7 @@ extension RecordViewModel {
     }
     
     /// Asset Identifiers에 대응되는 Media 스트림을 반환합니다.
-    private func requestImages(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
+    private func requestImages(from assetIdentifiers: [String]) -> Observable<[Media]> {
         photoKitService.fetchMedias(from: assetIdentifiers)
     }
     

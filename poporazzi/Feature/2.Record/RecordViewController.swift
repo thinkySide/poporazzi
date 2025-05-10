@@ -20,7 +20,7 @@ final class RecordViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    private var cache = [IndexPath: UIImage?]()
+    private var cache = [String: UIImage?]()
     
     let disposeBag = DisposeBag()
     
@@ -57,7 +57,7 @@ extension RecordViewController {
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            if let cacheThumbnail = self.cache[indexPath] {
+            if let cacheThumbnail = self.cache[media.id] {
                 cell.action(.setImage(cacheThumbnail))
             }
             
@@ -88,14 +88,15 @@ extension RecordViewController {
     }
     
     /// 페이지네이션 된 DataSource를 업데이트합니다.
-    private func updatePaginationDataSource(to medias: [OrderedMedia]) {
-        guard !medias.isEmpty else {
-            return
+    private func updatePaginationDataSource(to mediaList: [Media]) {
+        guard !mediaList.isEmpty else { return }
+        
+        for media in mediaList {
+            cache.updateValue(media.thumbnail, forKey: media.id)
         }
         
-        medias.forEach { cache.updateValue($1.thumbnail, forKey: .init(row: $0, section: 0)) }
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems(medias.map { $0.1 })
+        snapshot.reloadItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
@@ -142,8 +143,8 @@ extension RecordViewController {
         
         output.updateRecordCells
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, orderedMediaList in
-                owner.updatePaginationDataSource(to: orderedMediaList)
+            .bind(with: self) { owner, mediaList in
+                owner.updatePaginationDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)
         

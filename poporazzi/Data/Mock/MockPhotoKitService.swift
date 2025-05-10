@@ -20,13 +20,13 @@ struct MockPhotoKitService: PhotoKitInterface {
     }
     
     func fetchMediasWithNoThumbnail(mediaFetchType: MediaFetchType, date: Date, ascending: Bool) -> [Media] {
-        Array(repeatElement(Media(id: UUID().uuidString, mediaType: .photo), count: 30))
+        Array(repeatElement(Media(id: UUID().uuidString, creationDate: .now, mediaType: .photo), count: 30))
     }
     
-    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
-        var array = [OrderedMedia]()
+    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
+        var array = [Media]()
         for i in 0..<30 {
-            array.append((i, Media(id: UUID().uuidString, mediaType: .photo, thumbnail: UIImage())))
+            array.append(Media(id: UUID().uuidString, creationDate: .now, mediaType: .photo, thumbnail: UIImage()))
         }
         return .just(array)
     }

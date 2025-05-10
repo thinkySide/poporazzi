@@ -9,8 +9,10 @@ import UIKit
 
 /// 미디어
 struct Media: Hashable, Equatable {
-    var id: String
-    var mediaType: MediaType
+    
+    let id: String
+    let creationDate: Date?
+    let mediaType: MediaType
     var thumbnail: UIImage?
     
     func hash(into hasher: inout Hasher) {
@@ -38,4 +40,12 @@ enum MediaFetchType {
     case all
     case image
     case video
+}
+
+extension [Media] {
+    
+    /// 날짜순으로 정렬 후 반환합니다.
+    var sortedByCreationDate: [Media] {
+        sorted { $0.creationDate ?? Date() < $1.creationDate ?? Date() }
+    }
 }
