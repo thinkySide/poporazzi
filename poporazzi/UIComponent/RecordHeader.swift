@@ -77,7 +77,7 @@ extension RecordHeader {
 extension RecordHeader {
     
     func configLayout() {
-        containerView.flex.direction(.row).paddingLeft(20).define { flex in
+        containerView.flex.direction(.row).paddingLeft(4).define { flex in
             flex.addItem(dayCountLabel)
             flex.addItem(dateLabel).marginLeft(8)
         }

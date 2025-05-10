@@ -37,7 +37,7 @@ struct CollectionViewLayout {
         
         // 4. 섹션 설정
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .init(top: 8, leading: 0, bottom: 32, trailing: 0)
+        section.contentInsets = .init(top: 8, leading: 16, bottom: 32, trailing: 16)
         
         return section
     }

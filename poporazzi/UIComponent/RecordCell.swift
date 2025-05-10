@@ -16,7 +16,11 @@ final class RecordCell: UICollectionViewCell {
     var containerView = UIView()
     
     /// 영상 전용 오버레이
-    private let videoOverlay = UIView()
+    private let videoOverlay: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        return view
+    }()
     
     /// 선택 전용 오버레이
     private let selectOverlay: UIView = {
@@ -37,7 +41,7 @@ final class RecordCell: UICollectionViewCell {
     /// 영상 전용 그라디언트 레이어
     private let videoGradientLayer: CAGradientLayer = {
         let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [UIColor.clear.cgColor, UIColor.brandPrimary.withAlphaComponent(0.4).cgColor]
+        gradientLayer.colors = [UIColor.clear.cgColor, UIColor.mainLabel.withAlphaComponent(0.4).cgColor]
         gradientLayer.locations = [0.0, 1.0]
         gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
@@ -142,12 +146,13 @@ extension RecordCell {
 extension RecordCell {
     
     func configLayout() {
+        let cornerRadius: CGFloat = 8
         containerView.flex.define { flex in
-            flex.addItem(thumbnail).grow(1)
+            flex.addItem(thumbnail).cornerRadius(cornerRadius).grow(1)
             flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }
         
-        videoOverlay.flex.define { flex in
+        videoOverlay.flex.cornerRadius(cornerRadius).define { flex in
             flex.addItem(videoDurationLabel).position(.absolute).bottom(6).right(10)
         }
     }
