@@ -72,6 +72,7 @@ extension PhotoKitService {
         fetchResult?.enumerateObjects { asset, _, _ in
             let media = Media(
                 id: asset.localIdentifier,
+                creationDate: asset.creationDate,
                 mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
                 thumbnail: nil
             )
@@ -81,7 +82,7 @@ extension PhotoKitService {
     }
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
-    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]> {
+    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
         return Observable.create { [weak self] observer in
             Task.detached { [weak self] in
                 guard let self else {
@@ -101,23 +102,21 @@ extension PhotoKitService {
                 
                 let orderedAsset = assetIdentifiers.compactMap { assetMap[$0] }
                 
-                let medias: [OrderedMedia] = await withTaskGroup(of: OrderedMedia.self) { group in
-                    for (i, asset) in orderedAsset.enumerated() {
+                let medias: [Media] = await withTaskGroup(of: Media.self) { group in
+                    for asset in orderedAsset {
                         group.addTask {
                             let image = await self.requestImage(for: asset)
-                            return (i, Media(
+                            return Media(
                                 id: asset.localIdentifier,
+                                creationDate: asset.creationDate,
                                 mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
                                 thumbnail: image
-                            ))
+                            )
                         }
                     }
-                    var array: [OrderedMedia] = []
-                    for await i in group {
-                        array.append(i)
-                    }
-                    
-                    return array.sorted { $0.0 < $1.0 }
+                    var array: [Media] = []
+                    for await i in group { array.append(i) }
+                    return array.sortedByCreationDate
                 }
                 
                 observer.onNext(medias)

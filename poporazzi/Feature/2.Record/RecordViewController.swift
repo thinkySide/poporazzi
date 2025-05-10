@@ -14,13 +14,9 @@ final class RecordViewController: ViewController {
     private let scene = RecordView()
     private let viewModel: RecordViewModel
     
-    enum Section: Hashable {
-        case day(String)
-    }
-    
-    private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
+    private var dataSource: UICollectionViewDiffableDataSource<RecordSection, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    private var cache = [IndexPath: UIImage?]()
+    private var cache = [String: UIImage?]()
     
     let disposeBag = DisposeBag()
     
@@ -44,20 +40,35 @@ final class RecordViewController: ViewController {
     }
 }
 
+// MARK: - RecordSection
+
+typealias SectionMediaList = [(RecordSection, [Media])]
+
+enum RecordSection: Hashable, Comparable {
+    case day(order: Int, date: Date)
+    
+    static func < (lhs: RecordSection, rhs: RecordSection) -> Bool {
+        switch (lhs, rhs) {
+        case let (.day(order1, _), .day(order2, _)):
+            return order1 < order2
+        }
+    }
+}
+
 // MARK: - UICollectionViewDiffableDataSource
 
 extension RecordViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<RecordSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            if let cacheThumbnail = self.cache[indexPath] {
+            if let cacheThumbnail = self.cache[media.id] {
                 cell.action(.setImage(cacheThumbnail))
             }
             
@@ -67,35 +78,46 @@ extension RecordViewController {
         }
         
         dataSource.supplementaryViewProvider = {
-            (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
+            [weak self] (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
             let header = collectionView.dequeueReusableSupplementaryView(
                 ofKind: elementKind,
                 withReuseIdentifier: RecordHeader.identifier,
                 for: indexPath
             ) as? RecordHeader
-            header?.action(.updateDayCountLabel("첫째 날"))
-            header?.action(.updateDateLabel("4월 3일 목요일"))
+            
+            if let section = self?.dataSource.sectionIdentifier(for: indexPath.section) {
+                switch section {
+                case let .day(order, date):
+                    header?.action(.updateDayCountLabel(order))
+                    header?.action(.updateDateLabel(date))
+                }
+            }
+            
             return header
         }
     }
     
     /// 기본 DataSource를 업데이트합니다.
-    private func updateInitialDataSource(to medias: [Media]) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
-        snapshot.appendSections([.day("첫째 날")])
-        snapshot.appendItems(medias, toSection: .day("첫째 날"))
+    private func updateInitialDataSource(to sections: SectionMediaList) {
+        var snapshot = NSDiffableDataSourceSnapshot<RecordSection, Media>()
+        for (section, medias) in sections {
+            snapshot.appendSections([section])
+            snapshot.appendItems(medias, toSection: section)
+        }
+        
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
     /// 페이지네이션 된 DataSource를 업데이트합니다.
-    private func updatePaginationDataSource(to medias: [OrderedMedia]) {
-        guard !medias.isEmpty else {
-            return
+    private func updatePaginationDataSource(to mediaList: [Media]) {
+        guard !mediaList.isEmpty else { return }
+        
+        for media in mediaList {
+            cache.updateValue(media.thumbnail, forKey: media.id)
         }
         
-        medias.forEach { cache.updateValue($1.thumbnail, forKey: .init(row: $0, section: 0)) }
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems(medias.map { $0.1 })
+        snapshot.reloadItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
@@ -136,14 +158,20 @@ extension RecordViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
-                owner.updateInitialDataSource(to: medias)
+            }
+            .disposed(by: disposeBag)
+        
+        output.sectionMediaList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, sections in
+                owner.updateInitialDataSource(to: sections)
             }
             .disposed(by: disposeBag)
         
         output.updateRecordCells
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, orderedMediaList in
-                owner.updatePaginationDataSource(to: orderedMediaList)
+            .bind(with: self) { owner, mediaList in
+                owner.updatePaginationDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)
         

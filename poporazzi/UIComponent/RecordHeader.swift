@@ -19,7 +19,7 @@ final class RecordHeader: UICollectionReusableView {
     private let dayCountLabel: UILabel = {
         let label = UILabel()
         label.textColor = .mainLabel
-        label.font = .setDovemayo(18)
+        label.font = .setDovemayo(20)
         return label
     }()
     
@@ -27,7 +27,7 @@ final class RecordHeader: UICollectionReusableView {
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.textColor = .subLabel
-        label.font = .setDovemayo(14)
+        label.font = .setDovemayo(16)
         return label
     }()
     
@@ -53,17 +53,21 @@ final class RecordHeader: UICollectionReusableView {
 extension RecordHeader {
     
     enum Action {
-        case updateDayCountLabel(String)
-        case updateDateLabel(String)
+        case updateDayCountLabel(Int)
+        case updateDateLabel(Date)
     }
     
     func action(_ action: Action) {
         switch action {
-        case .updateDayCountLabel(let string):
-            dayCountLabel.text = string
+        case .updateDayCountLabel(let order):
+            dayCountLabel.flex.markDirty()
+            dayCountLabel.text = "\(order)일차"
+            setNeedsLayout()
             
-        case .updateDateLabel(let string):
-            dateLabel.text = string
+        case .updateDateLabel(let date):
+            dateLabel.flex.markDirty()
+            dateLabel.text = date.sectionHeaderFormat
+            setNeedsLayout()
         }
     }
 }
@@ -73,7 +77,7 @@ extension RecordHeader {
 extension RecordHeader {
     
     func configLayout() {
-        containerView.flex.direction(.row).paddingLeft(20).define { flex in
+        containerView.flex.direction(.row).paddingLeft(4).define { flex in
             flex.addItem(dayCountLabel)
             flex.addItem(dateLabel).marginLeft(8)
         }

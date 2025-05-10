@@ -25,7 +25,7 @@ protocol PhotoKitInterface {
     ) -> [Media]
     
     /// Media 배열 이벤트를 반환합니다.
-    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[OrderedMedia]>
+    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>
     
     /// 현재 fetchResult를 기준으로 앨범을 저장합니다.
     func saveAlbum(title: String, excludeAssets: [String]) throws
