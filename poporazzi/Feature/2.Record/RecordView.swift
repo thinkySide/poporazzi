@@ -39,14 +39,14 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 선택 버튼
-    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .whiteSecondary)
+    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .whiteSecondary)
+        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
         button.isHidden = true
         return button
     }()

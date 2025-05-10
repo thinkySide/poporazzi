@@ -25,13 +25,13 @@ final class AlbumEditView: CodeBaseUI {
     /// 뒤로 가기 버튼
     let backButton = NavigationButton(
         buttonType: .systemIcon(.dismiss, size: 12, weight: .bold),
-        variation: .whiteSecondary
+        variation: .secondary
     )
     
     /// 저장 버튼
     let saveButton = NavigationButton(
         buttonType: .text("저장"),
-        variation: .whiteSecondary
+        variation: .secondary
     )
     
     /// 제목 양식 라벨

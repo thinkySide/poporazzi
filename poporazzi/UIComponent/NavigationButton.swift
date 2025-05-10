@@ -19,24 +19,21 @@ final class NavigationButton: CodeBaseUI {
     
     enum Variation {
         case primary
-        case whiteSecondary
-        case subSecondary
+        case secondary
         case tertiary
         
         var backgroundColor: UIColor {
             switch self {
             case .primary: .brandPrimary
-            case .whiteSecondary: .brandSecondary
-            case .subSecondary: .naviSecondaryButtonBackground
-            case .tertiary: .naviTertiaryButtonBackground
+            case .secondary: .brandSecondary
+            case .tertiary: .brandTertiary
             }
         }
         
         var titleColor: UIColor {
             switch self {
             case .primary: .white
-            case .whiteSecondary: .subLabel
-            case .subSecondary: .naviSecondaryButtonText
+            case .secondary: .subLabel
             case .tertiary: .subLabel
             }
         }
