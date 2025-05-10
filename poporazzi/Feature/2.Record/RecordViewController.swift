@@ -84,7 +84,7 @@ extension RecordViewController {
             if let section = self?.dataSource.sectionIdentifier(for: indexPath.section) {
                 switch section {
                 case let .day(order, date):
-                    header?.action(.updateDayCountLabel("\(order)일차"))
+                    header?.action(.updateDayCountLabel(order))
                     header?.action(.updateDateLabel(date))
                 }
             }

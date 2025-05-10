@@ -53,15 +53,15 @@ final class RecordHeader: UICollectionReusableView {
 extension RecordHeader {
     
     enum Action {
-        case updateDayCountLabel(String)
+        case updateDayCountLabel(Int)
         case updateDateLabel(Date)
     }
     
     func action(_ action: Action) {
         switch action {
-        case .updateDayCountLabel(let string):
+        case .updateDayCountLabel(let order):
             dayCountLabel.flex.markDirty()
-            dayCountLabel.text = string
+            dayCountLabel.text = "\(order)일차"
             setNeedsLayout()
             
         case .updateDateLabel(let date):
