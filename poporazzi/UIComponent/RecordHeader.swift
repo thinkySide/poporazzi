@@ -19,7 +19,7 @@ final class RecordHeader: UICollectionReusableView {
     private let dayCountLabel: UILabel = {
         let label = UILabel()
         label.textColor = .mainLabel
-        label.font = .setDovemayo(18)
+        label.font = .setDovemayo(20)
         return label
     }()
     
@@ -27,7 +27,7 @@ final class RecordHeader: UICollectionReusableView {
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.textColor = .subLabel
-        label.font = .setDovemayo(14)
+        label.font = .setDovemayo(16)
         return label
     }()
     

@@ -10,7 +10,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-typealias SectionMediaList = [(Date, [Media])]
+typealias SectionMediaList = [(RecordSection, [Media])]
 
 final class RecordViewModel: ViewModel {
     
@@ -332,17 +332,28 @@ extension RecordViewModel {
         }
     }
     
+    /// 시작날짜를 기준으로 생성일이 몇일차인지 반환합니다.
+    private func days(from creationDate: Date) -> Int {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: output.album.value.trackingStartDate),
+            to: calendar.startOfDay(for: creationDate)
+        )
+        return (components.day ?? 0) + 1
+    }
+    
     /// 날짜 별로 MediaList를 분리해 반환합니다.
     private func dayCountSections(from allMediaList: [Media]) -> SectionMediaList {
-        let calendar = Calendar.current
-        var dic = [Date: [Media]]()
+        var dic = [RecordSection: [Media]]()
         
         for media in allMediaList.sortedByCreationDate {
             guard let creationDate = media.creationDate else { continue }
-            let components = calendar.dateComponents([.year, .month, .day], from: creationDate)
-            if let dayOnlyDate = calendar.date(from: components) {
-                dic[dayOnlyDate, default: []].append(media)
-            }
+            let days = days(from: creationDate)
+            dic[.day(
+                order: days,
+                date: Calendar.current.startOfDay(for: creationDate)
+            ), default: []].append(media)
         }
         
         return dic.keys

@@ -9,16 +9,23 @@ import UIKit
 import RxSwift
 import RxCocoa
 
+enum RecordSection: Hashable, Comparable {
+    case day(order: Int, date: Date)
+    
+    static func < (lhs: RecordSection, rhs: RecordSection) -> Bool {
+        switch (lhs, rhs) {
+        case let (.day(order1, _), .day(order2, _)):
+            return order1 < order2
+        }
+    }
+}
+
 final class RecordViewController: ViewController {
     
     private let scene = RecordView()
     private let viewModel: RecordViewModel
     
-    enum Section: Hashable {
-        case day(Date)
-    }
-    
-    private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
+    private var dataSource: UICollectionViewDiffableDataSource<RecordSection, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
     private var cache = [String: UIImage?]()
     
@@ -50,7 +57,7 @@ extension RecordViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<RecordSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
@@ -76,8 +83,8 @@ extension RecordViewController {
             
             if let section = self?.dataSource.sectionIdentifier(for: indexPath.section) {
                 switch section {
-                case .day(let date):
-                    header?.action(.updateDayCountLabel("\(indexPath.section + 1)일차"))
+                case let .day(order, date):
+                    header?.action(.updateDayCountLabel("\(order)일차"))
                     header?.action(.updateDateLabel(date))
                 }
             }
@@ -88,8 +95,7 @@ extension RecordViewController {
     
     /// 기본 DataSource를 업데이트합니다.
     private func updateInitialDataSource(to sections: SectionMediaList) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
-        let sections = sections.map { (Section.day($0), $1)}
+        var snapshot = NSDiffableDataSourceSnapshot<RecordSection, Media>()
         for (section, medias) in sections {
             snapshot.appendSections([section])
             snapshot.appendItems(medias, toSection: section)
