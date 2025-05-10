@@ -10,6 +10,8 @@ import Foundation
 import RxSwift
 import RxCocoa
 
+typealias SectionMediaList = [(Date, [Media])]
+
 final class RecordViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
@@ -55,7 +57,7 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let setupInitialData = BehaviorRelay<[(Date, [Media])]>(value: [])
+        let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         let updateRecordCells = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
@@ -145,10 +147,12 @@ extension RecordViewModel {
             .filter { !$0.isEmpty }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, indexPath in
-                guard indexPath.row <= owner.output.mediaList.value.count else { return }
+                
+                let currentIndex = owner.index(from: indexPath)
+                guard currentIndex <= owner.output.mediaList.value.count else { return }
                 
                 // 마지막 셀이 나타나기 전에 업데이트
-                if indexPath.row >= (owner.currentChunk + owner.chunkSize - 10) {
+                if currentIndex >= (owner.currentChunk + owner.chunkSize - 10) {
                     owner.updateChunk()
                     let assetIdentifiers = owner.chunkAssetIdentifiers
                     
@@ -171,8 +175,8 @@ extension RecordViewModel {
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
-                    .bind { orderedMediaList in
-                        owner.output.updateRecordCells.accept(orderedMediaList)
+                    .bind { mediaList in
+                        owner.output.updateRecordCells.accept(mediaList)
                     }
                     .disposed(by: owner.disposeBag)
             }
@@ -180,7 +184,7 @@ extension RecordViewModel {
         
         output.mediaList
             .bind(with: self) { owner, mediaList in
-                owner.output.setupInitialData.accept(owner.dayCountSections(from: mediaList))
+                owner.output.sectionMediaList.accept(owner.dayCountSections(from: mediaList))
                 owner.liveActivityService.update(
                     to: owner.output.album.value,
                     totalCount: mediaList.count
@@ -323,11 +327,13 @@ extension RecordViewModel {
     
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
-        output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }
+        output.selectedRecordCells.value.compactMap {
+            output.mediaList.value[index(from: $0)].id
+        }
     }
     
     /// 날짜 별로 MediaList를 분리해 반환합니다.
-    private func dayCountSections(from allMediaList: [Media]) -> [(Date, [Media])] {
+    private func dayCountSections(from allMediaList: [Media]) -> SectionMediaList {
         let calendar = Calendar.current
         var dic = [Date: [Media]]()
         
@@ -342,6 +348,29 @@ extension RecordViewModel {
         return dic.keys
             .sorted(by: <)
             .map { ($0, dic[$0] ?? []) }
+    }
+    
+    /// IndexPath의 Section과 Row를 기준으로 몇번째 인덱스인지 반환합니다.
+    private func index(from indexPath: IndexPath) -> Int {
+        var currentIndex = 0
+        for (index, mediaList) in output.sectionMediaList.value.enumerated() {
+            if index == indexPath.section {
+                currentIndex += indexPath.row
+                break
+            }
+            
+            currentIndex += mediaList.1.count
+        }
+        return currentIndex
+    }
+    
+    /// SectionMediaList의 전체 개수를 반환합니다.
+    private func totalMediaCount() -> Int {
+        var count = 0
+        for (_, mediaList) in output.sectionMediaList.value {
+            count += mediaList.count
+        }
+        return count
     }
 }
 

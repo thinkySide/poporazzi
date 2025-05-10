@@ -87,7 +87,7 @@ extension RecordViewController {
     }
     
     /// 기본 DataSource를 업데이트합니다.
-    private func updateInitialDataSource(to sections: [(Date, [Media])]) {
+    private func updateInitialDataSource(to sections: SectionMediaList) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
         let sections = sections.map { (Section.day($0), $1)}
         for (section, medias) in sections {
@@ -151,7 +151,7 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.setupInitialData
+        output.sectionMediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, sections in
                 owner.updateInitialDataSource(to: sections)
