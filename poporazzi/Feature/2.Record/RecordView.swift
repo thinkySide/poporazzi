@@ -39,7 +39,7 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 선택 버튼
-    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .subSecondary)
+    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .whiteSecondary)
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
@@ -121,12 +121,17 @@ final class RecordView: CodeBaseUI {
             RecordCell.self,
             forCellWithReuseIdentifier: RecordCell.identifier
         )
+        collectionView.register(
+            RecordHeader.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: RecordHeader.identifier
+        )
         return collectionView
     }()
     
     init() {
         super.init(frame: .zero)
-        setup(color: .brandTertiary)
+        setup()
         addSubview(loadingIndicator)
     }
     
