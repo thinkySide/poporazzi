@@ -29,18 +29,18 @@ final class ExcludeRecordView: CodeBaseUI {
     /// 뒤로 가기 버튼
     let backButton = NavigationButton(
         buttonType: .systemIcon(.dismiss, size: 12, weight: .bold),
-        variation: .secondary
+        variation: .whiteSecondary
     )
     
     /// 선택 버튼
     let selectButton = NavigationButton(
         buttonType: .text("선택"),
-        variation: .secondary
+        variation: .whiteSecondary
     )
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
+        let button = NavigationButton(buttonType: .text("취소"), variation: .whiteSecondary)
         button.isHidden = true
         return button
     }()

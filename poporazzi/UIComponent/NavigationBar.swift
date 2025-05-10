@@ -35,7 +35,7 @@ final class NavigationBar: CodeBaseUI {
         self.leadingView = leading
         self.trailingView = trailing
         super.init(frame: .zero)
-        setup()
+        setup(color: .clear)
     }
     
     required init?(coder: NSCoder) {

@@ -17,7 +17,7 @@ protocol CodeBaseUIProtocol: UIView {
     var containerView: UIView { get }
     
     /// 화면 세팅
-    func setup()
+    func setup(color: UIColor)
     
     /// 레이아웃 구성
     func configLayout()
@@ -27,10 +27,10 @@ protocol CodeBaseUIProtocol: UIView {
 
 extension CodeBaseUIProtocol {
     
-    func setup() {
-        backgroundColor = .white
-        containerView.backgroundColor = .white
+    func setup(color: UIColor = .white) {
         addSubview(containerView)
         configLayout()
+        backgroundColor = color
+        containerView.backgroundColor = color
     }
 }

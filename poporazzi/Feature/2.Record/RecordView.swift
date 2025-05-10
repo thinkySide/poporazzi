@@ -22,7 +22,11 @@ final class RecordView: CodeBaseUI {
     )
     
     /// 오른쪽 버튼들
-    private let navigationTrailingButtons = UIView()
+    private let navigationTrailingButtons: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }()
     
     /// 더보기 버튼
     let seemoreButton: NavigationButton = {
@@ -35,14 +39,14 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 선택 버튼
-    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
+    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .subSecondary)
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
+        let button = NavigationButton(buttonType: .text("취소"), variation: .whiteSecondary)
         button.isHidden = true
         return button
     }()
@@ -122,7 +126,7 @@ final class RecordView: CodeBaseUI {
     
     init() {
         super.init(frame: .zero)
-        setup()
+        setup(color: .brandTertiary)
         addSubview(loadingIndicator)
     }
     
@@ -208,9 +212,9 @@ extension RecordView {
             flex.addItem(navigationBar)
             
             flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                flex.addItem(albumTitleLabel)
+                flex.addItem(albumTitleLabel).marginTop(4)
                 
-                flex.addItem().direction(.row).marginTop(10).define { flex in
+                flex.addItem().direction(.row).marginTop(6).define { flex in
                     flex.addItem(startDateLabel)
                     flex.addItem().grow(1)
                     flex.addItem(totalRecordCountLabel)
