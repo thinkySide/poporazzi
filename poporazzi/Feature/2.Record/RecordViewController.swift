@@ -14,8 +14,8 @@ final class RecordViewController: ViewController {
     private let scene = RecordView()
     private let viewModel: RecordViewModel
     
-    enum Section {
-        case main
+    enum Section: Hashable {
+        case day(String)
     }
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
@@ -65,13 +65,25 @@ extension RecordViewController {
             
             return cell
         }
+        
+        dataSource.supplementaryViewProvider = {
+            (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: elementKind,
+                withReuseIdentifier: RecordHeader.identifier,
+                for: indexPath
+            ) as? RecordHeader
+            header?.action(.updateDayCountLabel("첫째 날"))
+            header?.action(.updateDateLabel("4월 3일 목요일"))
+            return header
+        }
     }
     
     /// 기본 DataSource를 업데이트합니다.
     private func updateInitialDataSource(to medias: [Media]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
-        snapshot.appendSections([.main])
-        snapshot.appendItems(medias, toSection: .main)
+        snapshot.appendSections([.day("첫째 날")])
+        snapshot.appendItems(medias, toSection: .day("첫째 날"))
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     

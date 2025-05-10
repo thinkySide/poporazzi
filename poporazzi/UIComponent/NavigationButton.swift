@@ -64,7 +64,7 @@ final class NavigationButton: CodeBaseUI {
         }
         
         self.button.backgroundColor = variation.backgroundColor
-        setup()
+        setup(color: .clear)
     }
     
     required init?(coder: NSCoder) {

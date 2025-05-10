@@ -22,7 +22,11 @@ final class RecordView: CodeBaseUI {
     )
     
     /// 오른쪽 버튼들
-    private let navigationTrailingButtons = UIView()
+    private let navigationTrailingButtons: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }()
     
     /// 더보기 버튼
     let seemoreButton: NavigationButton = {
@@ -117,6 +121,11 @@ final class RecordView: CodeBaseUI {
             RecordCell.self,
             forCellWithReuseIdentifier: RecordCell.identifier
         )
+        collectionView.register(
+            RecordHeader.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: RecordHeader.identifier
+        )
         return collectionView
     }()
     
@@ -208,9 +217,9 @@ extension RecordView {
             flex.addItem(navigationBar)
             
             flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                flex.addItem(albumTitleLabel)
+                flex.addItem(albumTitleLabel).marginTop(4)
                 
-                flex.addItem().direction(.row).marginTop(10).define { flex in
+                flex.addItem().direction(.row).marginTop(6).define { flex in
                     flex.addItem(startDateLabel)
                     flex.addItem().grow(1)
                     flex.addItem(totalRecordCountLabel)
