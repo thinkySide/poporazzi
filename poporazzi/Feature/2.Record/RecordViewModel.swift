@@ -55,6 +55,7 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
+        let setupInitialData = BehaviorRelay<[(Date, [Media])]>(value: [])
         let updateRecordCells = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
@@ -179,6 +180,7 @@ extension RecordViewModel {
         
         output.mediaList
             .bind(with: self) { owner, mediaList in
+                owner.output.setupInitialData.accept(owner.dayCountSections(from: mediaList))
                 owner.liveActivityService.update(
                     to: owner.output.album.value,
                     totalCount: mediaList.count
@@ -322,6 +324,24 @@ extension RecordViewModel {
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
         output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }
+    }
+    
+    /// 날짜 별로 MediaList를 분리해 반환합니다.
+    private func dayCountSections(from allMediaList: [Media]) -> [(Date, [Media])] {
+        let calendar = Calendar.current
+        var dic = [Date: [Media]]()
+        
+        for media in allMediaList.sortedByCreationDate {
+            guard let creationDate = media.creationDate else { continue }
+            let components = calendar.dateComponents([.year, .month, .day], from: creationDate)
+            if let dayOnlyDate = calendar.date(from: components) {
+                dic[dayOnlyDate, default: []].append(media)
+            }
+        }
+        
+        return dic.keys
+            .sorted(by: <)
+            .map { ($0, dic[$0] ?? []) }
     }
 }
 

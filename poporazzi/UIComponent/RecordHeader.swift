@@ -54,16 +54,20 @@ extension RecordHeader {
     
     enum Action {
         case updateDayCountLabel(String)
-        case updateDateLabel(String)
+        case updateDateLabel(Date)
     }
     
     func action(_ action: Action) {
         switch action {
         case .updateDayCountLabel(let string):
+            dayCountLabel.flex.markDirty()
             dayCountLabel.text = string
+            setNeedsLayout()
             
-        case .updateDateLabel(let string):
-            dateLabel.text = string
+        case .updateDateLabel(let date):
+            dateLabel.flex.markDirty()
+            dateLabel.text = date.sectionHeaderFormat
+            setNeedsLayout()
         }
     }
 }

@@ -15,7 +15,7 @@ final class RecordViewController: ViewController {
     private let viewModel: RecordViewModel
     
     enum Section: Hashable {
-        case day(String)
+        case day(Date)
     }
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
@@ -67,23 +67,34 @@ extension RecordViewController {
         }
         
         dataSource.supplementaryViewProvider = {
-            (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
+            [weak self] (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
             let header = collectionView.dequeueReusableSupplementaryView(
                 ofKind: elementKind,
                 withReuseIdentifier: RecordHeader.identifier,
                 for: indexPath
             ) as? RecordHeader
-            header?.action(.updateDayCountLabel("첫째 날"))
-            header?.action(.updateDateLabel("4월 3일 목요일"))
+            
+            if let section = self?.dataSource.sectionIdentifier(for: indexPath.section) {
+                switch section {
+                case .day(let date):
+                    header?.action(.updateDayCountLabel("\(indexPath.section + 1)일차"))
+                    header?.action(.updateDateLabel(date))
+                }
+            }
+            
             return header
         }
     }
     
     /// 기본 DataSource를 업데이트합니다.
-    private func updateInitialDataSource(to medias: [Media]) {
+    private func updateInitialDataSource(to sections: [(Date, [Media])]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
-        snapshot.appendSections([.day("첫째 날")])
-        snapshot.appendItems(medias, toSection: .day("첫째 날"))
+        let sections = sections.map { (Section.day($0), $1)}
+        for (section, medias) in sections {
+            snapshot.appendSections([section])
+            snapshot.appendItems(medias, toSection: section)
+        }
+        
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
@@ -137,7 +148,13 @@ extension RecordViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
                 owner.scene.action(.setTotalImageCountLabel(medias.count))
-                owner.updateInitialDataSource(to: medias)
+            }
+            .disposed(by: disposeBag)
+        
+        output.setupInitialData
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, sections in
+                owner.updateInitialDataSource(to: sections)
             }
             .disposed(by: disposeBag)
         
