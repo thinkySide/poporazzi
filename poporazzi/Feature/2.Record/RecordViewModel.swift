@@ -10,8 +10,6 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-typealias SectionMediaList = [(RecordSection, [Media])]
-
 final class RecordViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService

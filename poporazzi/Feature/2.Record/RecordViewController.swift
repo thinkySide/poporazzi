@@ -9,17 +9,6 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-enum RecordSection: Hashable, Comparable {
-    case day(order: Int, date: Date)
-    
-    static func < (lhs: RecordSection, rhs: RecordSection) -> Bool {
-        switch (lhs, rhs) {
-        case let (.day(order1, _), .day(order2, _)):
-            return order1 < order2
-        }
-    }
-}
-
 final class RecordViewController: ViewController {
     
     private let scene = RecordView()
@@ -48,6 +37,21 @@ final class RecordViewController: ViewController {
     
     deinit {
         Log.print(#file, .deinit)
+    }
+}
+
+// MARK: - RecordSection
+
+typealias SectionMediaList = [(RecordSection, [Media])]
+
+enum RecordSection: Hashable, Comparable {
+    case day(order: Int, date: Date)
+    
+    static func < (lhs: RecordSection, rhs: RecordSection) -> Bool {
+        switch (lhs, rhs) {
+        case let (.day(order1, _), .day(order2, _)):
+            return order1 < order2
+        }
     }
 }
 
