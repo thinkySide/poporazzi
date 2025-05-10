@@ -9,8 +9,7 @@ import UIKit
 
 struct CollectionViewLayout {
     
-    /// 기본 3단 레이아웃을 반환합니다.
-    static var threeColumns: UICollectionViewCompositionalLayout {
+    private static var section: NSCollectionLayoutSection {
         
         // 1. 기본값 변수 저장
         let numberOfRows: CGFloat = 3
@@ -38,9 +37,22 @@ struct CollectionViewLayout {
         
         // 4. 섹션 설정
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .init(top: 10, leading: 0, bottom: 28, trailing: 0)
+        section.contentInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0)
         
-        // 5. 헤더 설정
+        return section
+    }
+    
+    /// 기본 3단 레이아웃을 반환합니다.
+    static var threeColumns: UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout(section: section)
+    }
+    
+    /// Header가 포함된 기본 3단 레이아웃을 반환합니다.
+    static var threeColumnsWithHeader: UICollectionViewCompositionalLayout {
+        
+        let headerSection = section
+        
+        // 헤더 설정
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
             heightDimension: .absolute(32)
@@ -50,8 +62,8 @@ struct CollectionViewLayout {
             elementKind: UICollectionView.elementKindSectionHeader,
             alignment: .top
         )
-        section.boundarySupplementaryItems = [header]
+        headerSection.boundarySupplementaryItems = [header]
         
-        return UICollectionViewCompositionalLayout(section: section)
+        return UICollectionViewCompositionalLayout(section: headerSection)
     }
 }
