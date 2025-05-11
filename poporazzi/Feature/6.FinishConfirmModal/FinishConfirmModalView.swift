@@ -1,5 +1,5 @@
 //
-//  FinishModalView.swift
+//  FinishConfirmModalView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/11/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class FinishModalView: CodeBaseUI {
+final class FinishConfirmModalView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -24,7 +24,7 @@ final class FinishModalView: CodeBaseUI {
     let saveAsSingleRadioButton = RadioButton(
         title: "하나로 저장",
         sub: "모든 사진이 하나의 앨범으로 저장돼요",
-        variation: .selected
+        variation: .deselected
     )
     
     /// 일차별 저장 라디오 버튼
@@ -43,6 +43,7 @@ final class FinishModalView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        finishButton.action(.toggleEnabled(false))
     }
     
     required init?(coder: NSCoder) {
@@ -56,9 +57,40 @@ final class FinishModalView: CodeBaseUI {
     }
 }
 
+// MARK: - Action
+
+extension FinishConfirmModalView {
+    
+    enum Action {
+        case updateRadioState(AlbumSaveOption?)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case .updateRadioState(let radioState):
+            switch radioState {
+            case .none:
+                saveAsSingleRadioButton.action(.updateState(.deselected))
+                saveByDayRadioButton.action(.updateState(.deselected))
+                finishButton.action(.toggleEnabled(false))
+                
+            case .saveAsSingle:
+                saveAsSingleRadioButton.action(.updateState(.selected))
+                saveByDayRadioButton.action(.updateState(.deselected))
+                finishButton.action(.toggleEnabled(true))
+                
+            case .saveByDay:
+                saveAsSingleRadioButton.action(.updateState(.deselected))
+                saveByDayRadioButton.action(.updateState(.selected))
+                finishButton.action(.toggleEnabled(true))
+            }
+        }
+    }
+}
+
 // MARK: - Layout
 
-extension FinishModalView {
+extension FinishConfirmModalView {
     
     func configLayout() {
         containerView.flex.direction(.column).paddingHorizontal(20).define { flex in

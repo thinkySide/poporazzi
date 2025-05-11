@@ -128,19 +128,42 @@ extension PhotoKitService {
     }
     
     /// 앨범에 기록을 저장합니다.
-    func saveAlbum(title: String, excludeAssets: [String]) throws {
-        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets) else { return }
+    func saveAlbum(title: String, option: AlbumSaveOption?, sectionMediaList: SectionMediaList, excludeAssets: [String]) throws {
+        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets),
+              let option else { return }
         
-        var albumIdentifier: String?
-        
-        PHPhotoLibrary.shared().performChanges {
-            let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
-            albumIdentifier = request.placeholderForCreatedAssetCollection.localIdentifier
-        } completionHandler: { [weak self] isSuccess, error in
-            guard let self else { return }
-            guard isSuccess, let albumIdentifier else { return }
-            guard let album = fetchAlbum(from: albumIdentifier) else { return }
-            appendToAlbum(filteredFetchResult, to: album)
+        switch option {
+        case .saveAsSingle:
+            Task {
+                let albumIdentifier = await createAlbum(title: title)
+                guard let album = fetchAlbum(from: albumIdentifier) else { return }
+                appendToAlbum(filteredFetchResult, to: album)
+            }
+            
+        case .saveByDay:
+            Task {
+                let folderIdentifier = await createFolder(title: title)
+                guard let foler = fetchFolder(from: folderIdentifier) else { return }
+                
+                // TODO: 여기서 모든 앨범 생성
+                for (section, mediaList) in sectionMediaList {
+                    
+                    // 1. Section 기준으로 FetchResult 생성
+                    let assetIdentifiers = mediaList.map { $0.id }
+                    let fetchResult = PHAsset.fetchAssets(
+                        withLocalIdentifiers: assetIdentifiers,
+                        options: nil
+                    )
+                    
+                    // 2. 앨범 생성 및 추가
+                    let albumIdentifier = await createAlbum(title: section.dateFormat)
+                    guard let album = fetchAlbum(from: albumIdentifier) else { return }
+                    appendToAlbum(fetchResult, to: album)
+                    
+                    // 3. 폴더에 앨범 추가
+                    appendToFolder(album, to: foler)
+                }
+            }
         }
     }
     
@@ -156,6 +179,63 @@ extension PhotoKitService {
             }
             return Disposables.create()
         }
+    }
+}
+
+// MARK: - Album
+
+extension PhotoKitService {
+    
+    /// 앨범 생성 후 앨범의 identifier를 반환합니다.
+    private func createAlbum(title: String) async -> String {
+        let identifier = await withCheckedContinuation { continuation in
+            var albumIdentifier: String?
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
+                albumIdentifier = request.placeholderForCreatedAssetCollection.localIdentifier
+            } completionHandler: { isSuccess, error in
+                continuation.resume(returning: albumIdentifier)
+            }
+        }
+        
+        return identifier ?? ""
+    }
+    
+    /// 앨범을 반환합니다.
+    private func fetchAlbum(from locaIdentifier: String) -> PHAssetCollection? {
+        PHAssetCollection.fetchAssetCollections(
+            withLocalIdentifiers: [locaIdentifier],
+            options: nil
+        )
+        .firstObject
+    }
+}
+
+// MARK: - Folder
+
+extension PhotoKitService {
+    
+    /// 폴더 생성 후 폴더의 identifier를 반환합니다.
+    private func createFolder(title: String) async -> String {
+        let identifier = await withCheckedContinuation { continuation in
+            var folderIdentifier: String?
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHCollectionListChangeRequest.creationRequestForCollectionList(withTitle: title)
+                folderIdentifier = request.placeholderForCreatedCollectionList.localIdentifier
+            } completionHandler: { isSuccess, error in
+                continuation.resume(returning: folderIdentifier)
+            }
+        }
+        
+        return identifier ?? ""
+    }
+    
+    /// 폴더를 반환합니다.
+    private func fetchFolder(from locaIdentifier: String) -> PHCollectionList? {
+        PHCollectionList.fetchCollectionLists(
+            withLocalIdentifiers: [locaIdentifier], options: nil
+        )
+        .firstObject
     }
 }
 
@@ -231,20 +311,19 @@ extension PhotoKitService {
         return PHAsset.fetchAssets(withLocalIdentifiers: filteredIdentifiers, options: fetchOptions)
     }
     
-    /// 앨범을 반환합니다.
-    private func fetchAlbum(from locaIdentifier: String) -> PHAssetCollection? {
-        return PHAssetCollection.fetchAssetCollections(
-            withLocalIdentifiers: [locaIdentifier],
-            options: nil
-        )
-        .firstObject
-    }
-    
-    /// 앨범에 추가합니다.
+    /// 앨범에 에셋을 추가합니다.
     private func appendToAlbum(_ fetchResult: PHFetchResult<PHAsset>, to album: PHAssetCollection) {
         PHPhotoLibrary.shared().performChanges {
             let request = PHAssetCollectionChangeRequest(for: album)
             request?.addAssets(fetchResult)
+        }
+    }
+    
+    /// 폴더에 앨범을 추가합니다.
+    private func appendToFolder(_ album: PHAssetCollection, to folder: PHCollectionList) {
+        PHPhotoLibrary.shared().performChanges {
+            let request = PHCollectionListChangeRequest(for: folder)
+            request?.addChildCollections([album] as NSFastEnumeration)
         }
     }
 }

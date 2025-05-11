@@ -68,8 +68,8 @@ extension Coordinator {
                 case .presentExcludeRecord:
                     owner.presentExcludeRecord(recordVM)
                     
-                case .presentFinishModal:
-                    owner.presentFinishModal(recordVM)
+                case let .presentFinishModal(album, sectionMediaList):
+                    owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -146,12 +146,30 @@ extension Coordinator {
     }
     
     /// 날짜 선택 모달을 Present 합니다.
-    private func presentFinishModal(_ recordVM: RecordViewModel?) {
-        let finishVM = FinishModalViewModel(output: .init())
-        let finishVC = FinishModalViewController(viewModel: finishVM)
+    private func presentFinishModal(_ recordVM: RecordViewModel?, album: Album, sectionMediaList: SectionMediaList) {
+        let finishVM = FinishConfirmModalViewModel(
+            output: .init(
+                album: .init(value: album),
+                sectionMediaList: .init(value: sectionMediaList)
+            )
+        )
+        let finishVC = FinishConfirmModalViewController(viewModel: finishVM)
         finishVC.sheetPresentationController?.preferredCornerRadius = 20
         finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 352 })]
         finishVC.sheetPresentationController?.prefersGrabberVisible = true
         self.navigationController.present(finishVC, animated: true)
+        
+        finishVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .dismiss:
+                    owner.navigationController.dismiss(animated: true)
+                    
+                case .popToRoot:
+                    owner.navigationController.dismiss(animated: true)
+                    owner.navigationController.popToRootViewController(animated: true)
+                }
+            }
+            .disposed(by: finishVC.disposeBag)
     }
 }

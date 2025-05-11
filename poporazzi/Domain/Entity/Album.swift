@@ -15,3 +15,12 @@ struct Album {
         Album(title: "", trackingStartDate: .now)
     }
 }
+
+enum AlbumSaveOption {
+    
+    /// 하나로 저장
+    case saveAsSingle
+    
+    /// 일차별 저장
+    case saveByDay
+}
