@@ -165,16 +165,15 @@ extension RecordViewModel {
         // 3. 리프레쉬 및 라이브러리 변경 감지
         Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .do { [weak self] _ in
                 guard let self else { return }
                 self.output.mediaList.accept(self.fetchAllMediaListWithNoThumbnail())
                 self.resetChunk()
             }
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, _ in
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
-                    .observe(on: MainScheduler.instance)
                     .bind { mediaList in
                         owner.output.updateRecordCells.accept(mediaList)
                     }
