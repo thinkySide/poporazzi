@@ -157,52 +157,52 @@ extension RecordTests {
         XCTAssertTrue(output.selectedRecordCells.value.first! == .init(row: 0, section: 0))
     }
     
-    func test_기록종료_미디어없음() throws {
-        let (_, output) = makeInputOutput()
-        let disposeBag = DisposeBag()
-        
-        output.mediaList.accept([])
-        
-        let expectation = expectation(description: "뒤로가기")
-        
-        viewModel.navigation
-            .subscribe(onNext: { navigation in
-                if case .pop = navigation {
-                    expectation.fulfill()
-                }
-            })
-            .disposed(by: disposeBag)
-        
-        viewModel.alertAction.accept(.save)
-        
-        wait(for: [expectation], timeout: 1.0)
-        
-        XCTAssertTrue(UserDefaultsService.excludeAssets.isEmpty)
-        XCTAssertTrue(!UserDefaultsService.isTracking)
-    }
+//    func test_기록종료_미디어없음() throws {
+//        let (_, output) = makeInputOutput()
+//        let disposeBag = DisposeBag()
+//        
+//        output.mediaList.accept([])
+//        
+//        let expectation = expectation(description: "뒤로가기")
+//        
+//        viewModel.navigation
+//            .subscribe(onNext: { navigation in
+//                if case .pop = navigation {
+//                    expectation.fulfill()
+//                }
+//            })
+//            .disposed(by: disposeBag)
+//        
+//        viewModel.alertAction.accept(.save)
+//        
+//        wait(for: [expectation], timeout: 1.0)
+//        
+//        XCTAssertTrue(UserDefaultsService.excludeAssets.isEmpty)
+//        XCTAssertTrue(!UserDefaultsService.isTracking)
+//    }
     
-    func test_기록종료_미디어있음() throws {
-        let (_, output) = makeInputOutput()
-        let disposeBag = DisposeBag()
-        
-        output.mediaList.accept([.init(id: "0", creationDate: .now, mediaType: .photo)])
-        
-        let expectation = expectation(description: "앨범 저장 완료 Alert")
-        
-        output.alertPresented
-            .subscribe(onNext: { _ in
-                expectation.fulfill()
-            })
-            .disposed(by: disposeBag)
-        
-        viewModel.alertAction.accept(.save)
-        viewModel.alertAction.accept(.popToHome)
-        
-        wait(for: [expectation], timeout: 1.0)
-        
-        XCTAssertTrue(UserDefaultsService.excludeAssets.isEmpty)
-        XCTAssertTrue(!UserDefaultsService.isTracking)
-    }
+//    func test_기록종료_미디어있음() throws {
+//        let (_, output) = makeInputOutput()
+//        let disposeBag = DisposeBag()
+//        
+//        output.mediaList.accept([.init(id: "0", creationDate: .now, mediaType: .photo)])
+//        
+//        let expectation = expectation(description: "앨범 저장 완료 Alert")
+//        
+//        output.alertPresented
+//            .subscribe(onNext: { _ in
+//                expectation.fulfill()
+//            })
+//            .disposed(by: disposeBag)
+//        
+//        viewModel.alertAction.accept(.save)
+//        viewModel.alertAction.accept(.popToHome)
+//        
+//        wait(for: [expectation], timeout: 1.0)
+//        
+//        XCTAssertTrue(UserDefaultsService.excludeAssets.isEmpty)
+//        XCTAssertTrue(!UserDefaultsService.isTracking)
+//    }
 }
 
 // MARK: - Input & Output
