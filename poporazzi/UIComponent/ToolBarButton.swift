@@ -61,7 +61,7 @@ extension ToolBarButton {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(button).height(24)
+            flex.addItem(button).height(40)
         }
     }
 }

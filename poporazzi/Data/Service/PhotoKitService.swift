@@ -18,6 +18,13 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
         case emptyAssets
     }
     
+    /// 기본 PH 요청 옵션
+    private var defaultFetchOptions: PHFetchOptions = {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        return fetchOptions
+    }()
+    
     /// 기본 이미지 요청 옵션
     private var defaultImageRequestOptions: PHImageRequestOptions = {
         let requestOptions = PHImageRequestOptions()
@@ -152,7 +159,7 @@ extension PhotoKitService {
                     let assetIdentifiers = mediaList.map { $0.id }
                     let fetchResult = PHAsset.fetchAssets(
                         withLocalIdentifiers: assetIdentifiers,
-                        options: nil
+                        options: defaultFetchOptions
                     )
                     
                     // 2. 앨범 생성 및 추가
@@ -306,9 +313,7 @@ extension PhotoKitService {
             .filter { !Set(excludeAssets).contains($0.localIdentifier) }
             .map { $0.localIdentifier }
         
-        let fetchOptions = PHFetchOptions()
-        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
-        return PHAsset.fetchAssets(withLocalIdentifiers: filteredIdentifiers, options: fetchOptions)
+        return PHAsset.fetchAssets(withLocalIdentifiers: filteredIdentifiers, options: defaultFetchOptions)
     }
     
     /// 앨범에 에셋을 추가합니다.

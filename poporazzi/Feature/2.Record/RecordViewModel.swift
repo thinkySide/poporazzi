@@ -23,6 +23,7 @@ final class RecordViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
+    let alertAction = PublishRelay<AlertAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
     let menuAction = PublishRelay<MenuAction>()
     
@@ -75,6 +76,10 @@ extension RecordViewModel {
     enum Delegate {
         case albumDidEdited(Album)
         case updateExcludeRecord
+    }
+    
+    enum AlertAction {
+        case finishWithoutRecord
     }
     
     enum ActionSheetAction {
@@ -165,7 +170,7 @@ extension RecordViewModel {
                 self.output.mediaList.accept(self.fetchAllMediaListWithNoThumbnail())
                 self.resetChunk()
             }
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, _ in
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
@@ -229,16 +234,24 @@ extension RecordViewModel {
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
                 if owner.output.mediaList.value.isEmpty {
-                    // TODO: 비어있는 경우 확인
-                    owner.navigation.accept(.pop)
-                    owner.liveActivityService.stop()
-                    UserDefaultsService.excludeAssets.removeAll()
-                    UserDefaultsService.isTracking = false
+                    owner.output.alertPresented.accept(owner.finishWithoutRecordAlert)
                 } else {
                     owner.navigation.accept(.presentFinishModal(
                         owner.output.album.value,
                         owner.output.sectionMediaList.value
                     ))
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        alertAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case .finishWithoutRecord:
+                    owner.navigation.accept(.pop)
+                    owner.liveActivityService.stop()
+                    UserDefaultsService.excludeAssets.removeAll()
+                    UserDefaultsService.isTracking = false
                 }
             }
             .disposed(by: disposeBag)
@@ -391,6 +404,18 @@ extension RecordViewModel {
 // MARK: - Alert
 
 extension RecordViewModel {
+    
+    /// 기록 없이 종료 Alert
+    private var finishWithoutRecordAlert: AlertModel {
+        AlertModel(
+            title: "기록을 종료할까요?",
+            message: "촬영된 기록이 없어 앨범 저장 없이 종료돼요",
+            eventButton: .init(title: "종료") { [weak self] in
+                self?.alertAction.accept(.finishWithoutRecord)
+            },
+            cancelButton: .init(title: "취소")
+        )
+    }
     
     /// 기록 삭제 실패 Alert
     private var removeFailedAlert: AlertModel {
