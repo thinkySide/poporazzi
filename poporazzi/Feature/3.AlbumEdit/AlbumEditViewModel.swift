@@ -72,7 +72,7 @@ extension AlbumEditViewModel {
         
         input.startDatePickerTapped
             .emit(with: self) { owner, _ in
-                let startDate = owner.output.record.value.trackingStartDate
+                let startDate = owner.output.startDate.value
                 owner.navigation.accept(.presentStartDatePicker(startDate))
             }
             .disposed(by: disposeBag)
