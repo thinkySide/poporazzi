@@ -70,3 +70,11 @@
 |[#65 1.3.0 배포](https://github.com/thinkySide/poporazzi/pull/65)|ExcludeView CollectionView 업데이트, 사진 앱 앨범 DeepLink 구현, 전반적인 순환참조 문제 해결|
 |[#67 유닛 테스트 환경 세팅 및 작성](https://github.com/thinkySide/poporazzi/pull/67)|Unit Test Target 추가, Live Activity 및 PhotoKit Service 인터페이스 구현 및 Mock 객체 생성, XCTest를 활용한 테스트 코드 작성|
 |[#69 앨범 저장 오류 해결](https://github.com/thinkySide/poporazzi/pull/69)|동일한 이름의 앨범 생성 시, 저장 후 덮어씌워지는 문제 해결, 제외된 기록이 추가되었음에도 종료 시 반영되지 않는 문제 해결|
+
+#### v1.4.0 / 25.05.09 ~
+> MVP 개발 때 부터 생각했던 일자별로 앨범을 나누는 기능이 기술적으로 가능함을 확인했다. 이제 하루 이상 기록하게 되면 일차별로 나눠보자!
+
+|PR 제목|주요 구현 내용|
+|:--|:--|
+|[#73 RecordView UI 업데이트](https://github.com/thinkySide/poporazzi/pull/73)|UICompositionalLayout, DiffableDataSource에 맞춘 Header 추가|
+|[#75 RecordView 일차 별 분리 기능 구현](https://github.com/thinkySide/poporazzi/pull/75)|Media 배열 날짜 별 Section 분리 로직 구현|
