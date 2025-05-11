@@ -150,7 +150,7 @@ extension Coordinator {
         let finishVM = FinishModalViewModel(output: .init())
         let finishVC = FinishModalViewController(viewModel: finishVM)
         finishVC.sheetPresentationController?.preferredCornerRadius = 20
-        finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 376 })]
+        finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 352 })]
         finishVC.sheetPresentationController?.prefersGrabberVisible = true
         self.navigationController.present(finishVC, animated: true)
     }
