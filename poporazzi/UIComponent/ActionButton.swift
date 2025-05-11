@@ -76,8 +76,7 @@ extension ActionButton {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in
-            flex.addItem(button).height(48).cornerRadius(24)
+            flex.addItem(button).height(48).cornerRadius(16)
         }
     }
 }
-

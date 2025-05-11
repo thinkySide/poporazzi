@@ -67,6 +67,9 @@ extension Coordinator {
                     
                 case .presentExcludeRecord:
                     owner.presentExcludeRecord(recordVM)
+                    
+                case .presentFinishModal:
+                    owner.presentFinishModal(recordVM)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -140,5 +143,15 @@ extension Coordinator {
                 }
             }
             .disposed(by: datePickerVC.disposeBag)
+    }
+    
+    /// 날짜 선택 모달을 Present 합니다.
+    private func presentFinishModal(_ recordVM: RecordViewModel?) {
+        let finishVM = FinishModalViewModel(output: .init())
+        let finishVC = FinishModalViewController(viewModel: finishVM)
+        finishVC.sheetPresentationController?.preferredCornerRadius = 20
+        finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 352 })]
+        finishVC.sheetPresentationController?.prefersGrabberVisible = true
+        self.navigationController.present(finishVC, animated: true)
     }
 }

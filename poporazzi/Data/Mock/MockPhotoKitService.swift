@@ -25,7 +25,7 @@ struct MockPhotoKitService: PhotoKitInterface {
     
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
         var array = [Media]()
-        for i in 0..<30 {
+        for _ in 0..<30 {
             array.append(Media(id: UUID().uuidString, creationDate: .now, mediaType: .photo, thumbnail: UIImage()))
         }
         return .just(array)
