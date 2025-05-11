@@ -1,10 +1,10 @@
 # 🥷📸 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.3.1)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.4.0)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Xcode Cloud|
-|Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11)|
+|Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11), [Instagram](https://www.instagram.com/poporazzzzzi?igsh=MWV1cDl4ZWU2b2p0bQ%3D%3D&utm_source=qr)|
 |이메일 문의|eunlyuing@gmail.com|
 
 ### 완전 쉬운 포포라치 3️⃣단계 이용법
@@ -12,7 +12,7 @@
 2. 내맘대로 여행 즐기며 마음껏 사진 찍기.
 3. 여행 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기!
 
-![Group 1](https://github.com/user-attachments/assets/8f47fbfa-fd77-4f4b-af66-5f1bff051731)
+![Group 1](https://github.com/user-attachments/assets/b2904b2f-4c41-49b2-9de4-7e50cd7a5eff)
 
 ### 🛠️ 개발 타임라인
 
@@ -77,4 +77,7 @@
 |PR 제목|주요 구현 내용|
 |:--|:--|
 |[#73 RecordView UI 업데이트](https://github.com/thinkySide/poporazzi/pull/73)|UICompositionalLayout, DiffableDataSource에 맞춘 Header 추가|
-|[#75 RecordView 일차 별 분리 기능 구현](https://github.com/thinkySide/poporazzi/pull/75)|Media 배열 날짜 별 Section 분리 로직 구현|
+|[#75 FinishModal 화면 구현](https://github.com/thinkySide/poporazzi/pull/75)|FinishModal 화면 구현 및 네비게이션 연결, RadioButton 및 CancelButton UIComponent 구현|
+|[#77 앨범 저장 옵션 설정 및 저장 기능 구현](https://github.com/thinkySide/poporazzi/pull/77)|하나로, 일차별 앨범 저장 기능 구현|
+|[#79 RecordView 일차 별 분리 기능 구현](https://github.com/thinkySide/poporazzi/pull/79)|Media 배열 날짜 별 Section 분리 로직 구현|
+|[#81 1.4.0 업데이트 전 QA](https://github.com/thinkySide/poporazzi/pull/81)|1.4.0 배포 및 일부 UI 개선|
