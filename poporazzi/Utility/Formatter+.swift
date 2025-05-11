@@ -41,6 +41,12 @@ extension Date {
         Date.dateFormatter.dateFormat = "M월 d일 EEEE"
         return Date.dateFormatter.string(from: self)
     }
+    
+    /// album 날짜 포맷을 반환합니다.
+    var albumFormat: String {
+        Date.dateFormatter.dateFormat = "yyMMdd"
+        return Date.dateFormatter.string(from: self)
+    }
 }
 
 // MARK: - TimeInterval

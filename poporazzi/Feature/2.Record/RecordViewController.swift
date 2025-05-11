@@ -51,7 +51,7 @@ enum RecordSection: Hashable, Comparable {
     var dateFormat: String {
         switch self {
         case let .day(order, date):
-            "\(order)일차"
+            "\(order)일차 - \(date.albumFormat)"
         }
     }
     

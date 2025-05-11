@@ -156,8 +156,7 @@ extension PhotoKitService {
                     )
                     
                     // 2. 앨범 생성 및 추가
-                    let dateTitle = "\(section.dateFormat) - \(title)"
-                    let albumIdentifier = await createAlbum(title: dateTitle)
+                    let albumIdentifier = await createAlbum(title: section.dateFormat)
                     guard let album = fetchAlbum(from: albumIdentifier) else { return }
                     appendToAlbum(fetchResult, to: album)
                     
@@ -234,9 +233,7 @@ extension PhotoKitService {
     /// 폴더를 반환합니다.
     private func fetchFolder(from locaIdentifier: String) -> PHCollectionList? {
         PHCollectionList.fetchCollectionLists(
-            with: .folder,
-            subtype: .any,
-            options: nil
+            withLocalIdentifiers: [locaIdentifier], options: nil
         )
         .firstObject
     }
