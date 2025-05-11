@@ -50,11 +50,7 @@ extension FinishConfirmModalViewController {
         
         output.saveOption
             .bind(with: self) { owner, saveOption in
-                switch saveOption {
-                case .none: owner.scene.action(.updateRadioState(.none))
-                case .saveAsSingle: owner.scene.action(.updateRadioState(.saveAsSingle))
-                case .saveByDay: owner.scene.action(.updateRadioState(.saveByDay))
-                }
+                owner.scene.action(.updateRadioState(saveOption))
             }
             .disposed(by: disposeBag)
         

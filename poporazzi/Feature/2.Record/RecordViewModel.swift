@@ -69,7 +69,7 @@ extension RecordViewModel {
         case pop
         case presentAlbumEdit(Album)
         case presentExcludeRecord
-        case presentFinishModal(Album)
+        case presentFinishModal(Album, SectionMediaList)
     }
     
     enum Delegate {
@@ -235,7 +235,10 @@ extension RecordViewModel {
                     UserDefaultsService.excludeAssets.removeAll()
                     UserDefaultsService.isTracking = false
                 } else {
-                    owner.navigation.accept(.presentFinishModal(owner.output.album.value))
+                    owner.navigation.accept(.presentFinishModal(
+                        owner.output.album.value,
+                        owner.output.sectionMediaList.value
+                    ))
                 }
             }
             .disposed(by: disposeBag)

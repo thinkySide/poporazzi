@@ -47,6 +47,14 @@ typealias SectionMediaList = [(RecordSection, [Media])]
 enum RecordSection: Hashable, Comparable {
     case day(order: Int, date: Date)
     
+    /// DateFormat을 반환합니다.
+    var dateFormat: String {
+        switch self {
+        case let .day(order, date):
+            "\(order)일차"
+        }
+    }
+    
     static func < (lhs: RecordSection, rhs: RecordSection) -> Bool {
         switch (lhs, rhs) {
         case let (.day(order1, _), .day(order2, _)):

@@ -11,12 +11,6 @@ import FlexLayout
 
 final class FinishConfirmModalView: CodeBaseUI {
     
-    enum RadioState {
-        case none
-        case saveAsSingle
-        case saveByDay
-    }
-    
     var containerView = UIView()
     
     /// 기록 종료 라벨
@@ -68,7 +62,7 @@ final class FinishConfirmModalView: CodeBaseUI {
 extension FinishConfirmModalView {
     
     enum Action {
-        case updateRadioState(RadioState)
+        case updateRadioState(AlbumSaveOption?)
     }
     
     func action(_ action: Action) {

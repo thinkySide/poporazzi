@@ -39,6 +39,8 @@ enum MediaFetchType {
     case video
 }
 
+// MARK: - Helper
+
 extension [Media] {
     
     /// 날짜순으로 정렬 후 반환합니다.

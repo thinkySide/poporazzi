@@ -42,7 +42,8 @@ extension FinishConfirmModalViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
-        let saveOption = BehaviorRelay<SaveOption>(value: .none)
+        let sectionMediaList: BehaviorRelay<SectionMediaList>
+        let saveOption = BehaviorRelay<AlbumSaveOption?>(value: nil)
         let alertPresented = PublishRelay<AlertModel>()
     }
     
@@ -55,12 +56,6 @@ extension FinishConfirmModalViewModel {
         case linkToPhotoAlbum
         case popToHome
     }
-    
-    enum SaveOption {
-        case none
-        case saveAsSingle
-        case saveByDay
-    }
 }
 
 // MARK: - Transform
@@ -69,12 +64,12 @@ extension FinishConfirmModalViewModel {
     
     func transform(_ input: Input) -> Output {
         input.saveAsSingleRadioButtonTapped
-            .map { SaveOption.saveAsSingle }
+            .map { AlbumSaveOption.saveAsSingle }
             .emit(to: output.saveOption)
             .disposed(by: disposeBag)
         
         input.saveByDayRadioButtonTapped
-            .map { SaveOption.saveByDay }
+            .map { AlbumSaveOption.saveByDay }
             .emit(to: output.saveOption)
             .disposed(by: disposeBag)
         
@@ -84,6 +79,9 @@ extension FinishConfirmModalViewModel {
                     try owner.saveToAlbums()
                     HapticManager.notification(type: .success)
                     owner.output.alertPresented.accept(owner.saveCompleteAlert)
+                    owner.liveActivityService.stop()
+                    UserDefaultsService.excludeAssets.removeAll()
+                    UserDefaultsService.isTracking = false
                 } catch {
                     print(error)
                 }
@@ -119,8 +117,12 @@ extension FinishConfirmModalViewModel {
     
     /// 앨범에 저장합니다.
     private func saveToAlbums() throws {
-        let title = output.album.value.title
-        try photoKitService.saveAlbum(title: title, excludeAssets: UserDefaultsService.excludeAssets)
+        try photoKitService.saveAlbum(
+            title: output.album.value.title,
+            option: output.saveOption.value,
+            sectionMediaList: output.sectionMediaList.value,
+            excludeAssets: UserDefaultsService.excludeAssets
+        )
     }
 }
 

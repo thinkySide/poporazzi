@@ -68,8 +68,8 @@ extension Coordinator {
                 case .presentExcludeRecord:
                     owner.presentExcludeRecord(recordVM)
                     
-                case let .presentFinishModal(album):
-                    owner.presentFinishModal(recordVM, album: album)
+                case let .presentFinishModal(album, sectionMediaList):
+                    owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -146,8 +146,13 @@ extension Coordinator {
     }
     
     /// 날짜 선택 모달을 Present 합니다.
-    private func presentFinishModal(_ recordVM: RecordViewModel?, album: Album) {
-        let finishVM = FinishConfirmModalViewModel(output: .init(album: .init(value: album)))
+    private func presentFinishModal(_ recordVM: RecordViewModel?, album: Album, sectionMediaList: SectionMediaList) {
+        let finishVM = FinishConfirmModalViewModel(
+            output: .init(
+                album: .init(value: album),
+                sectionMediaList: .init(value: sectionMediaList)
+            )
+        )
         let finishVC = FinishConfirmModalViewController(viewModel: finishVM)
         finishVC.sheetPresentationController?.preferredCornerRadius = 20
         finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 352 })]
