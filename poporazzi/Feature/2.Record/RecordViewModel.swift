@@ -70,6 +70,7 @@ extension RecordViewModel {
         case pop
         case presentAlbumEdit(Album)
         case presentExcludeRecord
+        case presentFinishModal
     }
     
     enum Delegate {
@@ -234,7 +235,7 @@ extension RecordViewModel {
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.alertPresented.accept(owner.finishConfirmAlert)
+                owner.navigation.accept(.presentFinishModal)
             }
             .disposed(by: disposeBag)
         
@@ -419,26 +420,6 @@ extension RecordViewModel {
 // MARK: - Alert
 
 extension RecordViewModel {
-    
-    /// 기록 종료 확인 Alert
-    private var finishConfirmAlert: AlertModel {
-        let title = output.album.value.title
-        let totalCount = output.mediaList.value.count
-        let message = output.mediaList.value.isEmpty
-        ? "촬영된 기록이 없어 앨범 저장 없이 종료돼요"
-        : "총 \(totalCount)장의 '\(title)' 기록이 종료 후 '사진' 앱 앨범에 저장돼요"
-        return AlertModel(
-            title: "기록을 종료할까요?",
-            message: message,
-            eventButton: .init(
-                title: "종료",
-                action: { [weak self] in
-                    self?.alertAction.accept(.save)
-                }
-            ),
-            cancelButton: .init(title: "취소")
-        )
-    }
     
     /// 앨범 저장 완료 Alert
     private var saveCompleteAlert: AlertModel {
