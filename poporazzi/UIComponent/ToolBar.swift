@@ -36,7 +36,7 @@ final class ToolBar: CodeBaseUI {
         self.leadingView = leading
         self.trailingView = trailing
         super.init(frame: .zero)
-        setup()
+        setup(color: .brandTertiary)
     }
     
     required init?(coder: NSCoder) {
@@ -47,6 +47,7 @@ final class ToolBar: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
+        containerView.addStroke([.top], color: .line, thickness: 1.5)
     }
 }
 
@@ -72,16 +73,16 @@ extension ToolBar {
 extension ToolBar {
     
     func configLayout() {
-        let topPadding: CGFloat = 20
+        let bottomPadding: CGFloat = 16
         containerView.flex.height(88)
             .direction(.row)
             .justifyContent(.center)
+            .alignItems(.center)
             .paddingHorizontal(20)
-            .paddingTop(topPadding)
-            .backgroundColor(.brandTertiary)
+            .paddingBottom(bottomPadding)
             .define { flex in
                 flex.addItem()
-                flex.addItem(titleLabel).position(.absolute).alignSelf(.center).top(topPadding).horizontally(32)
+                flex.addItem(titleLabel).position(.absolute).alignSelf(.center).horizontally(32).marginBottom(bottomPadding)
                 flex.addItem(leadingView)
                 flex.addItem().grow(1)
                 flex.addItem(trailingView)
