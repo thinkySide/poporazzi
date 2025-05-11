@@ -41,8 +41,20 @@ extension FinishModalViewController {
     
     func bind() {
         let input = FinishModalViewModel.Input(
+            saveAsSingleRadioButtonTapped: scene.saveAsSingleRadioButton.tapGesture.rx.event.asVoidSignal(),
+            saveByDayRadioButtonTapped: scene.saveByDayRadioButton.tapGesture.rx.event.asVoidSignal(),
             cancelButtonTapped: scene.cancelButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
+        
+        output.saveOption
+            .bind(with: self) { owner, saveOption in
+                switch saveOption {
+                case .none: owner.scene.action(.updateRadioState(.none))
+                case .saveAsSingle: owner.scene.action(.updateRadioState(.saveAsSingle))
+                case .saveByDay: owner.scene.action(.updateRadioState(.saveByDay))
+                }
+            }
+            .disposed(by: disposeBag)
     }
 }

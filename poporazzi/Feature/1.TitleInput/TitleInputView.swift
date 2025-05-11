@@ -16,25 +16,21 @@ final class TitleInputView: CodeBaseUI {
     let tapGesture = UITapGestureRecognizer()
     
     /// 상단 라벨
-    let headerLabel: UILabel = {
-        let label = UILabel()
-        label.text = "어떤 순간을 기록하고 싶으신가요?"
-        label.textColor = .mainLabel
-        label.font = .setDovemayo(22)
-        return label
-    }()
+    let headerLabel = UILabel(
+        "어떤 순간을 기록하고 싶으신가요?",
+        size: 22,
+        color: .mainLabel
+    )
     
     /// 제목 텍스트필드
     let titleTextField = LineTextField(size: 24, placeholder: "제주도 우정 여행, 성수동 데이트")
     
     /// 제목 텍스트필드 보조 라벨
-    let titleTextFieldSubLabel: UILabel = {
-        let label = UILabel()
-        label.text = "앨범 제목은 언제든지 수정이 가능해요"
-        label.textColor = .subLabel
-        label.font = .setDovemayo(14)
-        return label
-    }()
+    let titleTextFieldSubLabel = UILabel(
+        "앨범 제목은 언제든지 수정이 가능해요",
+        size: 14,
+        color: .subLabel
+    )
     
     /// 액션 버튼
     let actionButton = TextFieldActionButton(title: "기록 시작하기")

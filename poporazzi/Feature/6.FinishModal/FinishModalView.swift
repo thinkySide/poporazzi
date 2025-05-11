@@ -11,6 +11,12 @@ import FlexLayout
 
 final class FinishModalView: CodeBaseUI {
     
+    enum RadioState {
+        case none
+        case saveAsSingle
+        case saveByDay
+    }
+    
     var containerView = UIView()
     
     /// 기록 종료 라벨
@@ -24,7 +30,7 @@ final class FinishModalView: CodeBaseUI {
     let saveAsSingleRadioButton = RadioButton(
         title: "하나로 저장",
         sub: "모든 사진이 하나의 앨범으로 저장돼요",
-        variation: .selected
+        variation: .deselected
     )
     
     /// 일차별 저장 라디오 버튼
@@ -43,6 +49,7 @@ final class FinishModalView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        finishButton.action(.toggleEnabled(false))
     }
     
     required init?(coder: NSCoder) {
@@ -53,6 +60,37 @@ final class FinishModalView: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
+    }
+}
+
+// MARK: - Action
+
+extension FinishModalView {
+    
+    enum Action {
+        case updateRadioState(RadioState)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case .updateRadioState(let radioState):
+            switch radioState {
+            case .none:
+                saveAsSingleRadioButton.action(.updateState(.deselected))
+                saveByDayRadioButton.action(.updateState(.deselected))
+                finishButton.action(.toggleEnabled(false))
+                
+            case .saveAsSingle:
+                saveAsSingleRadioButton.action(.updateState(.selected))
+                saveByDayRadioButton.action(.updateState(.deselected))
+                finishButton.action(.toggleEnabled(true))
+                
+            case .saveByDay:
+                saveAsSingleRadioButton.action(.updateState(.deselected))
+                saveByDayRadioButton.action(.updateState(.selected))
+                finishButton.action(.toggleEnabled(true))
+            }
+        }
     }
 }
 

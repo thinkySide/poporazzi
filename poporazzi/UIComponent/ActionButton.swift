@@ -64,8 +64,10 @@ extension ActionButton {
     func action(_ action: Action) {
         switch action {
         case let .toggleEnabled(isEnabled):
-            button.isEnabled = isEnabled
-            button.alpha = isEnabled ? 1 : 0.3
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.button.isEnabled = isEnabled
+                self?.button.alpha = isEnabled ? 1 : 0.3
+            }
         }
     }
 }

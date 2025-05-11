@@ -62,7 +62,8 @@ final class RadioButton: CodeBaseUI {
         super.init(frame: .zero)
         titleLabel.text = title
         subLabel.text = sub
-        action(.updateVariation(variation))
+        action(.updateState(variation))
+        addGestureRecognizer(tapGesture)
         setup()
     }
     
@@ -82,15 +83,17 @@ final class RadioButton: CodeBaseUI {
 extension RadioButton {
     
     enum Action {
-        case updateVariation(Variation)
+        case updateState(Variation)
     }
     
     func action(_ action: Action) {
         switch action {
-        case .updateVariation(let variation):
-            textContainerView.backgroundColor = variation.backgroundColor
-            textContainerView.layer.borderColor = variation.strokeColor.cgColor
-            radioIcon.image = variation.icon
+        case .updateState(let variation):
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.textContainerView.backgroundColor = variation.backgroundColor
+                self?.textContainerView.layer.borderColor = variation.strokeColor.cgColor
+                self?.radioIcon.image = variation.icon
+            }
         }
     }
 }
