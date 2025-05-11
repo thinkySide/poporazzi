@@ -40,6 +40,9 @@ final class FinishModalViewController: ViewController {
 extension FinishModalViewController {
     
     func bind() {
-        
+        let input = FinishModalViewModel.Input(
+            cancelButtonTapped: scene.cancelButton.button.rx.tap.asSignal()
+        )
+        let output = viewModel.transform(input)
     }
 }

@@ -30,7 +30,7 @@ final class FinishModalViewModel: ViewModel {
 extension FinishModalViewModel {
     
     struct Input {
-        
+        let cancelButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -38,7 +38,7 @@ extension FinishModalViewModel {
     }
     
     enum Navigation {
-        
+        case dismiss(isSaved: Bool)
     }
 }
 
@@ -47,6 +47,11 @@ extension FinishModalViewModel {
 extension FinishModalViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.cancelButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.dismiss(isSaved: false))
+            }
+            .disposed(by: disposeBag)
         
         return output
     }

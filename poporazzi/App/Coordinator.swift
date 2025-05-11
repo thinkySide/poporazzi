@@ -153,5 +153,14 @@ extension Coordinator {
         finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 352 })]
         finishVC.sheetPresentationController?.prefersGrabberVisible = true
         self.navigationController.present(finishVC, animated: true)
+        
+        finishVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case let .dismiss(isSaved):
+                    owner.navigationController.dismiss(animated: true)
+                }
+            }
+            .disposed(by: finishVC.disposeBag)
     }
 }
