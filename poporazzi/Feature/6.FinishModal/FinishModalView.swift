@@ -14,13 +14,11 @@ final class FinishModalView: CodeBaseUI {
     var containerView = UIView()
     
     /// 기록 종료 라벨
-    private let finishLabel: UILabel = {
-        let label = UILabel()
-        label.text = "기록을 종료할까요?"
-        label.font = .setDovemayo(18)
-        label.textColor = .mainLabel
-        return label
-    }()
+    private let finishLabel = UILabel(
+        "기록을 종료할까요?",
+        size: 18,
+        color: .mainLabel
+    )
     
     /// 하나로 저장 라디오 버튼
     let saveAsSingleRadioButton = RadioButton(

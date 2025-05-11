@@ -54,19 +54,9 @@ final class RadioButton: CodeBaseUI {
         return view
     }()
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(16)
-        label.textColor = .mainLabel
-        return label
-    }()
+    private let titleLabel = UILabel(size: 16, color: .mainLabel)
     
-    private let subLabel: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(13)
-        label.textColor = .subLabel
-        return label
-    }()
+    private let subLabel = UILabel(size: 13, color: .subLabel)
     
     init(title: String, sub: String, variation: Variation) {
         super.init(frame: .zero)
