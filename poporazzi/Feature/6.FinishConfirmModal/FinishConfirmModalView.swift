@@ -1,5 +1,5 @@
 //
-//  FinishModalView.swift
+//  FinishConfirmModalView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/11/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class FinishModalView: CodeBaseUI {
+final class FinishConfirmModalView: CodeBaseUI {
     
     enum RadioState {
         case none
@@ -65,7 +65,7 @@ final class FinishModalView: CodeBaseUI {
 
 // MARK: - Action
 
-extension FinishModalView {
+extension FinishConfirmModalView {
     
     enum Action {
         case updateRadioState(RadioState)
@@ -96,7 +96,7 @@ extension FinishModalView {
 
 // MARK: - Layout
 
-extension FinishModalView {
+extension FinishConfirmModalView {
     
     func configLayout() {
         containerView.flex.direction(.column).paddingHorizontal(20).define { flex in

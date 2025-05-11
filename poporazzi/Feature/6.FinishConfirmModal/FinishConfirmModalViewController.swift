@@ -1,5 +1,5 @@
 //
-//  FinishModalViewController.swift
+//  FinishConfirmModalViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/11/25.
@@ -9,14 +9,14 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class FinishModalViewController: ViewController {
+final class FinishConfirmModalViewController: ViewController {
     
-    private let scene = FinishModalView()
-    private let viewModel: FinishModalViewModel
+    private let scene = FinishConfirmModalView()
+    private let viewModel: FinishConfirmModalViewModel
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: FinishModalViewModel) {
+    init(viewModel: FinishConfirmModalViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -37,12 +37,13 @@ final class FinishModalViewController: ViewController {
 
 // MARK: - Binding
 
-extension FinishModalViewController {
+extension FinishConfirmModalViewController {
     
     func bind() {
-        let input = FinishModalViewModel.Input(
+        let input = FinishConfirmModalViewModel.Input(
             saveAsSingleRadioButtonTapped: scene.saveAsSingleRadioButton.tapGesture.rx.event.asVoidSignal(),
             saveByDayRadioButtonTapped: scene.saveByDayRadioButton.tapGesture.rx.event.asVoidSignal(),
+            finishButtonTapped: scene.finishButton.button.rx.tap.asSignal(),
             cancelButtonTapped: scene.cancelButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -54,6 +55,12 @@ extension FinishModalViewController {
                 case .saveAsSingle: owner.scene.action(.updateRadioState(.saveAsSingle))
                 case .saveByDay: owner.scene.action(.updateRadioState(.saveByDay))
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        output.alertPresented
+            .bind(with: self) { owner, alert in
+                owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
     }

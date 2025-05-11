@@ -23,7 +23,6 @@ final class RecordViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
-    let alertAction = PublishRelay<AlertAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
     let menuAction = PublishRelay<MenuAction>()
     
@@ -70,18 +69,12 @@ extension RecordViewModel {
         case pop
         case presentAlbumEdit(Album)
         case presentExcludeRecord
-        case presentFinishModal
+        case presentFinishModal(Album)
     }
     
     enum Delegate {
         case albumDidEdited(Album)
         case updateExcludeRecord
-    }
-    
-    enum AlertAction {
-        case save
-        case linkToPhotoAlbum
-        case popToHome
     }
     
     enum ActionSheetAction {
@@ -235,33 +228,14 @@ extension RecordViewModel {
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.presentFinishModal)
-            }
-            .disposed(by: disposeBag)
-        
-        alertAction
-            .bind(with: self) { owner, action in
-                switch action {
-                case .save:
-                    if owner.output.mediaList.value.isEmpty {
-                        owner.navigation.accept(.pop)
-                    } else {
-                        try? owner.saveToAlbums()
-                        owner.output.alertPresented.accept(owner.saveCompleteAlert)
-                        HapticManager.notification(type: .success)
-                    }
-                    
+                if owner.output.mediaList.value.isEmpty {
+                    // TODO: 비어있는 경우 확인
+                    owner.navigation.accept(.pop)
                     owner.liveActivityService.stop()
                     UserDefaultsService.excludeAssets.removeAll()
                     UserDefaultsService.isTracking = false
-                    
-                case .linkToPhotoAlbum:
-                    DeepLinkManager.openPhotoAlbum()
-                    owner.navigation.accept(.pop)
-                    break
-                    
-                case .popToHome:
-                    owner.navigation.accept(.pop)
+                } else {
+                    owner.navigation.accept(.presentFinishModal(owner.output.album.value))
                 }
             }
             .disposed(by: disposeBag)
@@ -409,38 +383,11 @@ extension RecordViewModel {
     private func requestImages(from assetIdentifiers: [String]) -> Observable<[Media]> {
         photoKitService.fetchMedias(from: assetIdentifiers)
     }
-    
-    /// 앨범에 저장합니다.
-    private func saveToAlbums() throws {
-        let title = output.album.value.title
-        try photoKitService.saveAlbum(title: title, excludeAssets: UserDefaultsService.excludeAssets)
-    }
 }
 
 // MARK: - Alert
 
 extension RecordViewModel {
-    
-    /// 앨범 저장 완료 Alert
-    private var saveCompleteAlert: AlertModel {
-        let title = output.album.value.title
-        return AlertModel(
-            title: "기록이 종료되었습니다!",
-            message: "사진 앱 내 '\(title)' 앨범을 확인해보세요!",
-            eventButton: .init(
-                title: "앨범 확인",
-                action: { [weak self] in
-                    self?.alertAction.accept(.linkToPhotoAlbum)
-                }
-            ),
-            cancelButton: .init(
-                title: "홈으로 돌아가기",
-                action: { [weak self] in
-                    self?.alertAction.accept(.popToHome)
-                }
-            )
-        )
-    }
     
     /// 기록 삭제 실패 Alert
     private var removeFailedAlert: AlertModel {
