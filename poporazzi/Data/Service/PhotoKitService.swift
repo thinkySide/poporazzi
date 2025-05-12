@@ -90,7 +90,7 @@ extension PhotoKitService {
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        return Observable.create { [weak self] observer in
+        Observable.create { [weak self] observer in
             Task.detached { [weak self] in
                 guard let self else {
                     observer.onCompleted()
@@ -134,43 +134,65 @@ extension PhotoKitService {
         }
     }
     
-    /// 앨범에 기록을 저장합니다.
-    func saveAlbum(title: String, option: AlbumSaveOption?, sectionMediaList: SectionMediaList, excludeAssets: [String]) throws {
-        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets),
-              let option else { return }
+    /// 하나의 앨범으로 만들어 저장합니다.
+    func saveAlbumAsSingle(title: String, excludeAssets: [String]) throws {
+        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets) else { return }
         
-        switch option {
-        case .saveAsSingle:
+        Task {
+            let albumIdentifier = await createAlbum(title: title)
+            guard let album = fetchAlbum(from: albumIdentifier) else { return }
+            appendToAlbum(filteredFetchResult, to: album)
+        }
+    }
+    
+    /// 일차별 앨범을 생성 후 폴더에 넣어 저장합니다.
+    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList, excludeAssets: [String]) -> Observable<Void> {
+        Observable.create { observer in
             Task {
-                let albumIdentifier = await createAlbum(title: title)
-                guard let album = fetchAlbum(from: albumIdentifier) else { return }
-                appendToAlbum(filteredFetchResult, to: album)
+                let folderIdentifier = await self.createFolder(title: title)
+                guard let folder = self.fetchFolder(from: folderIdentifier) else { return }
+                
+                // 각 일차 병렬 처리로 생성
+                let albumList = await withTaskGroup(of: (Int, PHAssetCollection?).self) { group in
+                    for (index, (section, mediaList)) in sectionMediaList.enumerated() {
+                        
+                        group.addTask {
+                            // 1. Section 기준으로 FetchResult 생성
+                            let assetIdentifiers = mediaList.map { $0.id }
+                            let fetchResult = PHAsset.fetchAssets(
+                                withLocalIdentifiers: assetIdentifiers,
+                                options: self.defaultFetchOptions
+                            )
+                            
+                            // 2. 앨범 생성 및 추가
+                            let albumIdentifier = await self.createAlbum(title: section.dateFormat)
+                            guard let album = self.fetchAlbum(from: albumIdentifier) else { return (index, nil) }
+                            self.appendToAlbum(fetchResult, to: album)
+                            
+                            return (index, album)
+                        }
+                    }
+                    
+                    var albumList = [(Int, PHAssetCollection)]()
+                    for await item in group {
+                        if let album = item.1 {
+                            albumList.append((item.0, album))
+                        }
+                    }
+                    
+                    return albumList.sorted { $0.0 < $1.0 }
+                }
+                
+                // 3. 폴더에 앨범 추가
+                for (_, album) in albumList {
+                    try await self.appendToFolder(album, to: folder)
+                }
+                
+                observer.onNext(())
+                observer.onCompleted()
             }
             
-        case .saveByDay:
-            Task {
-                let folderIdentifier = await createFolder(title: title)
-                guard let foler = fetchFolder(from: folderIdentifier) else { return }
-                
-                // TODO: 여기서 모든 앨범 생성
-                for (section, mediaList) in sectionMediaList {
-                    
-                    // 1. Section 기준으로 FetchResult 생성
-                    let assetIdentifiers = mediaList.map { $0.id }
-                    let fetchResult = PHAsset.fetchAssets(
-                        withLocalIdentifiers: assetIdentifiers,
-                        options: defaultFetchOptions
-                    )
-                    
-                    // 2. 앨범 생성 및 추가
-                    let albumIdentifier = await createAlbum(title: section.dateFormat)
-                    guard let album = fetchAlbum(from: albumIdentifier) else { return }
-                    appendToAlbum(fetchResult, to: album)
-                    
-                    // 3. 폴더에 앨범 추가
-                    appendToFolder(album, to: foler)
-                }
-            }
+            return Disposables.create()
         }
     }
     
@@ -325,10 +347,18 @@ extension PhotoKitService {
     }
     
     /// 폴더에 앨범을 추가합니다.
-    private func appendToFolder(_ album: PHAssetCollection, to folder: PHCollectionList) {
-        PHPhotoLibrary.shared().performChanges {
-            let request = PHCollectionListChangeRequest(for: folder)
-            request?.addChildCollections([album] as NSFastEnumeration)
+    private func appendToFolder(_ album: PHAssetCollection, to folder: PHCollectionList) async throws {
+        let _: Void = try await withCheckedThrowingContinuation { continuation in
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHCollectionListChangeRequest(for: folder)
+                request?.addChildCollections([album] as NSFastEnumeration)
+            } completionHandler: { isSuccess, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
         }
     }
 }

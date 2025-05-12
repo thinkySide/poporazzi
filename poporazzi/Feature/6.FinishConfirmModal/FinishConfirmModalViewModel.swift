@@ -44,6 +44,7 @@ extension FinishConfirmModalViewModel {
         let album: BehaviorRelay<Album>
         let sectionMediaList: BehaviorRelay<SectionMediaList>
         let saveOption = BehaviorRelay<AlbumSaveOption?>(value: nil)
+        let toggleLoading = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
     }
     
@@ -75,15 +76,24 @@ extension FinishConfirmModalViewModel {
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                do {
-                    try owner.saveToAlbums()
-                    HapticManager.notification(type: .success)
-                    owner.output.alertPresented.accept(owner.saveCompleteAlert)
-                    owner.liveActivityService.stop()
-                    UserDefaultsService.excludeAssets.removeAll()
-                    UserDefaultsService.isTracking = false
-                } catch {
-                    print(error)
+                owner.output.toggleLoading.accept(true)
+                
+                switch owner.output.saveOption.value {
+                case .saveAsSingle:
+                    try? owner.saveAlbumAsSingle()
+                    owner.output.toggleLoading.accept(false)
+                    owner.finishRecord()
+                    
+                case .saveByDay:
+                    owner.saveAlubmByDay()
+                        .bind { _ in
+                            owner.output.toggleLoading.accept(false)
+                            owner.finishRecord()
+                        }
+                        .disposed(by: owner.disposeBag)
+                    
+                case .none:
+                    break
                 }
             }
             .disposed(by: disposeBag)
@@ -111,15 +121,36 @@ extension FinishConfirmModalViewModel {
     }
 }
 
+// MARK: - Helper
+
+extension FinishConfirmModalViewModel {
+    
+    /// 기록을 종료합니다.
+    private func finishRecord() {
+        liveActivityService.stop()
+        output.alertPresented.accept(saveCompleteAlert)
+        HapticManager.notification(type: .success)
+        UserDefaultsService.excludeAssets.removeAll()
+        UserDefaultsService.isTracking = false
+    }
+}
+
 // MARK: - Album Logic
 
 extension FinishConfirmModalViewModel {
     
-    /// 앨범에 저장합니다.
-    private func saveToAlbums() throws {
-        try photoKitService.saveAlbum(
+    /// 하나로 앨범을 저장합니다.
+    private func saveAlbumAsSingle() throws {
+        try photoKitService.saveAlbumAsSingle(
             title: output.album.value.title,
-            option: output.saveOption.value,
+            excludeAssets: UserDefaultsService.excludeAssets
+        )
+    }
+    
+    /// 일차별로 앨범을 저장합니다.
+    private func saveAlubmByDay() -> Observable<Void> {
+        photoKitService.saveAlubmByDay(
+            title: output.album.value.title,
             sectionMediaList: output.sectionMediaList.value,
             excludeAssets: UserDefaultsService.excludeAssets
         )

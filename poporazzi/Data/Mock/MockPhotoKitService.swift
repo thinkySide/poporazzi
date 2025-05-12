@@ -31,8 +31,13 @@ struct MockPhotoKitService: PhotoKitInterface {
         return .just(array)
     }
     
-    func saveAlbum(title: String, option: AlbumSaveOption?, sectionMediaList: SectionMediaList, excludeAssets: [String]) throws {
-        print("[앨범 저장 완료] - \(title)")
+    func saveAlbumAsSingle(title: String, excludeAssets: [String]) throws {
+        print("[하나의 앨범으로 저장 완료] - \(title)")
+    }
+    
+    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList, excludeAssets: [String]) -> Observable<Void> {
+        print("[일차별 앨범으로 저장 완료] - \(title)")
+        return .just(())
     }
     
     func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
