@@ -136,19 +136,37 @@ extension PhotoKitService {
     }
     
     /// 하나의 앨범으로 만들어 저장합니다.
-    func saveAlbumAsSingle(title: String, excludeAssets: [String]) throws {
-        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets) else { return }
-        
-        Task {
-            let albumIdentifier = await createAlbum(title: title)
-            guard let album = fetchAlbum(from: albumIdentifier) else { return }
-            appendToAlbum(filteredFetchResult, to: album)
+    func saveAlbumAsSingle(title: String, sectionMediaList: SectionMediaList) -> Observable<Void> {
+        Observable.create { [weak self] observer in
+            guard let self else { return Disposables.create() }
+            Task {
+                // 1. 하나의 배열로 만들기
+                var assetIdentifiers = [String]()
+                for (_, mediaList) in sectionMediaList {
+                    assetIdentifiers.append(contentsOf: mediaList.map { $0.id })
+                }
+                
+                // 2. 앨범 생성하기
+                let albumIdentifier = await self.createAlbum(title: title)
+                guard let album = self.fetchAlbum(from: albumIdentifier) else { return }
+                let fetchResult = PHAsset.fetchAssets(
+                    withLocalIdentifiers: assetIdentifiers,
+                    options: self.defaultFetchOptions
+                )
+                self.appendToAlbum(fetchResult, to: album)
+                
+                observer.onNext(())
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
         }
     }
     
     /// 일차별 앨범을 생성 후 폴더에 넣어 저장합니다.
-    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList, excludeAssets: [String]) -> Observable<Void> {
-        Observable.create { observer in
+    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList) -> Observable<Void> {
+        Observable.create { [weak self] observer in
+            guard let self else { return Disposables.create() }
             Task {
                 let folderIdentifier = await self.createFolder(title: title)
                 guard let folder = self.fetchFolder(from: folderIdentifier) else { return }
@@ -199,7 +217,7 @@ extension PhotoKitService {
     
     /// 주어진 ID의 사진을 삭제합니다.
     func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
-        return Observable.create { observer in
+        Observable.create { observer in
             let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
             PHPhotoLibrary.shared().performChanges {
                 PHAssetChangeRequest.deleteAssets(assets)

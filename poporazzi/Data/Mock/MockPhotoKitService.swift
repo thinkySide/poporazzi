@@ -40,11 +40,12 @@ struct MockPhotoKitService: PhotoKitInterface {
         return .just(array)
     }
     
-    func saveAlbumAsSingle(title: String, excludeAssets: [String]) throws {
+    func saveAlbumAsSingle(title: String, sectionMediaList: SectionMediaList)  -> Observable<Void> {
         print("[하나의 앨범으로 저장 완료] - \(title)")
+        return .just(())
     }
     
-    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList, excludeAssets: [String]) -> Observable<Void> {
+    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList) -> Observable<Void> {
         print("[일차별 앨범으로 저장 완료] - \(title)")
         return .just(())
     }
