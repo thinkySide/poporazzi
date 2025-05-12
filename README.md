@@ -12,7 +12,7 @@
 2. 내맘대로 여행 즐기며 마음껏 사진 찍기.
 3. 여행 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기!
 
-![Group 1](https://github.com/user-attachments/assets/b2904b2f-4c41-49b2-9de4-7e50cd7a5eff)
+![Group 1](https://github.com/user-attachments/assets/2ac72c32-27b9-46ba-b1cd-53e0c1e004d5)
 
 ### 🛠️ 개발 타임라인
 
