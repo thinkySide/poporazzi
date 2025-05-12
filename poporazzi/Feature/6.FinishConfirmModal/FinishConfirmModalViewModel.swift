@@ -13,6 +13,7 @@ final class FinishConfirmModalViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
+    @Dependency(\.storeKitService) private var storeKitService
     
     private let disposeBag = DisposeBag()
     private let output: Output
@@ -110,9 +111,11 @@ extension FinishConfirmModalViewModel {
                 case .linkToPhotoAlbum:
                     DeepLinkManager.openPhotoAlbum()
                     owner.navigation.accept(.popToRoot)
+                    owner.storeKitService.requestReview()
                     
                 case .popToHome:
                     owner.navigation.accept(.popToRoot)
+                    owner.storeKitService.requestReview()
                 }
             }
             .disposed(by: disposeBag)
