@@ -134,43 +134,47 @@ extension PhotoKitService {
         }
     }
     
-    /// 앨범에 기록을 저장합니다.
-    func saveAlbum(title: String, option: AlbumSaveOption?, sectionMediaList: SectionMediaList, excludeAssets: [String]) throws {
-        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets),
-              let option else { return }
+    /// 하나의 앨범으로 만들어 저장합니다.
+    func saveAlbumAsSingle(title: String, excludeAssets: [String]) throws {
+        guard let filteredFetchResult = try filterExcludeAssets(excludeAssets) else { return }
         
-        switch option {
-        case .saveAsSingle:
+        Task {
+            let albumIdentifier = await createAlbum(title: title)
+            guard let album = fetchAlbum(from: albumIdentifier) else { return }
+            appendToAlbum(filteredFetchResult, to: album)
+        }
+    }
+    
+    /// 일차별 앨범을 생성 후 폴더에 넣어 저장합니다.
+    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList, excludeAssets: [String]) -> Observable<Void> {
+        Observable.create { observer in
             Task {
-                let albumIdentifier = await createAlbum(title: title)
-                guard let album = fetchAlbum(from: albumIdentifier) else { return }
-                appendToAlbum(filteredFetchResult, to: album)
-            }
-            
-        case .saveByDay:
-            Task {
-                let folderIdentifier = await createFolder(title: title)
-                guard let foler = fetchFolder(from: folderIdentifier) else { return }
+                let folderIdentifier = await self.createFolder(title: title)
+                guard let foler = self.fetchFolder(from: folderIdentifier) else { return }
                 
-                // TODO: 여기서 모든 앨범 생성
                 for (section, mediaList) in sectionMediaList {
                     
                     // 1. Section 기준으로 FetchResult 생성
                     let assetIdentifiers = mediaList.map { $0.id }
                     let fetchResult = PHAsset.fetchAssets(
                         withLocalIdentifiers: assetIdentifiers,
-                        options: defaultFetchOptions
+                        options: self.defaultFetchOptions
                     )
                     
                     // 2. 앨범 생성 및 추가
-                    let albumIdentifier = await createAlbum(title: section.dateFormat)
-                    guard let album = fetchAlbum(from: albumIdentifier) else { return }
-                    appendToAlbum(fetchResult, to: album)
+                    let albumIdentifier = await self.createAlbum(title: section.dateFormat)
+                    guard let album = self.fetchAlbum(from: albumIdentifier) else { return }
+                    self.appendToAlbum(fetchResult, to: album)
                     
                     // 3. 폴더에 앨범 추가
-                    appendToFolder(album, to: foler)
+                    self.appendToFolder(album, to: foler)
                 }
+                
+                observer.onNext(())
+                observer.onCompleted()
             }
+            
+            return Disposables.create()
         }
     }
     

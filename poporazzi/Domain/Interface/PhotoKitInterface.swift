@@ -27,8 +27,11 @@ protocol PhotoKitInterface {
     /// Media 배열 이벤트를 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>
     
-    /// 현재 fetchResult를 기준으로 앨범을 저장합니다.
-    func saveAlbum(title: String, option: AlbumSaveOption?, sectionMediaList: SectionMediaList, excludeAssets: [String]) throws
+    /// 하나의 앨범으로 만들어 저장합니다.
+    func saveAlbumAsSingle(title: String, excludeAssets: [String]) throws
+    
+    /// 일차별로 앨범을 나눈 후 폴더를 만들어 저장합니다.
+    func saveAlubmByDay(title: String, sectionMediaList: SectionMediaList, excludeAssets: [String]) -> Observable<Void>
     
     /// 사진을 삭제 후 결과 이벤트를 반환합니다.
     func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool>
