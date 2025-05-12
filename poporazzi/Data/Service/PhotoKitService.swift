@@ -76,11 +76,12 @@ extension PhotoKitService {
         )
         fetchResult = fetchAssetResult
         
-        fetchResult?.enumerateObjects { asset, _, _ in
+        fetchResult?.enumerateObjects { [weak self] asset, _, _ in
+            guard let self else { return }
             let media = Media(
                 id: asset.localIdentifier,
                 creationDate: asset.creationDate,
-                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+                mediaType: mediaType(from: asset),
                 thumbnail: nil
             )
             newMedias.append(media)
@@ -116,7 +117,7 @@ extension PhotoKitService {
                             return Media(
                                 id: asset.localIdentifier,
                                 creationDate: asset.creationDate,
-                                mediaType: asset.mediaType == .image ? .photo : .video(duration: asset.duration),
+                                mediaType: self.mediaType(from: asset),
                                 thumbnail: image
                             )
                         }
@@ -271,6 +272,13 @@ extension PhotoKitService {
 // MARK: - Helper
 
 extension PhotoKitService {
+    
+    /// 현재 Asset의 MediaType을 반환합니다.
+    private func mediaType(from asset: PHAsset) -> MediaType {
+        asset.mediaType == .image
+        ? .photo(isScreenShot: asset.mediaSubtypes.contains(.photoScreenshot))
+        : .video(duration: asset.duration)
+    }
     
     /// PHFetchResult를 날짜에 맞게 반환합니다.
     private func fetchAssetResult(

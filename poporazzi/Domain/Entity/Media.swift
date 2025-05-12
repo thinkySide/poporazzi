@@ -28,7 +28,7 @@ struct Media: Hashable, Equatable {
 
 /// 미디어 타입
 enum MediaType: Hashable {
-    case photo
+    case photo(isScreenShot: Bool)
     case video(duration: TimeInterval)
 }
 

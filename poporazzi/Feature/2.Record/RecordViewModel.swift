@@ -135,7 +135,7 @@ extension RecordViewModel {
                 owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
-                owner.requestImages(from: assetIdentifiers)
+                owner.fetchAllMediaList(from: assetIdentifiers)
                     .observe(on: MainScheduler.asyncInstance)
                     .bind { mediaList in
                         owner.output.updateRecordCells.accept(mediaList)
@@ -158,7 +158,7 @@ extension RecordViewModel {
                     owner.updateChunk()
                     let assetIdentifiers = owner.chunkAssetIdentifiers
                     
-                    owner.requestImages(from: assetIdentifiers)
+                    owner.fetchAllMediaList(from: assetIdentifiers)
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { mediaList in
                             owner.output.updateRecordCells.accept(mediaList)
@@ -176,7 +176,7 @@ extension RecordViewModel {
                 owner.resetChunk()
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
-                owner.requestImages(from: assetIdentifiers)
+                owner.fetchAllMediaList(from: assetIdentifiers)
                     .observe(on: MainScheduler.asyncInstance)
                     .bind { mediaList in
                         owner.output.updateRecordCells.accept(mediaList)
@@ -389,6 +389,7 @@ extension RecordViewModel {
     /// 썸네일 없이 전체 Media 리스트를 반환합니다.
     ///
     /// - 제외된 사진을 필터링합니다.
+    /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() -> [Media] {
         let trackingStartDate = output.album.value.trackingStartDate
         return photoKitService.fetchMediasWithNoThumbnail(
@@ -396,13 +397,19 @@ extension RecordViewModel {
             date: trackingStartDate,
             ascending: true
         )
-        .filter { media in
-            !Set(UserDefaultsService.excludeAssets).contains(media.id)
+        .filter { !Set(UserDefaultsService.excludeAssets).contains($0.id) }
+        .filter {
+            if !output.isContainScreenshot.value {
+                if case let .photo(isScreenshot) = $0.mediaType {
+                    return !isScreenshot
+                }
+            }
+            return true
         }
     }
     
-    /// Asset Identifiers에 대응되는 Media 스트림을 반환합니다.
-    private func requestImages(from assetIdentifiers: [String]) -> Observable<[Media]> {
+    /// 전체 Media 리스트를 반환합니다.
+    private func fetchAllMediaList(from assetIdentifiers: [String]) -> Observable<[Media]> {
         photoKitService.fetchMedias(from: assetIdentifiers)
     }
 }
