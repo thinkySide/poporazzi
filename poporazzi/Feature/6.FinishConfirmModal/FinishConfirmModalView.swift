@@ -13,6 +13,9 @@ final class FinishConfirmModalView: CodeBaseUI {
     
     var containerView = UIView()
     
+    /// 로딩 인디케이터
+    private let loadingIndicator = LoadingIndicator()
+    
     /// 기록 종료 라벨
     private let finishLabel = UILabel(
         "기록을 종료할까요?",
@@ -43,6 +46,7 @@ final class FinishConfirmModalView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        addSubview(loadingIndicator)
         finishButton.action(.toggleEnabled(false))
     }
     
@@ -53,7 +57,9 @@ final class FinishConfirmModalView: CodeBaseUI {
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
+        loadingIndicator.pin.all()
         containerView.flex.layout()
+        loadingIndicator.flex.layout()
     }
 }
 
@@ -63,6 +69,7 @@ extension FinishConfirmModalView {
     
     enum Action {
         case updateRadioState(AlbumSaveOption?)
+        case toggleLoading(Bool)
     }
     
     func action(_ action: Action) {
@@ -84,6 +91,10 @@ extension FinishConfirmModalView {
                 saveByDayRadioButton.action(.updateState(.selected))
                 finishButton.action(.toggleEnabled(true))
             }
+            
+        case let .toggleLoading(isActive):
+            loadingIndicator.isHidden = !isActive
+            loadingIndicator.action(isActive ? .start : .stop)
         }
     }
 }

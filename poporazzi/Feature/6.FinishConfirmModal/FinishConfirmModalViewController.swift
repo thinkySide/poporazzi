@@ -57,7 +57,7 @@ extension FinishConfirmModalViewController {
         output.toggleLoading
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, bool in
-                owner.scene.finishButton.action(.toggleEnabled(!bool))
+                owner.scene.action(.toggleLoading(bool))
             }
             .disposed(by: disposeBag)
         

@@ -150,24 +150,42 @@ extension PhotoKitService {
         Observable.create { observer in
             Task {
                 let folderIdentifier = await self.createFolder(title: title)
-                guard let foler = self.fetchFolder(from: folderIdentifier) else { return }
+                guard let folder = self.fetchFolder(from: folderIdentifier) else { return }
                 
-                for (section, mediaList) in sectionMediaList {
+                // 각 일차 병렬 처리로 생성
+                let albumList = await withTaskGroup(of: (Int, PHAssetCollection?).self) { group in
+                    for (index, (section, mediaList)) in sectionMediaList.enumerated() {
+                        
+                        group.addTask {
+                            // 1. Section 기준으로 FetchResult 생성
+                            let assetIdentifiers = mediaList.map { $0.id }
+                            let fetchResult = PHAsset.fetchAssets(
+                                withLocalIdentifiers: assetIdentifiers,
+                                options: self.defaultFetchOptions
+                            )
+                            
+                            // 2. 앨범 생성 및 추가
+                            let albumIdentifier = await self.createAlbum(title: section.dateFormat)
+                            guard let album = self.fetchAlbum(from: albumIdentifier) else { return (index, nil) }
+                            self.appendToAlbum(fetchResult, to: album)
+                            
+                            return (index, album)
+                        }
+                    }
                     
-                    // 1. Section 기준으로 FetchResult 생성
-                    let assetIdentifiers = mediaList.map { $0.id }
-                    let fetchResult = PHAsset.fetchAssets(
-                        withLocalIdentifiers: assetIdentifiers,
-                        options: self.defaultFetchOptions
-                    )
+                    var albumList = [(Int, PHAssetCollection)]()
+                    for await item in group {
+                        if let album = item.1 {
+                            albumList.append((item.0, album))
+                        }
+                    }
                     
-                    // 2. 앨범 생성 및 추가
-                    let albumIdentifier = await self.createAlbum(title: section.dateFormat)
-                    guard let album = self.fetchAlbum(from: albumIdentifier) else { return }
-                    self.appendToAlbum(fetchResult, to: album)
-                    
-                    // 3. 폴더에 앨범 추가
-                    self.appendToFolder(album, to: foler)
+                    return albumList.sorted { $0.0 < $1.0 }
+                }
+                
+                // 3. 폴더에 앨범 추가
+                for (_, album) in albumList {
+                    try await self.appendToFolder(album, to: folder)
                 }
                 
                 observer.onNext(())
@@ -329,10 +347,18 @@ extension PhotoKitService {
     }
     
     /// 폴더에 앨범을 추가합니다.
-    private func appendToFolder(_ album: PHAssetCollection, to folder: PHCollectionList) {
-        PHPhotoLibrary.shared().performChanges {
-            let request = PHCollectionListChangeRequest(for: folder)
-            request?.addChildCollections([album] as NSFastEnumeration)
+    private func appendToFolder(_ album: PHAssetCollection, to folder: PHCollectionList) async throws {
+        let _: Void = try await withCheckedThrowingContinuation { continuation in
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHCollectionListChangeRequest(for: folder)
+                request?.addChildCollections([album] as NSFastEnumeration)
+            } completionHandler: { isSuccess, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
         }
     }
 }
