@@ -43,6 +43,7 @@ extension FinishConfirmModalViewController {
         let input = FinishConfirmModalViewModel.Input(
             saveAsSingleRadioButtonTapped: scene.saveAsSingleRadioButton.tapGesture.rx.event.asVoidSignal(),
             saveByDayRadioButtonTapped: scene.saveByDayRadioButton.tapGesture.rx.event.asVoidSignal(),
+            noSaveRadioButtonTapped: scene.noSaveRadioButton.tapGesture.rx.event.asVoidSignal(),
             finishButtonTapped: scene.finishButton.button.rx.tap.asSignal(),
             cancelButtonTapped: scene.cancelButton.button.rx.tap.asSignal()
         )

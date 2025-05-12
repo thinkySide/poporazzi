@@ -37,6 +37,7 @@ extension FinishConfirmModalViewModel {
     struct Input {
         let saveAsSingleRadioButtonTapped: Signal<Void>
         let saveByDayRadioButtonTapped: Signal<Void>
+        let noSaveRadioButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
         let cancelButtonTapped: Signal<Void>
     }
@@ -44,7 +45,7 @@ extension FinishConfirmModalViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let sectionMediaList: BehaviorRelay<SectionMediaList>
-        let saveOption = BehaviorRelay<AlbumSaveOption?>(value: nil)
+        let saveOption = BehaviorRelay<AlbumSaveOption>(value: .saveAsSingle)
         let toggleLoading = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
     }
@@ -75,6 +76,11 @@ extension FinishConfirmModalViewModel {
             .emit(to: output.saveOption)
             .disposed(by: disposeBag)
         
+        input.noSaveRadioButtonTapped
+            .map { AlbumSaveOption.noSave }
+            .emit(to: output.saveOption)
+            .disposed(by: disposeBag)
+        
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.toggleLoading.accept(true)
@@ -93,7 +99,7 @@ extension FinishConfirmModalViewModel {
                         }
                         .disposed(by: owner.disposeBag)
                     
-                case .none:
+                case .noSave:
                     break
                 }
             }

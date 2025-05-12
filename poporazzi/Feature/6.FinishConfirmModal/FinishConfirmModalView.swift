@@ -27,13 +27,20 @@ final class FinishConfirmModalView: CodeBaseUI {
     let saveAsSingleRadioButton = RadioButton(
         title: "하나로 저장",
         sub: "모든 사진이 하나의 앨범으로 저장돼요",
-        variation: .deselected
+        variation: .selected
     )
     
     /// 일차별 저장 라디오 버튼
     let saveByDayRadioButton = RadioButton(
         title: "일차별 저장",
         sub: "모든 일차별로 앨범을 생성 후 한 폴더에 저장돼요",
+        variation: .deselected
+    )
+    
+    /// 저장 없이 종료 라디오 버튼
+    let noSaveRadioButton = RadioButton(
+        title: "저장 없이 종료",
+        sub: "앨범 저장 없이 기록이 종료돼요",
         variation: .deselected
     )
     
@@ -47,7 +54,6 @@ final class FinishConfirmModalView: CodeBaseUI {
         super.init(frame: .zero)
         setup()
         addSubview(loadingIndicator)
-        finishButton.action(.toggleEnabled(false))
     }
     
     required init?(coder: NSCoder) {
@@ -68,7 +74,7 @@ final class FinishConfirmModalView: CodeBaseUI {
 extension FinishConfirmModalView {
     
     enum Action {
-        case updateRadioState(AlbumSaveOption?)
+        case updateRadioState(AlbumSaveOption)
         case toggleLoading(Bool)
     }
     
@@ -76,20 +82,20 @@ extension FinishConfirmModalView {
         switch action {
         case .updateRadioState(let radioState):
             switch radioState {
-            case .none:
-                saveAsSingleRadioButton.action(.updateState(.deselected))
-                saveByDayRadioButton.action(.updateState(.deselected))
-                finishButton.action(.toggleEnabled(false))
-                
             case .saveAsSingle:
                 saveAsSingleRadioButton.action(.updateState(.selected))
                 saveByDayRadioButton.action(.updateState(.deselected))
-                finishButton.action(.toggleEnabled(true))
+                noSaveRadioButton.action(.updateState(.deselected))
                 
             case .saveByDay:
                 saveAsSingleRadioButton.action(.updateState(.deselected))
                 saveByDayRadioButton.action(.updateState(.selected))
-                finishButton.action(.toggleEnabled(true))
+                noSaveRadioButton.action(.updateState(.deselected))
+                
+            case .noSave:
+                saveAsSingleRadioButton.action(.updateState(.deselected))
+                saveByDayRadioButton.action(.updateState(.deselected))
+                noSaveRadioButton.action(.updateState(.selected))
             }
             
         case let .toggleLoading(isActive):
@@ -109,6 +115,7 @@ extension FinishConfirmModalView {
             
             flex.addItem(saveAsSingleRadioButton).marginTop(24)
             flex.addItem(saveByDayRadioButton).marginTop(16)
+            flex.addItem(noSaveRadioButton).marginTop(16)
             
             flex.addItem(finishButton).marginTop(32)
             flex.addItem(cancelButton).marginTop(8).alignSelf(.center)
