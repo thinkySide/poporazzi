@@ -1,31 +1,29 @@
 //
-//  FormLabel.swift
+//  FormSwitch.swift
 //  poporazzi
 //
-//  Created by 김민준 on 4/17/25.
+//  Created by 김민준 on 5/12/25.
 //
 
 import UIKit
 import PinLayout
 import FlexLayout
 
-final class FormLabel: CodeBaseUI {
+final class FormSwitch: CodeBaseUI {
     
     var containerView = UIView()
     
-    let tapGesture = UITapGestureRecognizer()
+    private let formLabel = UILabel("", size: 16, color: .mainLabel)
     
-    /// 앨범 제목 라벨
-    private let label: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(16)
-        label.textColor = .subLabel
-        return label
+    let controlSwitch: UISwitch = {
+        let control = UISwitch()
+        control.onTintColor = .brandPrimary
+        return control
     }()
     
     init(title: String) {
         super.init(frame: .zero)
-        label.text = title
+        formLabel.text = title
         setup(color: .clear)
     }
     
@@ -42,11 +40,13 @@ final class FormLabel: CodeBaseUI {
 
 // MARK: - Layout
 
-extension FormLabel {
+extension FormSwitch {
     
     func configLayout() {
-        containerView.flex.define { flex in
-            flex.addItem(label)
+        containerView.flex.direction(.row).define { flex in
+            flex.addItem(formLabel)
+            flex.addItem().grow(1)
+            flex.addItem(controlSwitch)
         }
     }
 }

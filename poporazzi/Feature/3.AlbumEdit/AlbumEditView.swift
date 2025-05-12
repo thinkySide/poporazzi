@@ -46,6 +46,12 @@ final class AlbumEditView: CodeBaseUI {
     /// 시작날짜 피커
     let startDatePicker = FormDatePicker()
     
+    /// 세부 옵션 라벨
+    let detailOptionLabel = FormLabel(title: "세부 옵션")
+    
+    /// 앨범에 스크린샷 포함 스위치
+    let containScreenshotSwitch = FormSwitch(title: "앨범에 스크린샷 포함")
+    
     init() {
         super.init(frame: .zero)
         setup()
@@ -71,7 +77,7 @@ extension AlbumEditView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
+            flex.addItem().paddingHorizontal(20).define { flex in
                 flex.addItem().marginTop(24).define { flex in
                     flex.addItem(titleFormLabel)
                     flex.addItem(titleTextField).marginTop(12)
@@ -80,6 +86,11 @@ extension AlbumEditView {
                 flex.addItem().marginTop(32).define { flex in
                     flex.addItem(startDateFormLabel)
                     flex.addItem(startDatePicker).marginTop(12)
+                }
+                
+                flex.addItem().marginTop(40).define { flex in
+                    flex.addItem(detailOptionLabel)
+                    flex.addItem(containScreenshotSwitch).marginTop(8)
                 }
             }
         }

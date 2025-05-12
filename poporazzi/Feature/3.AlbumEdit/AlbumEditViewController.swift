@@ -44,6 +44,7 @@ extension AlbumEditViewController {
             viewDidLoad: .just(()),
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
             startDatePickerTapped: scene.startDatePicker.tapGesture.rx.event.asVoidSignal(),
+            containScreenshotSwitchChanged: scene.containScreenshotSwitch.controlSwitch.rx.isOn.asSignal(onErrorJustReturn: false),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             saveButtonTapped: scene.saveButton.button.rx.tap.asSignal()
         )
@@ -60,6 +61,12 @@ extension AlbumEditViewController {
         output.startDate
             .bind(with: self) { owner, date in
                 owner.scene.startDatePicker.action(.updateDate(date))
+            }
+            .disposed(by: disposeBag)
+        
+        output.isContainScreenshot
+            .bind(with: self) { owner, isOn in
+                owner.scene.containScreenshotSwitch.controlSwitch.setOn(isOn, animated: false)
             }
             .disposed(by: disposeBag)
         

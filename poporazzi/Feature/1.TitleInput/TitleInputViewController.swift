@@ -30,11 +30,6 @@ final class TitleInputViewController: ViewController {
         bind()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        scene.titleTextField.action(.presentKeyboard)
-    }
-    
     deinit {
         Log.print(#file, .deinit)
     }
@@ -47,6 +42,7 @@ extension TitleInputViewController {
     func bind() {
         let input = TitleInputViewModel.Input(
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
+            containScreenshotChanged: scene.containScreenshotSwitch.controlSwitch.rx.isOn.asSignal(onErrorJustReturn: false),
             startButtonTapped: scene.actionButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -68,7 +64,13 @@ extension TitleInputViewController {
             .bind(with: self) { owner, path in
                 switch path {
                 case .pushRecord:
-                    owner.scene.titleTextField.textField.text = ""
+                    Task {
+                        try await Task.sleep(for: .seconds(1))
+                        await MainActor.run {
+                            owner.scene.titleTextField.textField.text = ""
+                            owner.scene.containScreenshotSwitch.controlSwitch.isOn = false
+                        }
+                    }
                 }
             }
             .disposed(by: disposeBag)

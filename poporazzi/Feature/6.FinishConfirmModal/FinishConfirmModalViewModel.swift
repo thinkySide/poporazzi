@@ -86,9 +86,12 @@ extension FinishConfirmModalViewModel {
                 switch owner.output.saveOption.value {
                 case .saveAsSingle:
                     owner.output.toggleLoading.accept(true)
-                    try? owner.saveAlbumAsSingle()
-                    owner.output.toggleLoading.accept(false)
-                    owner.finishRecord()
+                    owner.saveAlbumAsSingle()
+                        .bind { _ in
+                            owner.output.toggleLoading.accept(false)
+                            owner.finishRecord()
+                        }
+                        .disposed(by: owner.disposeBag)
                     
                 case .saveByDay:
                     owner.output.toggleLoading.accept(true)
@@ -101,6 +104,7 @@ extension FinishConfirmModalViewModel {
                     
                 case .noSave:
                     owner.navigation.accept(.popToRoot)
+                    owner.finishRecord()
                 }
             }
             .disposed(by: disposeBag)
@@ -149,10 +153,10 @@ extension FinishConfirmModalViewModel {
 extension FinishConfirmModalViewModel {
     
     /// 하나로 앨범을 저장합니다.
-    private func saveAlbumAsSingle() throws {
-        try photoKitService.saveAlbumAsSingle(
+    private func saveAlbumAsSingle() -> Observable<Void> {
+        photoKitService.saveAlbumAsSingle(
             title: output.album.value.title,
-            excludeAssets: UserDefaultsService.excludeAssets
+            sectionMediaList: output.sectionMediaList.value
         )
     }
     
@@ -160,8 +164,7 @@ extension FinishConfirmModalViewModel {
     private func saveAlubmByDay() -> Observable<Void> {
         photoKitService.saveAlubmByDay(
             title: output.album.value.title,
-            sectionMediaList: output.sectionMediaList.value,
-            excludeAssets: UserDefaultsService.excludeAssets
+            sectionMediaList: output.sectionMediaList.value
         )
     }
 }
