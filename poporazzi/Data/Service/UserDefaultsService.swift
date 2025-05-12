@@ -22,6 +22,9 @@ struct UserDefaultsService {
     
     @UserDefault(key: "excludeAssets", defaultValue: [])
     static var excludeAssets: [String]
+    
+    @UserDefault(key: "isContainScreenshot", defaultValue: true)
+    static var isContainScreenshot: Bool
 }
 
 // MARK: - Syntax Sugar
