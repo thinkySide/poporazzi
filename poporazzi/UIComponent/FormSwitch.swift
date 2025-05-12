@@ -24,7 +24,7 @@ final class FormSwitch: CodeBaseUI {
     init(title: String) {
         super.init(frame: .zero)
         formLabel.text = title
-        setup()
+        setup(color: .clear)
     }
     
     required init?(coder: NSCoder) {

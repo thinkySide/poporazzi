@@ -32,10 +32,11 @@ final class TitleInputView: CodeBaseUI {
         color: .subLabel
     )
     
+    /// 키보드 전용 뷰
+    let keyboardAccessoryView = UIView()
+    
     /// 세부 옵션 라벨
     let detailOptionLabel = FormLabel(title: "세부 옵션")
-    
-    let keyboardAccessoryView = UIView()
     
     /// 앨범에 스크린샷 포함 스위치
     let containScreenshotSwitch = FormSwitch(title: "앨범에 스크린샷 포함")
@@ -100,9 +101,10 @@ extension TitleInputView {
             }
         
         keyboardAccessoryView.flex.direction(.column).justifyContent(.end).define { flex in
+            flex.grow(1)
             flex.addItem(detailOptionLabel).marginHorizontal(20)
             flex.addItem(containScreenshotSwitch).marginTop(8).marginHorizontal(20)
-            flex.addItem(actionButton).marginTop(28)
+            flex.addItem(actionButton).marginTop(24)
         }
     }
 }

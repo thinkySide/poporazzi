@@ -26,7 +26,7 @@ final class FormLabel: CodeBaseUI {
     init(title: String) {
         super.init(frame: .zero)
         label.text = title
-        setup()
+        setup(color: .clear)
     }
     
     required init?(coder: NSCoder) {

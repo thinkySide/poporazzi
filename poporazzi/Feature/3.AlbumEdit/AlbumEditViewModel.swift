@@ -35,6 +35,7 @@ extension AlbumEditViewModel {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
         let startDatePickerTapped: Signal<Void>
+        let containScreenshotSwitchChanged: Signal<Bool>
         let backButtonTapped: Signal<Void>
         let saveButtonTapped: Signal<Void>
     }
@@ -43,12 +44,13 @@ extension AlbumEditViewModel {
         let record: BehaviorRelay<Album>
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
+        let isContainScreenshot: BehaviorRelay<Bool>
         let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     enum Navigation {
         case presentStartDatePicker(Date)
-        case dismiss(Album)
+        case dismiss(Album, isContainScreenshot: Bool)
     }
     
     enum Delegate {
@@ -77,9 +79,20 @@ extension AlbumEditViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.containScreenshotSwitchChanged
+            .skip(1)
+            .emit(to: output.isContainScreenshot)
+            .disposed(by: disposeBag)
+        
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.dismiss(owner.output.record.value))
+                let isContainScreenshot = UserDefaultsService.isContainScreenshot
+                owner.navigation.accept(
+                    .dismiss(
+                        owner.output.record.value,
+                        isContainScreenshot: isContainScreenshot
+                    )
+                )
             }
             .disposed(by: disposeBag)
         
@@ -88,8 +101,10 @@ extension AlbumEditViewModel {
                 let currentTitle = owner.output.titleText.value
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
                 let record = (Album(title: albumTitle, trackingStartDate: owner.output.startDate.value))
-                owner.navigation.accept(.dismiss(record))
+                let isContainScreenshot = owner.output.isContainScreenshot.value
+                owner.navigation.accept(.dismiss(record, isContainScreenshot: isContainScreenshot))
                 UserDefaultsService.album = record
+                UserDefaultsService.isContainScreenshot = isContainScreenshot
             }
             .disposed(by: disposeBag)
         

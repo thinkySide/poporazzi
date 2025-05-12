@@ -54,6 +54,7 @@ extension RecordViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
+        let isContainScreenshot: BehaviorRelay<Bool>
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         let updateRecordCells = BehaviorRelay<[Media]>(value: [])
@@ -68,13 +69,13 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case presentAlbumEdit(Album)
+        case presentAlbumEdit(Album, Bool)
         case presentExcludeRecord
         case presentFinishModal(Album, SectionMediaList)
     }
     
     enum Delegate {
-        case albumDidEdited(Album)
+        case albumDidEdited(Album, isContainScreenshot: Bool)
         case updateExcludeRecord
     }
     
@@ -125,13 +126,17 @@ extension RecordViewModel {
         // 1. 화면 진입 시 기본 이미지 로드
         input.viewDidLoad
             .asObservable()
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .do { [weak self] _ in
+                guard let self else { return }
+                self.output.setupSeeMoreMenu.accept(self.seemoreMenu)
+            }
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, _ in
-                owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
                 owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
+                    .observe(on: MainScheduler.asyncInstance)
                     .bind { mediaList in
                         owner.output.updateRecordCells.accept(mediaList)
                     }
@@ -154,6 +159,7 @@ extension RecordViewModel {
                     let assetIdentifiers = owner.chunkAssetIdentifiers
                     
                     owner.requestImages(from: assetIdentifiers)
+                        .observe(on: MainScheduler.asyncInstance)
                         .bind { mediaList in
                             owner.output.updateRecordCells.accept(mediaList)
                         }
@@ -285,7 +291,8 @@ extension RecordViewModel {
                 switch action {
                 case .editAlbum:
                     let album = owner.output.album.value
-                    owner.navigation.accept(.presentAlbumEdit(album))
+                    let isContainScreenshot = owner.output.isContainScreenshot.value
+                    owner.navigation.accept(.presentAlbumEdit(album, isContainScreenshot))
                     
                 case .excludeRecord:
                     owner.navigation.accept(.presentExcludeRecord)
@@ -296,8 +303,9 @@ extension RecordViewModel {
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
-                case .albumDidEdited(let record):
-                    owner.output.album.accept(record)
+                case let .albumDidEdited(album, isContainScreenshot):
+                    owner.output.album.accept(album)
+                    owner.output.isContainScreenshot.accept(isContainScreenshot)
                     owner.output.viewDidRefresh.accept(())
                     
                 case .updateExcludeRecord:

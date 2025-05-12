@@ -30,15 +30,16 @@ final class Coordinator {
         titleInputVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
-                case .pushRecord(let album):
-                    owner.pushRecord(titleInputVM, album)
+                case let .pushRecord(album, isContainScreenshot):
+                    owner.pushRecord(titleInputVM, album, isContainScreenshot)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
         
         if UserDefaultsService.isTracking {
             let album = UserDefaultsService.album
-            titleInputVM.navigation.accept(.pushRecord(album))
+            let isContainScreenshot = UserDefaultsService.isContainScreenshot
+            titleInputVM.navigation.accept(.pushRecord(album, isContainScreenshot))
         }
         
         window?.rootViewController = navigationController
@@ -51,8 +52,13 @@ final class Coordinator {
 extension Coordinator {
     
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ album: Album) {
-        let recordVM = RecordViewModel(output: .init(album: .init(value: album)))
+    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ album: Album, _ isContainScreenshot: Bool) {
+        let recordVM = RecordViewModel(
+            output: .init(
+                album: .init(value: album),
+                isContainScreenshot: .init(value: isContainScreenshot)
+            )
+        )
         let recordVC = RecordViewController(viewModel: recordVM)
         self.navigationController.pushViewController(recordVC, animated: true)
         
@@ -62,8 +68,8 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .presentAlbumEdit(album):
-                    owner.presentAlbumEdit(recordVM, album)
+                case let .presentAlbumEdit(album, isContainScreenshot):
+                    owner.presentAlbumEdit(recordVM, album, isContainScreenshot)
                     
                 case .presentExcludeRecord:
                     owner.presentExcludeRecord(recordVM)
@@ -81,12 +87,13 @@ extension Coordinator {
 extension Coordinator {
     
     /// 앨범 수정 화면을 Present 합니다.
-    private func presentAlbumEdit(_ recordVM: RecordViewModel?, _ album: Album) {
+    private func presentAlbumEdit(_ recordVM: RecordViewModel?, _ album: Album, _ isContainScreenshot: Bool) {
         let editVM = AlbumEditViewModel(
             output: .init(
                 record: .init(value: album),
                 titleText: .init(value: album.title),
-                startDate: .init(value: album.trackingStartDate)
+                startDate: .init(value: album.trackingStartDate),
+                isContainScreenshot: .init(value: isContainScreenshot)
             )
         )
         let editVC = AlbumEditViewController(viewModel: editVM)
@@ -99,8 +106,8 @@ extension Coordinator {
                 case .presentStartDatePicker(let date):
                     owner.presentDatePickerModal(editVC, editVM, startDate: date)
                     
-                case .dismiss(let album):
-                    recordVM?.delegate.accept(.albumDidEdited(album))
+                case let .dismiss(album, isContainScreenshot):
+                    recordVM?.delegate.accept(.albumDidEdited(album, isContainScreenshot: isContainScreenshot))
                     editVC?.dismiss(animated: true)
                 }
             }
