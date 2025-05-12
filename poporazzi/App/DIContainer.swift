@@ -20,6 +20,7 @@ final class DIContainer {
     struct Dependencies {
         let liveActivityService: LiveActivityInterface
         let photoKitService: PhotoKitInterface
+        let storeKitService: StoreKitServiceInterface
     }
     
     /// 객체를 꺼내옵니다.
@@ -42,11 +43,13 @@ extension DIContainer {
             switch self {
             case .liveValue: .init(
                 liveActivityService: LiveActivityService(),
-                photoKitService: PhotoKitService()
+                photoKitService: PhotoKitService(),
+                storeKitService: StoreKitService()
             )
             case .testValue: .init(
                 liveActivityService: MockLiveActivityService(),
-                photoKitService: MockPhotoKitService()
+                photoKitService: MockPhotoKitService(),
+                storeKitService: MockStoreKitService()
             )
             }
         }
