@@ -171,6 +171,7 @@ extension RecordViewModel {
                 
                 let assetIdentifiers = owner.chunkAssetIdentifiers
                 owner.requestImages(from: assetIdentifiers)
+                    .observe(on: MainScheduler.asyncInstance)
                     .bind { mediaList in
                         owner.output.updateRecordCells.accept(mediaList)
                     }

@@ -16,6 +16,7 @@ struct Album {
     }
 }
 
+/// 앨범 저장 옵션
 enum AlbumSaveOption {
     
     /// 하나로 저장
@@ -23,4 +24,7 @@ enum AlbumSaveOption {
     
     /// 일차별 저장
     case saveByDay
+    
+    /// 저장 없이 종료
+    case noSave
 }

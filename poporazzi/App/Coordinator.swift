@@ -155,7 +155,7 @@ extension Coordinator {
         )
         let finishVC = FinishConfirmModalViewController(viewModel: finishVM)
         finishVC.sheetPresentationController?.preferredCornerRadius = 20
-        finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 352 })]
+        finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 428 })]
         finishVC.sheetPresentationController?.prefersGrabberVisible = true
         self.navigationController.present(finishVC, animated: true)
         
