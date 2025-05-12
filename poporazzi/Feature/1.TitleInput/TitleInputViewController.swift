@@ -30,11 +30,6 @@ final class TitleInputViewController: ViewController {
         bind()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        scene.titleTextField.action(.presentKeyboard)
-    }
-    
     deinit {
         Log.print(#file, .deinit)
     }

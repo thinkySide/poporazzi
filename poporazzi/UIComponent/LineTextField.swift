@@ -66,6 +66,7 @@ extension LineTextField {
         switch action {
         case let .setupInputAccessoryView(view):
             textField.inputAccessoryView = view
+            textField.becomeFirstResponder()
             
         case .presentKeyboard:
             textField.becomeFirstResponder()

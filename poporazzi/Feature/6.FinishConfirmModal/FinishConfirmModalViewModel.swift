@@ -101,6 +101,7 @@ extension FinishConfirmModalViewModel {
                     
                 case .noSave:
                     owner.navigation.accept(.popToRoot)
+                    owner.finishRecord()
                 }
             }
             .disposed(by: disposeBag)

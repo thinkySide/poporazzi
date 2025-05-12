@@ -32,6 +32,14 @@ final class TitleInputView: CodeBaseUI {
         color: .subLabel
     )
     
+    /// 세부 옵션 라벨
+    let detailOptionLabel = FormLabel(title: "세부 옵션")
+    
+    let keyboardAccessoryView = UIView()
+    
+    /// 앨범에 스크린샷 포함 스위치
+    let containScreenshotSwitch = FormSwitch(title: "앨범에 스크린샷 포함")
+    
     /// 액션 버튼
     let actionButton = TextFieldActionButton(title: "기록 시작하기")
     
@@ -48,7 +56,11 @@ final class TitleInputView: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
-        titleTextField.action(.setupInputAccessoryView(actionButton))
+        
+        keyboardAccessoryView.pin.width(bounds.width).height(120)
+        keyboardAccessoryView.flex.layout()
+        
+        titleTextField.action(.setupInputAccessoryView(keyboardAccessoryView))
     }
 }
 
@@ -87,6 +99,10 @@ extension TitleInputView {
                 }
             }
         
-        actionButton.pin.height(56)
+        keyboardAccessoryView.flex.direction(.column).justifyContent(.end).define { flex in
+            flex.addItem(detailOptionLabel).marginHorizontal(20)
+            flex.addItem(containScreenshotSwitch).marginTop(8).marginHorizontal(20)
+            flex.addItem(actionButton).marginTop(28)
+        }
     }
 }
