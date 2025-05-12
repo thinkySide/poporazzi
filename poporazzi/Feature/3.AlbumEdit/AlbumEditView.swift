@@ -47,10 +47,10 @@ final class AlbumEditView: CodeBaseUI {
     let startDatePicker = FormDatePicker()
     
     /// 세부 옵션 라벨
-    let detailOptionLabel = FormLabel(title: "세부 옵션")
+    let detailOptionLabel = FormLabel(title: "앨범 저장 옵션")
     
     /// 앨범에 스크린샷 포함 스위치
-    let containScreenshotSwitch = FormSwitch(title: "앨범에 스크린샷 포함")
+    let containScreenshotSwitch = FormSwitch(title: "스크린샷 포함")
     
     init() {
         super.init(frame: .zero)
