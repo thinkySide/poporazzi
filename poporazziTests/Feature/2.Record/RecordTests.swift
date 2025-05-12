@@ -16,7 +16,12 @@ final class RecordTests: XCTestCase {
     
     override func setUpWithError() throws {
         DIContainer.shared.inject(.testValue)
-        viewModel = RecordViewModel(output: .init(album: .init(value: .initialValue)))
+        viewModel = RecordViewModel(
+            output: .init(
+                album: .init(value: .initialValue),
+                isContainScreenshot: .init(value: false)
+            )
+        )
         try super.setUpWithError()
     }
     
@@ -76,7 +81,7 @@ extension RecordTests {
         let (_, output) = makeInputOutput()
         let disposeBag = DisposeBag()
         
-        let dummys: [Media] = (0..<300).map { Media(id: String($0), creationDate: .now, mediaType: .photo) }
+        let dummys: [Media] = (0..<300).map { Media(id: String($0), creationDate: .now, mediaType: .photo(isScreenShot: false)) }
         output.mediaList.accept(dummys)
         
         output.mediaList
@@ -97,7 +102,7 @@ extension RecordTests {
         let expectation = XCTestExpectation(description: "페이지네이션 횟수 카운트")
         expectation.expectedFulfillmentCount = 2
         
-        let dummys: [Media] = (0..<300).map { Media(id: String($0), creationDate: .now, mediaType: .photo) }
+        let dummys: [Media] = (0..<300).map { Media(id: String($0), creationDate: .now, mediaType: .photo(isScreenShot: false)) }
         output.mediaList.accept(dummys)
         
         output.updateRecordCells

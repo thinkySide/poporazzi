@@ -26,6 +26,7 @@ final class TitleInputTests: XCTestCase {
     }
     
     typealias TestInput = (
+        containScreenshotChanged: PublishRelay<Bool>,
         titleTextChanged: PublishRelay<String>,
         startButtonTapped: PublishRelay<Void>
     )
@@ -56,7 +57,7 @@ extension TitleInputTests {
     }
     
     func test_시작후저장값() throws {
-        let (input, output) = makeInputOutput()
+        let (input, _) = makeInputOutput()
         let testTitle = "테스트"
         input.titleTextChanged.accept(testTitle)
         input.startButtonTapped.accept(())
@@ -71,11 +72,13 @@ extension TitleInputTests {
     
     func makeInputOutput() -> (TestInput, TitleInputViewModel.Output) {
         let testInput = (
+            containScreenshotChanged: PublishRelay<Bool>(),
             titleTextChanged: PublishRelay<String>(),
             startButtonTapped: PublishRelay<Void>()
         )
         let input = TitleInputViewModel.Input(
             titleTextChanged: testInput.titleTextChanged.asSignal(),
+            containScreenshotChanged: testInput.containScreenshotChanged.asSignal(),
             startButtonTapped: testInput.startButtonTapped.asSignal()
         )
         let output = viewModel.transform(input)
