@@ -20,7 +20,7 @@ final class FormDatePicker: CodeBaseUI {
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.font = .setDovemayo(18)
-        label.textColor = .subLabel
+        label.textColor = .mainLabel
         return label
     }()
     
