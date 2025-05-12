@@ -83,15 +83,15 @@ extension FinishConfirmModalViewModel {
         
         input.finishButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.toggleLoading.accept(true)
-                
                 switch owner.output.saveOption.value {
                 case .saveAsSingle:
+                    owner.output.toggleLoading.accept(true)
                     try? owner.saveAlbumAsSingle()
                     owner.output.toggleLoading.accept(false)
                     owner.finishRecord()
                     
                 case .saveByDay:
+                    owner.output.toggleLoading.accept(true)
                     owner.saveAlubmByDay()
                         .bind { _ in
                             owner.output.toggleLoading.accept(false)
@@ -100,7 +100,7 @@ extension FinishConfirmModalViewModel {
                         .disposed(by: owner.disposeBag)
                     
                 case .noSave:
-                    break
+                    owner.navigation.accept(.popToRoot)
                 }
             }
             .disposed(by: disposeBag)

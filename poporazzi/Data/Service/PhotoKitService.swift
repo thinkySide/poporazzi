@@ -91,7 +91,7 @@ extension PhotoKitService {
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
         Observable.create { [weak self] observer in
-            Task.detached { [weak self] in
+            Task {
                 guard let self else {
                     observer.onCompleted()
                     return
