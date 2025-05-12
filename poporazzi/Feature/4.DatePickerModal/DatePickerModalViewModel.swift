@@ -58,6 +58,7 @@ extension DatePickerModalViewModel {
         input.confirmButtonTapped
             .emit(with: self) { owner, _ in
                 owner.navigation.accept(.pop(owner.output.selectedDate.value))
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         

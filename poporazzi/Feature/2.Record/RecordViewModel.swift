@@ -196,14 +196,17 @@ extension RecordViewModel {
             .disposed(by: disposeBag)
         
         input.selectButtonTapped
-            .map { true }
-            .emit(to: output.switchSelectMode)
+            .emit(with: self) { owner, _ in
+                owner.output.switchSelectMode.accept(true)
+                HapticManager.impact(style: .light)
+            }
             .disposed(by: disposeBag)
         
         input.selectCancelButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.selectedRecordCells.accept([])
                 owner.output.switchSelectMode.accept(false)
+                HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
         
@@ -226,12 +229,14 @@ extension RecordViewModel {
         input.excludeButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.actionSheetPresented.accept(owner.excludeActionSheet)
+                HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
         
         input.removeButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.actionSheetPresented.accept(owner.removeActionSheet)
+                HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
         

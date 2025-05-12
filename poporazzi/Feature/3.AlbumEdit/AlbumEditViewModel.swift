@@ -103,6 +103,7 @@ extension AlbumEditViewModel {
                 let record = (Album(title: albumTitle, trackingStartDate: owner.output.startDate.value))
                 let isContainScreenshot = owner.output.isContainScreenshot.value
                 owner.navigation.accept(.dismiss(record, isContainScreenshot: isContainScreenshot))
+                HapticManager.notification(type: .success)
                 UserDefaultsService.album = record
                 UserDefaultsService.isContainScreenshot = isContainScreenshot
             }

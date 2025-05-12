@@ -86,14 +86,17 @@ extension ExcludeRecordViewModel {
             .disposed(by: disposeBag)
         
         input.selectButtonTapped
-            .map { true }
-            .emit(to: output.switchSelectMode)
+            .emit(with: self) { owner, _ in
+                owner.output.switchSelectMode.accept(true)
+                HapticManager.impact(style: .light)
+            }
             .disposed(by: disposeBag)
         
         input.selectCancelButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.selectedRecordCells.accept([])
                 owner.output.switchSelectMode.accept(false)
+                HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
         
