@@ -26,9 +26,8 @@ final class TitleInputTests: XCTestCase {
     }
     
     typealias TestInput = (
-        containScreenshotChanged: PublishRelay<Bool>,
         titleTextChanged: PublishRelay<String>,
-        startButtonTapped: PublishRelay<Void>
+        nextButtonTapped: PublishRelay<Void>
     )
 }
 
@@ -43,24 +42,24 @@ extension TitleInputTests {
         input.titleTextChanged.accept(testTitle)
         
         XCTAssertEqual(output.titleText.value, testTitle)
-        XCTAssertTrue(output.isStartButtonEnabled.value)
+        XCTAssertTrue(output.isNextButtonEnabled.value)
     }
     
     func test_시작버튼활성화() throws {
         let (input, output) = makeInputOutput()
         
-        XCTAssertTrue(!output.isStartButtonEnabled.value)
+        XCTAssertTrue(!output.isNextButtonEnabled.value)
         input.titleTextChanged.accept("테스트")
-        XCTAssertTrue(output.isStartButtonEnabled.value)
+        XCTAssertTrue(output.isNextButtonEnabled.value)
         input.titleTextChanged.accept("")
-        XCTAssertTrue(!output.isStartButtonEnabled.value)
+        XCTAssertTrue(!output.isNextButtonEnabled.value)
     }
     
     func test_시작후저장값() throws {
         let (input, _) = makeInputOutput()
         let testTitle = "테스트"
         input.titleTextChanged.accept(testTitle)
-        input.startButtonTapped.accept(())
+        input.nextButtonTapped.accept(())
         XCTAssertTrue(UserDefaultsService.albumTitle == testTitle)
         XCTAssertTrue(UserDefaultsService.isTracking)
     }
@@ -72,14 +71,12 @@ extension TitleInputTests {
     
     func makeInputOutput() -> (TestInput, TitleInputViewModel.Output) {
         let testInput = (
-            containScreenshotChanged: PublishRelay<Bool>(),
             titleTextChanged: PublishRelay<String>(),
-            startButtonTapped: PublishRelay<Void>()
+            nextButtonTapped: PublishRelay<Void>()
         )
-        let input = TitleInputViewModel.Input(
+        let input =  TitleInputViewModel.Input(
             titleTextChanged: testInput.titleTextChanged.asSignal(),
-            containScreenshotChanged: testInput.containScreenshotChanged.asSignal(),
-            startButtonTapped: testInput.startButtonTapped.asSignal()
+            nextButtonTapped: testInput.nextButtonTapped.asSignal()
         )
         let output = viewModel.transform(input)
         return (testInput, output)

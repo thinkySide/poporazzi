@@ -28,18 +28,26 @@ final class Coordinator {
         navigationController.setNavigationBarHidden(true, animated: false)
         
         titleInputVM.navigation
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak titleInputVM] owner, path in
                 switch path {
-                case let .pushRecord(album, isContainScreenshot):
-                    owner.pushRecord(titleInputVM, album, isContainScreenshot)
+                case let .pushAlbumOptionInput(title):
+                    owner.pushAlbumOptionInput(titleInputVM, title)
+                    
+                case let .pushRecord(album, fetchType, detailFetchTypes):
+                    owner.pushRecord(album, fetchType, detailFetchTypes)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
         
         if UserDefaultsService.isTracking {
             let album = UserDefaultsService.album
-            let isContainScreenshot = UserDefaultsService.isContainScreenshot
-            titleInputVM.navigation.accept(.pushRecord(album, isContainScreenshot))
+            var details = [MediaDetialFetchType]()
+            if UserDefaultsService.isContainSelfShooting { details.append(.selfShooting) }
+            if UserDefaultsService.isContainDownload { details.append(.download) }
+            if UserDefaultsService.isContainScreenshot { details.append(.screenshot) }
+            
+            // TODO: 업데이트 필요
+            titleInputVM.navigation.accept(.pushRecord(album, .all, details))
         }
         
         window?.rootViewController = navigationController
@@ -51,12 +59,33 @@ final class Coordinator {
 
 extension Coordinator {
     
+    /// 앨범 옵션 입력 화면으로 Push 합니다.
+    private func pushAlbumOptionInput(_ titleInputVM: TitleInputViewModel?, _ title: String) {
+        let albumOptionVM = AlbumOptionInputViewModel(output: .init(titleText: .init(value: title)))
+        let albumOptionVC = AlbumOptionInputViewController(viewModel: albumOptionVM)
+        self.navigationController.pushViewController(albumOptionVC, animated: true)
+        
+        albumOptionVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case let .pushRecord(album, fetchType, detailFetchTypes):
+                    owner.pushRecord(album, fetchType, detailFetchTypes)
+                    titleInputVM?.delegate.accept(.reset)
+                }
+            }
+            .disposed(by: albumOptionVC.disposeBag)
+    }
+    
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ album: Album, _ isContainScreenshot: Bool) {
+    private func pushRecord(_ album: Album, _ mediaFetchType: MediaFetchType, _ mediaDetailFetchTypes: [MediaDetialFetchType]) {
         let recordVM = RecordViewModel(
             output: .init(
                 album: .init(value: album),
-                isContainScreenshot: .init(value: isContainScreenshot)
+                mediaFetchType: .init(value: mediaFetchType),
+                mediaFetchDetailType: .init(value: mediaDetailFetchTypes)
             )
         )
         let recordVC = RecordViewController(viewModel: recordVM)
@@ -66,10 +95,10 @@ extension Coordinator {
             .bind(with: self) { [weak recordVM] owner, path in
                 switch path {
                 case .pop:
-                    owner.navigationController.popViewController(animated: true)
+                    owner.navigationController.popToRootViewController(animated: true)
                     
-                case let .presentAlbumEdit(album, isContainScreenshot):
-                    owner.presentAlbumEdit(recordVM, album, isContainScreenshot)
+                case let .presentAlbumEdit(album, fetchType, detailFetchTypes):
+                    owner.presentAlbumEdit(recordVM, album, fetchType, detailFetchTypes)
                     
                 case .presentExcludeRecord:
                     owner.presentExcludeRecord(recordVM)
@@ -87,13 +116,19 @@ extension Coordinator {
 extension Coordinator {
     
     /// 앨범 수정 화면을 Present 합니다.
-    private func presentAlbumEdit(_ recordVM: RecordViewModel?, _ album: Album, _ isContainScreenshot: Bool) {
+    private func presentAlbumEdit(
+        _ recordVM: RecordViewModel?,
+        _ album: Album,
+        _ mediaFetchType: MediaFetchType,
+        _ mediaDetailFetchTypes: [MediaDetialFetchType]
+    ) {
         let editVM = AlbumEditViewModel(
             output: .init(
                 record: .init(value: album),
                 titleText: .init(value: album.title),
                 startDate: .init(value: album.trackingStartDate),
-                isContainScreenshot: .init(value: isContainScreenshot)
+                mediaFetchType: .init(value: mediaFetchType),
+                mediaFetchDetailType: .init(value: mediaDetailFetchTypes)
             )
         )
         let editVC = AlbumEditViewController(viewModel: editVM)
@@ -106,8 +141,11 @@ extension Coordinator {
                 case .presentStartDatePicker(let date):
                     owner.presentDatePickerModal(editVC, editVM, startDate: date)
                     
-                case let .dismiss(album, isContainScreenshot):
-                    recordVM?.delegate.accept(.albumDidEdited(album, isContainScreenshot: isContainScreenshot))
+                case .dismiss:
+                    editVC?.dismiss(animated: true)
+                    
+                case let .dismissWithUpdate(album, fetchType, detailFetchTypes):
+                    recordVM?.delegate.accept(.albumDidEdited(album, fetchType, detailFetchTypes))
                     editVC?.dismiss(animated: true)
                 }
             }
