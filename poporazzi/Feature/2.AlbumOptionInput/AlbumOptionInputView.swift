@@ -37,7 +37,7 @@ final class AlbumOptionInputView: CodeBaseUI {
     private let saveItemFormLabel = FormLabel(title: "저장 항목")
     
     /// 선택 칩 뷰
-    let choiceChipView = UIView()
+    private let choiceChipView = UIView()
     
     /// 전체 선택 칩
     let allChoiceChip = FormChoiceChip("전체", variation: .selected)
@@ -49,7 +49,7 @@ final class AlbumOptionInputView: CodeBaseUI {
     let videoChoiceChip = FormChoiceChip("동영상", variation: .deselected)
     
     /// 모든 정보 수정 가능 라벨
-    let allInfoCanChangeAnytimeSubLabel: UILabel = {
+    private let allInfoCanChangeAnytimeSubLabel: UILabel = {
         let label = UILabel(
             "모든 정보는 언제든지 수정이 가능해요",
             size: 14,
@@ -87,6 +87,58 @@ final class AlbumOptionInputView: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
+    }
+}
+
+// MARK: - Action
+
+extension AlbumOptionInputView {
+    
+    enum Action {
+        case updateMediaFetchType(MediaFetchType)
+        case updateMediaDetailFetchType([MediaDetialFetchType])
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .updateMediaFetchType(fetchType):
+            switch fetchType {
+            case .all:
+                allChoiceChip.action(.updateVariation(.selected))
+                photoChoiceChip.action(.updateVariation(.deselected))
+                videoChoiceChip.action(.updateVariation(.deselected))
+                screenshotOptionCheckBox.isHidden = false
+                
+            case .image:
+                allChoiceChip.action(.updateVariation(.deselected))
+                photoChoiceChip.action(.updateVariation(.selected))
+                videoChoiceChip.action(.updateVariation(.deselected))
+                screenshotOptionCheckBox.isHidden = false
+                
+            case .video:
+                allChoiceChip.action(.updateVariation(.deselected))
+                photoChoiceChip.action(.updateVariation(.deselected))
+                videoChoiceChip.action(.updateVariation(.selected))
+                screenshotOptionCheckBox.isHidden = true
+            }
+            
+        case let .updateMediaDetailFetchType(details):
+            for detail in MediaDetialFetchType.allCases {
+                if details.contains(detail) {
+                    switch detail {
+                    case .selfShooting: selfShootingOptionCheckBox.action(.updateVariation(.selected))
+                    case .download: downloadOptionCheckBox.action(.updateVariation(.selected))
+                    case .screenshot: screenshotOptionCheckBox.action(.updateVariation(.selected))
+                    }
+                } else {
+                    switch detail {
+                    case .selfShooting: selfShootingOptionCheckBox.action(.updateVariation(.deselected))
+                    case .download: downloadOptionCheckBox.action(.updateVariation(.deselected))
+                    case .screenshot: screenshotOptionCheckBox.action(.updateVariation(.deselected))
+                    }
+                }
+            }
+        }
     }
 }
 

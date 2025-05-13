@@ -39,6 +39,13 @@ enum MediaFetchType {
     case video
 }
 
+/// 미디어 세부 검색 타입
+enum MediaDetialFetchType: CaseIterable {
+    case selfShooting
+    case download
+    case screenshot
+}
+
 // MARK: - Helper
 
 extension [Media] {

@@ -70,8 +70,10 @@ extension FormChoiceChip {
     func action(_ action: Action) {
         switch action {
         case let .updateVariation(variation):
-            button.backgroundColor = variation.backgroundColor
-            button.setTitleColor(variation.textColor, for: .normal)
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.button.backgroundColor = variation.backgroundColor
+                self?.button.setTitleColor(variation.textColor, for: .normal)
+            }
         }
     }
 }

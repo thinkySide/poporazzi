@@ -32,6 +32,9 @@ final class Coordinator {
                 switch path {
                 case let .pushAlbumOptionInput(title):
                     owner.pushAlbumOptionInput(title)
+                    
+                case let .pushRecord(album):
+                    owner.pushRecord(album)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
@@ -39,7 +42,7 @@ final class Coordinator {
         if UserDefaultsService.isTracking {
             let album = UserDefaultsService.album
             let isContainScreenshot = UserDefaultsService.isContainScreenshot
-            // titleInputVM.navigation.accept(.pushAlbumOptionInput(album))
+            titleInputVM.navigation.accept(.pushRecord(album))
         }
         
         window?.rootViewController = navigationController
@@ -64,7 +67,7 @@ extension Coordinator {
                     owner.navigationController.popViewController(animated: true)
                     
                 case .pushRecord(let album):
-                    break
+                    owner.pushRecord(album)
                 }
             }
             .disposed(by: albumOptionVC.disposeBag)

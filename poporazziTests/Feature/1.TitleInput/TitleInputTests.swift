@@ -26,9 +26,8 @@ final class TitleInputTests: XCTestCase {
     }
     
     typealias TestInput = (
-        containScreenshotChanged: PublishRelay<Bool>,
         titleTextChanged: PublishRelay<String>,
-        startButtonTapped: PublishRelay<Void>
+        nextButtonTapped: PublishRelay<Void>
     )
 }
 
@@ -60,7 +59,7 @@ extension TitleInputTests {
         let (input, _) = makeInputOutput()
         let testTitle = "테스트"
         input.titleTextChanged.accept(testTitle)
-        input.startButtonTapped.accept(())
+        input.nextButtonTapped.accept(())
         XCTAssertTrue(UserDefaultsService.albumTitle == testTitle)
         XCTAssertTrue(UserDefaultsService.isTracking)
     }
@@ -72,14 +71,12 @@ extension TitleInputTests {
     
     func makeInputOutput() -> (TestInput, TitleInputViewModel.Output) {
         let testInput = (
-            containScreenshotChanged: PublishRelay<Bool>(),
             titleTextChanged: PublishRelay<String>(),
-            startButtonTapped: PublishRelay<Void>()
+            nextButtonTapped: PublishRelay<Void>()
         )
-        let input = TitleInputViewModel.Input(
+        let input =  TitleInputViewModel.Input(
             titleTextChanged: testInput.titleTextChanged.asSignal(),
-            containScreenshotChanged: testInput.containScreenshotChanged.asSignal(),
-            startButtonTapped: testInput.startButtonTapped.asSignal()
+            nextButtonTapped: testInput.nextButtonTapped.asSignal()
         )
         let output = viewModel.transform(input)
         return (testInput, output)
