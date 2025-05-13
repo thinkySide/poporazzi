@@ -44,7 +44,7 @@ extension TitleInputViewModel {
     }
     
     enum Navigation {
-        case pushRecord(Album)
+        case pushAlbumOptionInput(title: String)
     }
     
     enum Alert {
@@ -68,12 +68,8 @@ extension TitleInputViewModel {
         
         input.nextButtonTapped
             .emit(with: self) { owner, _ in
-                let album = Album(title: owner.output.titleText.value, trackingStartDate: .now)
-                owner.navigation.accept(.pushRecord(album))
-                owner.liveActivityService.start(to: album)
-                HapticManager.notification(type: .success)
-                UserDefaultsService.album = album
-                UserDefaultsService.isTracking = true
+                let title = owner.output.titleText.value
+                owner.navigation.accept(.pushAlbumOptionInput(title: title))
             }
             .disposed(by: disposeBag)
         

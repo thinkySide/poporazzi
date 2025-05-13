@@ -58,20 +58,6 @@ extension TitleInputViewController {
             }
             .disposed(by: disposeBag)
         
-        viewModel.navigation
-            .bind(with: self) { owner, path in
-                switch path {
-                case .pushRecord:
-                    Task {
-                        try await Task.sleep(for: .seconds(1))
-                        await MainActor.run {
-                            owner.scene.titleTextField.textField.text = ""
-                        }
-                    }
-                }
-            }
-            .disposed(by: disposeBag)
-        
         output.alertPresented
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, alert in

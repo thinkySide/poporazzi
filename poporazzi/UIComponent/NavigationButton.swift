@@ -101,7 +101,7 @@ extension NavigationButton {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(button).paddingHorizontal(12).height(28).cornerRadius(14)
+            flex.addItem(button).paddingHorizontal(12).height(32).cornerRadius(14)
         }
     }
 }

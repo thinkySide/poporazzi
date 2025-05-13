@@ -30,8 +30,8 @@ final class Coordinator {
         titleInputVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
-                case let .pushRecord(album):
-                    owner.pushRecord(titleInputVM, album)
+                case let .pushAlbumOptionInput(title):
+                    owner.pushAlbumOptionInput(title)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
@@ -39,7 +39,7 @@ final class Coordinator {
         if UserDefaultsService.isTracking {
             let album = UserDefaultsService.album
             let isContainScreenshot = UserDefaultsService.isContainScreenshot
-            titleInputVM.navigation.accept(.pushRecord(album))
+            // titleInputVM.navigation.accept(.pushAlbumOptionInput(album))
         }
         
         window?.rootViewController = navigationController
@@ -51,8 +51,27 @@ final class Coordinator {
 
 extension Coordinator {
     
+    /// 앨범 옵션 입력 화면으로 Push 합니다.
+    private func pushAlbumOptionInput(_ title: String) {
+        let albumOptionVM = AlbumOptionInputViewModel(output: .init(titleText: .init(value: title)))
+        let albumOptionVC = AlbumOptionInputViewController(viewModel: albumOptionVM)
+        self.navigationController.pushViewController(albumOptionVC, animated: true)
+        
+        albumOptionVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case .pushRecord(let album):
+                    break
+                }
+            }
+            .disposed(by: albumOptionVC.disposeBag)
+    }
+    
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ album: Album) {
+    private func pushRecord(_ album: Album) {
         let recordVM = RecordViewModel(
             output: .init(
                 album: .init(value: album),
