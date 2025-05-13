@@ -30,8 +30,8 @@ final class Coordinator {
         titleInputVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
-                case let .pushRecord(album, isContainScreenshot):
-                    owner.pushRecord(titleInputVM, album, isContainScreenshot)
+                case let .pushRecord(album):
+                    owner.pushRecord(titleInputVM, album)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
@@ -39,7 +39,7 @@ final class Coordinator {
         if UserDefaultsService.isTracking {
             let album = UserDefaultsService.album
             let isContainScreenshot = UserDefaultsService.isContainScreenshot
-            titleInputVM.navigation.accept(.pushRecord(album, isContainScreenshot))
+            titleInputVM.navigation.accept(.pushRecord(album))
         }
         
         window?.rootViewController = navigationController
@@ -52,11 +52,11 @@ final class Coordinator {
 extension Coordinator {
     
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ album: Album, _ isContainScreenshot: Bool) {
+    private func pushRecord(_ titleInputVM: TitleInputViewModel, _ album: Album) {
         let recordVM = RecordViewModel(
             output: .init(
                 album: .init(value: album),
-                isContainScreenshot: .init(value: isContainScreenshot)
+                isContainScreenshot: .init(value: true)
             )
         )
         let recordVC = RecordViewController(viewModel: recordVM)

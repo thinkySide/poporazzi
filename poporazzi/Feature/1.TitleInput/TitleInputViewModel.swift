@@ -34,19 +34,17 @@ extension TitleInputViewModel {
     
     struct Input {
         let titleTextChanged: Signal<String>
-        let containScreenshotChanged: Signal<Bool>
-        let startButtonTapped: Signal<Void>
+        let nextButtonTapped: Signal<Void>
     }
     
     struct Output {
         let titleText = BehaviorRelay<String>(value: "")
         let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
-        let isContainScreenshot = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
-        case pushRecord(Album, Bool)
+        case pushRecord(Album)
     }
     
     enum Alert {
@@ -68,21 +66,14 @@ extension TitleInputViewModel {
             .emit(to: output.isStartButtonEnabled)
             .disposed(by: disposeBag)
         
-        input.containScreenshotChanged
-            .emit(to: output.isContainScreenshot)
-            .disposed(by: disposeBag)
-        
-        input.startButtonTapped
+        input.nextButtonTapped
             .emit(with: self) { owner, _ in
                 let album = Album(title: owner.output.titleText.value, trackingStartDate: .now)
-                let isContainScreenshot = owner.output.isContainScreenshot.value
-                owner.navigation.accept(.pushRecord(album, isContainScreenshot))
-                owner.output.isContainScreenshot.accept(false)
+                owner.navigation.accept(.pushRecord(album))
                 owner.liveActivityService.start(to: album)
                 HapticManager.notification(type: .success)
                 UserDefaultsService.album = album
                 UserDefaultsService.isTracking = true
-                UserDefaultsService.isContainScreenshot = owner.output.isContainScreenshot.value
             }
             .disposed(by: disposeBag)
         

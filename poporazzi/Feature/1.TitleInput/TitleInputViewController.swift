@@ -42,14 +42,13 @@ extension TitleInputViewController {
     func bind() {
         let input = TitleInputViewModel.Input(
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
-            containScreenshotChanged: scene.containScreenshotSwitch.controlSwitch.rx.isOn.asSignal(onErrorJustReturn: false),
-            startButtonTapped: scene.actionButton.button.rx.tap.asSignal()
+            nextButtonTapped: scene.nextButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
         output.isStartButtonEnabled
             .bind(with: self) { owner, isEnabled in
-                owner.scene.actionButton.action(.toggleEnabled(isEnabled))
+                owner.scene.nextButton.action(.toggleEnabled(isEnabled))
             }
             .disposed(by: disposeBag)
         
@@ -67,7 +66,6 @@ extension TitleInputViewController {
                         try await Task.sleep(for: .seconds(1))
                         await MainActor.run {
                             owner.scene.titleTextField.textField.text = ""
-                            owner.scene.containScreenshotSwitch.controlSwitch.isOn = false
                         }
                     }
                 }

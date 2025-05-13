@@ -14,19 +14,20 @@ final class TitleInputView: CodeBaseUI {
     var containerView = UIView()
     
     /// NavigationBar
-    private lazy var navigationBar = NavigationBar(title: "기록 생성")
+    private lazy var navigationBar = NavigationBar()
+    
+    /// 메인 라벨
+    let mainLabel = UILabel(
+        "어떤 순간을 기록하고 싶으신가요?",
+        size: 22,
+        color: .mainLabel
+    )
     
     /// 앨범 이름
     let titleFormLabel = FormLabel(title: "앨범 이름")
     
     /// 제목 텍스트필드
     let titleTextField = LineTextField(size: 24, placeholder: "부산 여행, 성수동 데이트")
-    
-    /// 세부 옵션 라벨
-    let detailOptionLabel = FormLabel(title: "앨범 저장 옵션")
-    
-    /// 앨범에 스크린샷 포함 스위치
-    let containScreenshotSwitch = FormSwitch(title: "스크린샷 포함")
     
     /// 키보드 전용 뷰
     let keyboardAccessoryView = UIView()
@@ -42,8 +43,8 @@ final class TitleInputView: CodeBaseUI {
         return label
     }()
     
-    /// 액션 버튼
-    let actionButton = TextFieldActionButton(title: "기록 시작하기")
+    /// 다음 버튼
+    let nextButton = ActionButton(title: "다음", variataion: .primary)
     
     init() {
         super.init(frame: .zero)
@@ -77,18 +78,17 @@ extension TitleInputView {
                 flex.addItem(navigationBar)
                 
                 flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                    flex.addItem(titleFormLabel).marginTop(16)
-                    flex.addItem(titleTextField).marginTop(10)
+                    flex.addItem(mainLabel).marginTop(16)
                     
-                    flex.addItem(detailOptionLabel).marginTop(32)
-                    flex.addItem(containScreenshotSwitch).marginTop(8)
+                    flex.addItem(titleFormLabel).marginTop(40)
+                    flex.addItem(titleTextField).marginTop(10)
                 }
             }
         
         keyboardAccessoryView.flex.direction(.column).justifyContent(.end).define { flex in
             flex.grow(1)
-            flex.addItem(allInfoCanChangeAnytimeSubLabel).marginHorizontal(20)
-            flex.addItem(actionButton).marginTop(16)
+            flex.addItem(allInfoCanChangeAnytimeSubLabel)
+            flex.addItem(nextButton).marginTop(16).marginBottom(20).marginHorizontal(20)
         }
     }
 }
