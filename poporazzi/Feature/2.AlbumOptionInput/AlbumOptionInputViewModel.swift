@@ -11,6 +11,7 @@ import RxCocoa
 
 final class AlbumOptionInputViewModel: ViewModel {
     
+    @Dependency(\.persistenceService) var persistenceService
     @Dependency(\.liveActivityService) var liveActivityService
     
     private let disposeBag = DisposeBag()
@@ -47,13 +48,13 @@ extension AlbumOptionInputViewModel {
     
     struct Output {
         let titleText: BehaviorRelay<String>
-        let mediaFetchType = BehaviorRelay<MediaFetchType>(value: .all)
-        let mediaFetchDetailType = BehaviorRelay<[MediaDetialFetchType]>(value: [.selfShooting])
+        let mediaFetchOption = BehaviorRelay<MediaFetchOption>(value: .all)
+        let mediaFilterOption = BehaviorRelay<MediaFilterOption>(value: .init())
     }
     
     enum Navigation {
         case pop
-        case pushRecord(Album, MediaFetchType, [MediaDetialFetchType])
+        case pushRecord(Album, MediaFetchOption, MediaFilterOption)
     }
 }
 
@@ -70,68 +71,70 @@ extension AlbumOptionInputViewModel {
         
         input.allSaveChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.all)
+                owner.output.mediaFetchOption.accept(.all)
             }
             .disposed(by: disposeBag)
         
         input.photoChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.image)
+                owner.output.mediaFetchOption.accept(.image)
             }
             .disposed(by: disposeBag)
         input.videoChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.video)
+                owner.output.mediaFetchOption.accept(.video)
             }
             .disposed(by: disposeBag)
         
         input.selfShootingOptionCheckBoxTapped
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.selfShooting)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainSelfShooting.toggle()
+                owner.output.mediaFilterOption.accept(filter)
             }
             .disposed(by: disposeBag)
         
         input.downloadOptionCheckBox
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.download)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainDownload.toggle()
+                owner.output.mediaFilterOption.accept(filter)
             }
             .disposed(by: disposeBag)
         
         input.screenshotOptionCheckBox
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.screenshot)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainScreenshot.toggle()
+                owner.output.mediaFilterOption.accept(filter)
             }
             .disposed(by: disposeBag)
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
-                let album = Album(title: owner.output.titleText.value, trackingStartDate: .now)
-                let fetchType = owner.output.mediaFetchType.value
-                let detailTypes = owner.output.mediaFetchDetailType.value
-                owner.navigation.accept(.pushRecord(album, fetchType, detailTypes))
+                let fetchOption = owner.output.mediaFetchOption.value
+                let filterOption = owner.output.mediaFilterOption.value
+                let album = Album(
+                    title: owner.output.titleText.value,
+                    mediaFetchOption: fetchOption,
+                    mediaFilterOption: filterOption
+                )
+                
+                owner.navigation.accept(.pushRecord(album, fetchOption, filterOption))
                 owner.liveActivityService.start(to: album)
                 HapticManager.notification(type: .success)
+                
+                try? owner.persistenceService.createAlbum(
+                    from: album,
+                    fetchOption: fetchOption,
+                    filterOption: filterOption
+                )
+                
                 UserDefaultsService.album = album
                 UserDefaultsService.isTracking = true
             }
             .disposed(by: disposeBag)
         
         return output
-    }
-}
-
-// MARK: - Helper
-
-extension AlbumOptionInputViewModel {
-    
-    /// 미디어 세부 항목을 업데이트 후 상태를 업데이트합니다.
-    private func updateMediaFetchDetailType(_ detailFetchType: MediaDetialFetchType) {
-        var details = output.mediaFetchDetailType.value
-        if details.contains(detailFetchType) {
-            details.removeAll(where: { $0 == detailFetchType })
-        } else {
-            details.append(detailFetchType)
-        }
-        output.mediaFetchDetailType.accept(details)
     }
 }

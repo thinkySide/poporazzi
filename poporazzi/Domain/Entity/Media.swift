@@ -33,17 +33,10 @@ enum MediaType: Hashable {
 }
 
 /// 미디어 검색 타입
-enum MediaFetchType {
+enum MediaFetchOption {
     case all
     case image
     case video
-}
-
-/// 미디어 세부 검색 타입
-enum MediaDetialFetchType: CaseIterable {
-    case selfShooting
-    case download
-    case screenshot
 }
 
 // MARK: - Helper

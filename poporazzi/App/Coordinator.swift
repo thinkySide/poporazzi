@@ -33,21 +33,17 @@ final class Coordinator {
                 case let .pushAlbumOptionInput(title):
                     owner.pushAlbumOptionInput(titleInputVM, title)
                     
-                case let .pushRecord(album, fetchType, detailFetchTypes):
-                    owner.pushRecord(album, fetchType, detailFetchTypes)
+                case let .pushRecord(album, fetchOption, filterOption):
+                    owner.pushRecord(album, fetchOption, filterOption)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
         
         if UserDefaultsService.isTracking {
             let album = UserDefaultsService.album
-            var details = [MediaDetialFetchType]()
-            if UserDefaultsService.isContainSelfShooting { details.append(.selfShooting) }
-            if UserDefaultsService.isContainDownload { details.append(.download) }
-            if UserDefaultsService.isContainScreenshot { details.append(.screenshot) }
             
             // TODO: 업데이트 필요
-            titleInputVM.navigation.accept(.pushRecord(album, .all, details))
+            titleInputVM.navigation.accept(.pushRecord(album, .all, .init()))
         }
         
         window?.rootViewController = navigationController
@@ -71,8 +67,8 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .pushRecord(album, fetchType, detailFetchTypes):
-                    owner.pushRecord(album, fetchType, detailFetchTypes)
+                case let .pushRecord(album, fetchOption, filterOption):
+                    owner.pushRecord(album, fetchOption, filterOption)
                     titleInputVM?.delegate.accept(.reset)
                 }
             }
@@ -80,12 +76,16 @@ extension Coordinator {
     }
     
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(_ album: Album, _ mediaFetchType: MediaFetchType, _ mediaDetailFetchTypes: [MediaDetialFetchType]) {
+    private func pushRecord(
+        _ album: Album,
+        _ fetchOption: MediaFetchOption,
+        _ filterOption: MediaFilterOption
+    ) {
         let recordVM = RecordViewModel(
             output: .init(
                 album: .init(value: album),
-                mediaFetchType: .init(value: mediaFetchType),
-                mediaFetchDetailType: .init(value: mediaDetailFetchTypes)
+                mediaFetchOption: .init(value: fetchOption),
+                mediaFilterOption: .init(value: filterOption)
             )
         )
         let recordVC = RecordViewController(viewModel: recordVM)
@@ -119,16 +119,16 @@ extension Coordinator {
     private func presentAlbumEdit(
         _ recordVM: RecordViewModel?,
         _ album: Album,
-        _ mediaFetchType: MediaFetchType,
-        _ mediaDetailFetchTypes: [MediaDetialFetchType]
+        _ fetchOption: MediaFetchOption,
+        _ filterOption: MediaFilterOption
     ) {
         let editVM = AlbumEditViewModel(
             output: .init(
                 record: .init(value: album),
                 titleText: .init(value: album.title),
-                startDate: .init(value: album.trackingStartDate),
-                mediaFetchType: .init(value: mediaFetchType),
-                mediaFetchDetailType: .init(value: mediaDetailFetchTypes)
+                startDate: .init(value: album.startDate),
+                mediaFetchOption: .init(value: fetchOption),
+                mediaFilterOption: .init(value: filterOption)
             )
         )
         let editVC = AlbumEditViewController(viewModel: editVM)

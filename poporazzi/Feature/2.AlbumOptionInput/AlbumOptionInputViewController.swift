@@ -52,16 +52,15 @@ extension AlbumOptionInputViewController {
         )
         let output = viewModel.transform(input)
         
-        output.mediaFetchType
-            .bind(with: self) { owner, fetchType in
-                owner.scene.action(.updateMediaFetchType(fetchType))
+        output.mediaFetchOption
+            .bind(with: self) { owner, fetchOption in
+                owner.scene.action(.updateMediaFetchOption(fetchOption))
             }
             .disposed(by: disposeBag)
         
-        output.mediaFetchDetailType
-            .bind(with: self) { owner, detailFetchType in
-                print(detailFetchType)
-                owner.scene.action(.updateMediaDetailFetchType(detailFetchType))
+        output.mediaFilterOption
+            .bind(with: self) { owner, filterOption in
+                owner.scene.action(.updateMediaFilterOption(filterOption))
             }
             .disposed(by: disposeBag)
     }

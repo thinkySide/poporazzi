@@ -59,7 +59,7 @@ extension AlbumEditViewController {
             .bind(with: self) { owner, record in
                 owner.scene.titleTextField.action(.updateText(record.title))
                 owner.scene.titleTextField.action(.updatePlaceholder(record.title))
-                owner.scene.startDatePicker.action(.updateDate(record.trackingStartDate))
+                owner.scene.startDatePicker.action(.updateDate(record.startDate))
             }
             .disposed(by: disposeBag)
         
@@ -87,16 +87,16 @@ extension AlbumEditViewController {
             }
             .disposed(by: disposeBag)
         
-        output.mediaFetchType
-            .bind(with: self) { owner, fetchType in
-                owner.scene.action(.updateMediaFetchType(fetchType))
+        output.mediaFetchOption
+            .bind(with: self) { owner, fetchOption in
+                owner.scene.action(.updateMediaFetchOption(fetchOption))
             }
             .disposed(by: disposeBag)
         
-        output.mediaFetchDetailType
-            .bind(with: self) { owner, detailFetchType in
-                print(detailFetchType)
-                owner.scene.action(.updateMediaDetailFetchType(detailFetchType))
+        output.mediaFilterOption
+            .bind(with: self) { owner, filterOption in
+                
+                // owner.scene.action(.updateMediaDetailFetchType(detailFetchType))
             }
             .disposed(by: disposeBag)
         

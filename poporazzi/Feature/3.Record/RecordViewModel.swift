@@ -55,8 +55,8 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         
-        let mediaFetchType: BehaviorRelay<MediaFetchType>
-        let mediaFetchDetailType: BehaviorRelay<[MediaDetialFetchType]>
+        let mediaFetchOption: BehaviorRelay<MediaFetchOption>
+        let mediaFilterOption: BehaviorRelay<MediaFilterOption>
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
@@ -74,13 +74,13 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case presentAlbumEdit(Album, MediaFetchType, [MediaDetialFetchType])
+        case presentAlbumEdit(Album, MediaFetchOption, MediaFilterOption)
         case presentExcludeRecord
         case presentFinishModal(Album, SectionMediaList)
     }
     
     enum Delegate {
-        case albumDidEdited(Album, MediaFetchType, [MediaDetialFetchType])
+        case albumDidEdited(Album, MediaFetchOption, MediaFilterOption)
         case updateExcludeRecord
     }
     
@@ -302,8 +302,8 @@ extension RecordViewModel {
                 case .editAlbum:
                     owner.navigation.accept(.presentAlbumEdit(
                         owner.output.album.value,
-                        owner.output.mediaFetchType.value,
-                        owner.output.mediaFetchDetailType.value
+                        owner.output.mediaFetchOption.value,
+                        owner.output.mediaFilterOption.value
                     ))
                     
                 case .excludeRecord:
@@ -317,8 +317,8 @@ extension RecordViewModel {
                 switch delegate {
                 case let .albumDidEdited(album, fetchType, detailType):
                     owner.output.album.accept(album)
-                    owner.output.mediaFetchType.accept(fetchType)
-                    owner.output.mediaFetchDetailType.accept(detailType)
+                    owner.output.mediaFetchOption.accept(fetchType)
+                    owner.output.mediaFilterOption.accept(detailType)
                     owner.output.viewDidRefresh.accept(())
                     
                 case .updateExcludeRecord:
@@ -347,7 +347,7 @@ extension RecordViewModel {
         let calendar = Calendar.current
         let components = calendar.dateComponents(
             [.day],
-            from: calendar.startOfDay(for: output.album.value.trackingStartDate),
+            from: calendar.startOfDay(for: output.album.value.startDate),
             to: calendar.startOfDay(for: creationDate)
         )
         return (components.day ?? 0) + 1
@@ -404,7 +404,7 @@ extension RecordViewModel {
     /// - 제외된 사진을 필터링합니다.
     /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() -> [Media] {
-        let trackingStartDate = output.album.value.trackingStartDate
+        let trackingStartDate = output.album.value.startDate
         return photoKitService.fetchMediasWithNoThumbnail(
             mediaFetchType: .all,
             date: trackingStartDate,

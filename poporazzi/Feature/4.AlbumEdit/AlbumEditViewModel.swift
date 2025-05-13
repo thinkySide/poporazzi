@@ -53,8 +53,8 @@ extension AlbumEditViewModel {
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
         
-        let mediaFetchType: BehaviorRelay<MediaFetchType>
-        let mediaFetchDetailType: BehaviorRelay<[MediaDetialFetchType]>
+        let mediaFetchOption: BehaviorRelay<MediaFetchOption>
+        let mediaFilterOption: BehaviorRelay<MediaFilterOption>
         
         let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
@@ -62,7 +62,7 @@ extension AlbumEditViewModel {
     enum Navigation {
         case presentStartDatePicker(Date)
         case dismiss
-        case dismissWithUpdate(Album, MediaFetchType, [MediaDetialFetchType])
+        case dismissWithUpdate(Album, MediaFetchOption, MediaFilterOption)
     }
     
     enum Delegate {
@@ -93,36 +93,42 @@ extension AlbumEditViewModel {
         
         input.allSaveChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.all)
+                owner.output.mediaFetchOption.accept(.all)
             }
             .disposed(by: disposeBag)
         
         input.photoChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.image)
+                owner.output.mediaFetchOption.accept(.image)
             }
             .disposed(by: disposeBag)
         input.videoChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.video)
+                owner.output.mediaFetchOption.accept(.video)
             }
             .disposed(by: disposeBag)
         
         input.selfShootingOptionCheckBoxTapped
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.selfShooting)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainSelfShooting.toggle()
+                owner.output.mediaFilterOption.accept(filter)
             }
             .disposed(by: disposeBag)
         
         input.downloadOptionCheckBox
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.download)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainDownload.toggle()
+                owner.output.mediaFilterOption.accept(filter)
             }
             .disposed(by: disposeBag)
         
         input.screenshotOptionCheckBox
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.screenshot)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainScreenshot.toggle()
+                owner.output.mediaFilterOption.accept(filter)
             }
             .disposed(by: disposeBag)
         
@@ -136,12 +142,13 @@ extension AlbumEditViewModel {
             .emit(with: self) { owner, _ in
                 let currentTitle = owner.output.titleText.value
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
-                let record = (Album(title: albumTitle, trackingStartDate: owner.output.startDate.value))
+                
+                let record = Album.initialValue // (Album(title: albumTitle, startDate: owner.output.startDate.value))
                 owner.navigation.accept(
                     .dismissWithUpdate(
                         owner.output.record.value,
-                        owner.output.mediaFetchType.value,
-                        owner.output.mediaFetchDetailType.value
+                        owner.output.mediaFetchOption.value,
+                        owner.output.mediaFilterOption.value
                     )
                 )
                 HapticManager.notification(type: .success)
@@ -160,21 +167,5 @@ extension AlbumEditViewModel {
             .disposed(by: disposeBag)
         
         return output
-    }
-}
-
-// MARK: - Helper
-
-extension AlbumEditViewModel {
-    
-    /// 미디어 세부 항목을 업데이트 후 상태를 업데이트합니다.
-    private func updateMediaFetchDetailType(_ detailFetchType: MediaDetialFetchType) {
-        var details = output.mediaFetchDetailType.value
-        if details.contains(detailFetchType) {
-            details.removeAll(where: { $0 == detailFetchType })
-        } else {
-            details.append(detailFetchType)
-        }
-        output.mediaFetchDetailType.accept(details)
     }
 }

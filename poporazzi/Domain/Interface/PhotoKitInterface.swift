@@ -19,7 +19,7 @@ protocol PhotoKitInterface {
     
     /// Thumbnail 없이 Media 배열을 반환합니다.
     func fetchMediasWithNoThumbnail(
-        mediaFetchType: MediaFetchType,
+        mediaFetchType: MediaFetchOption,
         date: Date,
         ascending: Bool
     ) -> [Media]

@@ -8,11 +8,66 @@
 import Foundation
 
 struct Album {
+    
+    /// 앨범 제목
     var title: String
-    var trackingStartDate: Date
+    
+    /// 시작 날짜
+    var startDate: Date
+    
+    /// 제외된 미디어 리스트
+    var excludeMediaList: [String]
+    
+    /// 미디어 요청 옵션
+    var mediaFetchOption: MediaFetchOption
+    
+    /// 미디어 필터링 옵션
+    var mediaFilterOption: MediaFilterOption
+    
+    init(
+        title: String,
+        startDate: Date = .now,
+        excludeMediaList: [String] = [],
+        mediaFetchOption: MediaFetchOption,
+        mediaFilterOption: MediaFilterOption
+    ) {
+        self.title = title
+        self.startDate = startDate
+        self.excludeMediaList = excludeMediaList
+        self.mediaFetchOption = mediaFetchOption
+        self.mediaFilterOption = mediaFilterOption
+    }
     
     static var initialValue: Self {
-        Album(title: "", trackingStartDate: .now)
+        Album(
+            title: "",
+            startDate: .now,
+            excludeMediaList: [],
+            mediaFetchOption: .all,
+            mediaFilterOption: .init()
+        )
+    }
+}
+
+struct MediaFilterOption {
+    
+    /// 직접 촬영한 사진 포함 여부
+    var isContainSelfShooting: Bool
+    
+    /// 다운로드 사진 포함 여부
+    var isContainDownload: Bool
+    
+    /// 스크린샷 포함 여부
+    var isContainScreenshot: Bool
+    
+    init(
+        isContainSelfShooting: Bool = true,
+        isContainDownload: Bool = false,
+        isContainScreenshot: Bool = false
+    ) {
+        self.isContainSelfShooting = isContainSelfShooting
+        self.isContainDownload = isContainDownload
+        self.isContainScreenshot = isContainScreenshot
     }
 }
 

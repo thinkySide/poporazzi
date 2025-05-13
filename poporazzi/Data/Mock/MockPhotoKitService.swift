@@ -19,7 +19,7 @@ struct MockPhotoKitService: PhotoKitInterface {
         print("[권한 허용 완료]")
     }
     
-    func fetchMediasWithNoThumbnail(mediaFetchType: MediaFetchType, date: Date, ascending: Bool) -> [Media] {
+    func fetchMediasWithNoThumbnail(mediaFetchType: MediaFetchOption, date: Date, ascending: Bool) -> [Media] {
         Array(repeatElement(.init(
             id: UUID().uuidString,
             creationDate: .now,

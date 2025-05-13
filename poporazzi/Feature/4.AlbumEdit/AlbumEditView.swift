@@ -95,13 +95,13 @@ final class AlbumEditView: CodeBaseUI {
 extension AlbumEditView {
     
     enum Action {
-        case updateMediaFetchType(MediaFetchType)
-        case updateMediaDetailFetchType([MediaDetialFetchType])
+        case updateMediaFetchOption(MediaFetchOption)
+        case updateMediaFilterOption(MediaFilterOption)
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .updateMediaFetchType(fetchType):
+        case let .updateMediaFetchOption(fetchType):
             switch fetchType {
             case .all:
                 allChoiceChip.action(.updateVariation(.selected))
@@ -122,22 +122,10 @@ extension AlbumEditView {
                 screenshotOptionCheckBox.isHidden = true
             }
             
-        case let .updateMediaDetailFetchType(details):
-            for detail in MediaDetialFetchType.allCases {
-                if details.contains(detail) {
-                    switch detail {
-                    case .selfShooting: selfShootingOptionCheckBox.action(.updateVariation(.selected))
-                    case .download: downloadOptionCheckBox.action(.updateVariation(.selected))
-                    case .screenshot: screenshotOptionCheckBox.action(.updateVariation(.selected))
-                    }
-                } else {
-                    switch detail {
-                    case .selfShooting: selfShootingOptionCheckBox.action(.updateVariation(.deselected))
-                    case .download: downloadOptionCheckBox.action(.updateVariation(.deselected))
-                    case .screenshot: screenshotOptionCheckBox.action(.updateVariation(.deselected))
-                    }
-                }
-            }
+        case let .updateMediaFilterOption(details):
+            self.selfShootingOptionCheckBox.action(.updateVariation(details.isContainSelfShooting ? .selected : .deselected))
+            self.downloadOptionCheckBox.action(.updateVariation(details.isContainDownload ? .selected : .deselected))
+            self.screenshotOptionCheckBox.action(.updateVariation(details.isContainScreenshot ? .selected : .deselected))
         }
     }
 }
