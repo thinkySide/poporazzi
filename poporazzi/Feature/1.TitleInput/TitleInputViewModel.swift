@@ -17,6 +17,7 @@ final class TitleInputViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     let alert = PublishRelay<Alert>()
     
     init(output: Output) {
@@ -39,13 +40,17 @@ extension TitleInputViewModel {
     
     struct Output {
         let titleText = BehaviorRelay<String>(value: "")
-        let isStartButtonEnabled = BehaviorRelay<Bool>(value: false)
+        let isNextButtonEnabled = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
         case pushAlbumOptionInput(title: String)
         case pushRecord(Album)
+    }
+    
+    enum Delegate {
+        case reset
     }
     
     enum Alert {
@@ -64,13 +69,23 @@ extension TitleInputViewModel {
         
         input.titleTextChanged
             .map { !$0.isEmpty }
-            .emit(to: output.isStartButtonEnabled)
+            .emit(to: output.isNextButtonEnabled)
             .disposed(by: disposeBag)
         
         input.nextButtonTapped
             .emit(with: self) { owner, _ in
                 let title = owner.output.titleText.value
                 owner.navigation.accept(.pushAlbumOptionInput(title: title))
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .reset:
+                    owner.output.isNextButtonEnabled.accept(false)
+                    owner.output.titleText.accept("")
+                }
             }
             .disposed(by: disposeBag)
         

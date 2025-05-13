@@ -86,7 +86,7 @@ extension TitleInputView {
             }
         
         keyboardAccessoryView.flex.direction(.column).justifyContent(.end).define { flex in
-            flex.addItem(nextButton).marginBottom(12).marginHorizontal(20)
+            flex.addItem(nextButton).marginBottom(20).marginHorizontal(20)
         }
     }
 }

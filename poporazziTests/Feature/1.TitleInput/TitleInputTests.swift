@@ -42,17 +42,17 @@ extension TitleInputTests {
         input.titleTextChanged.accept(testTitle)
         
         XCTAssertEqual(output.titleText.value, testTitle)
-        XCTAssertTrue(output.isStartButtonEnabled.value)
+        XCTAssertTrue(output.isNextButtonEnabled.value)
     }
     
     func test_시작버튼활성화() throws {
         let (input, output) = makeInputOutput()
         
-        XCTAssertTrue(!output.isStartButtonEnabled.value)
+        XCTAssertTrue(!output.isNextButtonEnabled.value)
         input.titleTextChanged.accept("테스트")
-        XCTAssertTrue(output.isStartButtonEnabled.value)
+        XCTAssertTrue(output.isNextButtonEnabled.value)
         input.titleTextChanged.accept("")
-        XCTAssertTrue(!output.isStartButtonEnabled.value)
+        XCTAssertTrue(!output.isNextButtonEnabled.value)
     }
     
     func test_시작후저장값() throws {

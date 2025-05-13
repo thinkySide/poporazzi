@@ -28,10 +28,10 @@ final class Coordinator {
         navigationController.setNavigationBarHidden(true, animated: false)
         
         titleInputVM.navigation
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak titleInputVM] owner, path in
                 switch path {
                 case let .pushAlbumOptionInput(title):
-                    owner.pushAlbumOptionInput(title)
+                    owner.pushAlbumOptionInput(titleInputVM, title)
                     
                 case let .pushRecord(album):
                     owner.pushRecord(album)
@@ -55,7 +55,7 @@ final class Coordinator {
 extension Coordinator {
     
     /// 앨범 옵션 입력 화면으로 Push 합니다.
-    private func pushAlbumOptionInput(_ title: String) {
+    private func pushAlbumOptionInput(_ titleInputVM: TitleInputViewModel?, _ title: String) {
         let albumOptionVM = AlbumOptionInputViewModel(output: .init(titleText: .init(value: title)))
         let albumOptionVC = AlbumOptionInputViewController(viewModel: albumOptionVM)
         self.navigationController.pushViewController(albumOptionVC, animated: true)
@@ -68,6 +68,7 @@ extension Coordinator {
                     
                 case .pushRecord(let album):
                     owner.pushRecord(album)
+                    titleInputVM?.delegate.accept(.reset)
                 }
             }
             .disposed(by: albumOptionVC.disposeBag)
@@ -88,7 +89,7 @@ extension Coordinator {
             .bind(with: self) { [weak recordVM] owner, path in
                 switch path {
                 case .pop:
-                    owner.navigationController.popViewController(animated: true)
+                    owner.navigationController.popToRootViewController(animated: true)
                     
                 case let .presentAlbumEdit(album, isContainScreenshot):
                     owner.presentAlbumEdit(recordVM, album, isContainScreenshot)
