@@ -105,8 +105,8 @@ extension Coordinator {
                 case let .presentAlbumEdit(album, fetchType, detailFetchTypes):
                     owner.presentAlbumEdit(recordVM, album, fetchType, detailFetchTypes)
                     
-                case .presentExcludeRecord:
-                    owner.presentExcludeRecord(recordVM)
+                case let .presentExcludeRecord(excludeList):
+                    owner.presentExcludeRecord(recordVM, excludeList)
                     
                 case let .presentFinishModal(album, sectionMediaList):
                     owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
@@ -158,8 +158,8 @@ extension Coordinator {
     }
     
     /// 제외된 기록 화면을 Present 합니다.
-    private func presentExcludeRecord(_ recordVM: RecordViewModel?) {
-        let excludeRecordVM = ExcludeRecordViewModel(output: .init())
+    private func presentExcludeRecord(_ recordVM: RecordViewModel?, _ excludeList: Set<String>) {
+        let excludeRecordVM = ExcludeRecordViewModel(output: .init(excludeList: .init(value: excludeList)))
         let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
         excludeRecordVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(excludeRecordVC, animated: true)
@@ -167,8 +167,8 @@ extension Coordinator {
         excludeRecordVM.navigation
             .bind(with: self) { [weak excludeRecordVC] owner, path in
                 switch path {
-                case .dismiss:
-                    recordVM?.delegate.accept(.updateExcludeRecord)
+                case let .dismiss(newExcludeList):
+                    recordVM?.delegate.accept(.updateExcludeRecord(excludeList: newExcludeList))
                     excludeRecordVC?.dismiss(animated: true)
                 }
             }

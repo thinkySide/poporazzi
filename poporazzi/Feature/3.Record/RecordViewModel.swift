@@ -76,13 +76,13 @@ extension RecordViewModel {
     enum Navigation {
         case pop
         case presentAlbumEdit(Album, MediaFetchOption, MediaFilterOption)
-        case presentExcludeRecord
+        case presentExcludeRecord(excludeList: Set<String>)
         case presentFinishModal(Album, SectionMediaList)
     }
     
     enum Delegate {
         case albumDidEdited(Album, MediaFetchOption, MediaFilterOption)
-        case updateExcludeRecord
+        case updateExcludeRecord(excludeList: Set<String>)
     }
     
     enum AlertAction {
@@ -276,10 +276,13 @@ extension RecordViewModel {
                 case .exclude:
                     let assetIdentifiers = owner.selectedAssetIdentifiers()
                     
-                    let album = owner.output.album.value
+                    var album = owner.output.album.value
+                    album.excludeMediaList.formUnion(assetIdentifiers)
+                    owner.output.album.accept(album)
+                    
                     owner.persistenceService.appendExcludeMediaList(
                         albumId: album.id,
-                        excludeList: assetIdentifiers
+                        excludeList: album.excludeMediaList
                     )
                     
                     owner.output.viewDidRefresh.accept(())
@@ -313,7 +316,8 @@ extension RecordViewModel {
                     ))
                     
                 case .excludeRecord:
-                    owner.navigation.accept(.presentExcludeRecord)
+                    let excludeList = owner.output.album.value.excludeMediaList
+                    owner.navigation.accept(.presentExcludeRecord(excludeList: excludeList))
                 }
             }
             .disposed(by: disposeBag)
@@ -327,7 +331,11 @@ extension RecordViewModel {
                     owner.output.mediaFilterOption.accept(detailType)
                     owner.output.viewDidRefresh.accept(())
                     
-                case .updateExcludeRecord:
+                case let .updateExcludeRecord(excludeList):
+                    var album = owner.output.album.value
+                    album.excludeMediaList = excludeList
+                    owner.output.album.accept(album)
+                    owner.persistenceService.updateAlbum(album)
                     owner.output.viewDidRefresh.accept(())
                 }
             }

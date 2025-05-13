@@ -50,10 +50,7 @@ extension PersistenceService {
     
     /// 앨범을 업데이트합니다.
     func updateAlbum(_ newAlbum: Album) {
-        guard let persistenceAlbum = readPersistenceAlbum(fromId: newAlbum.id) else {
-            print("조기 종료")
-            return
-        }
+        guard let persistenceAlbum = readPersistenceAlbum(fromId: newAlbum.id) else { return }
         do {
             try realm.write {
                 persistenceAlbum.title = newAlbum.title
@@ -69,7 +66,7 @@ extension PersistenceService {
     }
     
     /// 제외할 미디어 목록을 업데이트합니다.
-    func appendExcludeMediaList(albumId: String, excludeList: [String]) {
+    func appendExcludeMediaList(albumId: String, excludeList: Set<String>) {
         let album = readPersistenceAlbum(fromId: albumId)
         do {
             try realm.write {
@@ -116,7 +113,7 @@ extension PersistenceService {
             id: album.id,
             title: album.title,
             startDate: album.startDate,
-            excludeMediaList: Array(album.excludeMediaList),
+            excludeMediaList: Set(album.excludeMediaList),
             mediaFetchOption: toEntity(from: album.mediaFetchOption),
             mediaFilterOption: toEntity(from: album.mediaFilterOption)
         )

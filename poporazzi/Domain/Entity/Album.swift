@@ -19,7 +19,7 @@ struct Album {
     var startDate: Date
     
     /// 제외된 미디어 리스트
-    var excludeMediaList: [String]
+    var excludeMediaList: Set<String>
     
     /// 미디어 요청 옵션
     var mediaFetchOption: MediaFetchOption
@@ -31,7 +31,7 @@ struct Album {
         id: String = UUID().uuidString,
         title: String,
         startDate: Date = .now,
-        excludeMediaList: [String] = [],
+        excludeMediaList: Set<String> = [],
         mediaFetchOption: MediaFetchOption,
         mediaFilterOption: MediaFilterOption
     ) {
