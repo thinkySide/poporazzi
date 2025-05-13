@@ -23,6 +23,12 @@ struct UserDefaultsService {
     @UserDefault(key: "excludeAssets", defaultValue: [])
     static var excludeAssets: [String]
     
+    @UserDefault(key: "isContainSelfShooting", defaultValue: true)
+    static var isContainSelfShooting: Bool
+    
+    @UserDefault(key: "isContainDownload", defaultValue: true)
+    static var isContainDownload: Bool
+    
     @UserDefault(key: "isContainScreenshot", defaultValue: true)
     static var isContainScreenshot: Bool
 }

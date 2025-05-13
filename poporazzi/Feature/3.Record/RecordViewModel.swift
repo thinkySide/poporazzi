@@ -54,11 +54,16 @@ extension RecordViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
-        let isContainScreenshot: BehaviorRelay<Bool>
+        
+        let mediaFetchType: BehaviorRelay<MediaFetchType>
+        let mediaFetchDetailType: BehaviorRelay<[MediaDetialFetchType]>
+        
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
+        
         let updateRecordCells = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
+        
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
@@ -69,13 +74,13 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case presentAlbumEdit(Album, Bool)
+        case presentAlbumEdit(Album, MediaFetchType, [MediaDetialFetchType])
         case presentExcludeRecord
         case presentFinishModal(Album, SectionMediaList)
     }
     
     enum Delegate {
-        case albumDidEdited(Album, isContainScreenshot: Bool)
+        case albumDidEdited(Album, MediaFetchType, [MediaDetialFetchType])
         case updateExcludeRecord
     }
     
@@ -295,9 +300,11 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    let album = owner.output.album.value
-                    let isContainScreenshot = owner.output.isContainScreenshot.value
-                    owner.navigation.accept(.presentAlbumEdit(album, isContainScreenshot))
+                    owner.navigation.accept(.presentAlbumEdit(
+                        owner.output.album.value,
+                        owner.output.mediaFetchType.value,
+                        owner.output.mediaFetchDetailType.value
+                    ))
                     
                 case .excludeRecord:
                     owner.navigation.accept(.presentExcludeRecord)
@@ -308,9 +315,10 @@ extension RecordViewModel {
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
-                case let .albumDidEdited(album, isContainScreenshot):
+                case let .albumDidEdited(album, fetchType, detailType):
                     owner.output.album.accept(album)
-                    owner.output.isContainScreenshot.accept(isContainScreenshot)
+                    owner.output.mediaFetchType.accept(fetchType)
+                    owner.output.mediaFetchDetailType.accept(detailType)
                     owner.output.viewDidRefresh.accept(())
                     
                 case .updateExcludeRecord:
@@ -403,14 +411,15 @@ extension RecordViewModel {
             ascending: true
         )
         .filter { !Set(UserDefaultsService.excludeAssets).contains($0.id) }
-        .filter {
-            if !output.isContainScreenshot.value {
-                if case let .photo(isScreenshot) = $0.mediaType {
-                    return !isScreenshot
-                }
-            }
-            return true
-        }
+        // TODO: 필터 로직 수정
+//        .filter {
+//            if !output.isContainScreenshot.value {
+//                if case let .photo(isScreenshot) = $0.mediaType {
+//                    return !isScreenshot
+//                }
+//            }
+//            return true
+//        }
     }
     
     /// 전체 Media 리스트를 반환합니다.

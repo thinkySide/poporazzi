@@ -35,7 +35,7 @@ final class FormChoiceChip: CodeBaseUI {
     /// 버튼
     let button: UIButton = {
         let button = UIButton()
-        button.titleLabel?.font = .setDovemayo(18)
+        button.titleLabel?.font = .setDovemayo(16)
         button.backgroundColor = .white
         button.setTitleColor(.mainLabel, for: .normal)
         return button

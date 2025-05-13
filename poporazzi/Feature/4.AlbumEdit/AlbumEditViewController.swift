@@ -44,7 +44,12 @@ extension AlbumEditViewController {
             viewDidLoad: .just(()),
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
             startDatePickerTapped: scene.startDatePicker.tapGesture.rx.event.asVoidSignal(),
-            containScreenshotSwitchChanged: scene.containScreenshotSwitch.controlSwitch.rx.isOn.asSignal(onErrorJustReturn: false),
+            allSaveChoiceChipTapped: scene.allChoiceChip.button.rx.tap.asSignal(),
+            photoChoiceChipTapped: scene.photoChoiceChip.button.rx.tap.asSignal(),
+            videoChoiceChipTapped: scene.videoChoiceChip.button.rx.tap.asSignal(),
+            selfShootingOptionCheckBoxTapped: scene.selfShootingOptionCheckBox.button.rx.tap.asSignal(),
+            downloadOptionCheckBox: scene.downloadOptionCheckBox.button.rx.tap.asSignal(),
+            screenshotOptionCheckBox: scene.screenshotOptionCheckBox.button.rx.tap.asSignal(),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             saveButtonTapped: scene.saveButton.button.rx.tap.asSignal()
         )
@@ -64,12 +69,6 @@ extension AlbumEditViewController {
             }
             .disposed(by: disposeBag)
         
-        output.isContainScreenshot
-            .bind(with: self) { owner, isOn in
-                owner.scene.containScreenshotSwitch.controlSwitch.setOn(isOn, animated: false)
-            }
-            .disposed(by: disposeBag)
-        
         output.isSaveButtonEnabled
             .bind(with: self) { owner, isEnabled in
                 owner.scene.saveButton.action(.toggleDisabled(!isEnabled))
@@ -85,6 +84,19 @@ extension AlbumEditViewController {
         scene.tapGesture.rx.event
             .subscribe(with: self) { owner, _ in
                 owner.scene.titleTextField.action(.dismissKeyboard)
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaFetchType
+            .bind(with: self) { owner, fetchType in
+                owner.scene.action(.updateMediaFetchType(fetchType))
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaFetchDetailType
+            .bind(with: self) { owner, detailFetchType in
+                print(detailFetchType)
+                owner.scene.action(.updateMediaDetailFetchType(detailFetchType))
             }
             .disposed(by: disposeBag)
         

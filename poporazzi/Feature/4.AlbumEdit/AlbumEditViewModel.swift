@@ -35,7 +35,15 @@ extension AlbumEditViewModel {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
         let startDatePickerTapped: Signal<Void>
-        let containScreenshotSwitchChanged: Signal<Bool>
+        
+        let allSaveChoiceChipTapped: Signal<Void>
+        let photoChoiceChipTapped: Signal<Void>
+        let videoChoiceChipTapped: Signal<Void>
+        
+        let selfShootingOptionCheckBoxTapped: Signal<Void>
+        let downloadOptionCheckBox: Signal<Void>
+        let screenshotOptionCheckBox: Signal<Void>
+        
         let backButtonTapped: Signal<Void>
         let saveButtonTapped: Signal<Void>
     }
@@ -44,13 +52,17 @@ extension AlbumEditViewModel {
         let record: BehaviorRelay<Album>
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
-        let isContainScreenshot: BehaviorRelay<Bool>
+        
+        let mediaFetchType: BehaviorRelay<MediaFetchType>
+        let mediaFetchDetailType: BehaviorRelay<[MediaDetialFetchType]>
+        
         let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     enum Navigation {
         case presentStartDatePicker(Date)
-        case dismiss(Album, isContainScreenshot: Bool)
+        case dismiss
+        case dismissWithUpdate(Album, MediaFetchType, [MediaDetialFetchType])
     }
     
     enum Delegate {
@@ -79,20 +91,44 @@ extension AlbumEditViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.containScreenshotSwitchChanged
-            .skip(1)
-            .emit(to: output.isContainScreenshot)
+        input.allSaveChoiceChipTapped
+            .emit(with: self) { owner, _ in
+                owner.output.mediaFetchType.accept(.all)
+            }
+            .disposed(by: disposeBag)
+        
+        input.photoChoiceChipTapped
+            .emit(with: self) { owner, _ in
+                owner.output.mediaFetchType.accept(.image)
+            }
+            .disposed(by: disposeBag)
+        input.videoChoiceChipTapped
+            .emit(with: self) { owner, _ in
+                owner.output.mediaFetchType.accept(.video)
+            }
+            .disposed(by: disposeBag)
+        
+        input.selfShootingOptionCheckBoxTapped
+            .emit(with: self) { owner, _ in
+                owner.updateMediaFetchDetailType(.selfShooting)
+            }
+            .disposed(by: disposeBag)
+        
+        input.downloadOptionCheckBox
+            .emit(with: self) { owner, _ in
+                owner.updateMediaFetchDetailType(.download)
+            }
+            .disposed(by: disposeBag)
+        
+        input.screenshotOptionCheckBox
+            .emit(with: self) { owner, _ in
+                owner.updateMediaFetchDetailType(.screenshot)
+            }
             .disposed(by: disposeBag)
         
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                let isContainScreenshot = UserDefaultsService.isContainScreenshot
-                owner.navigation.accept(
-                    .dismiss(
-                        owner.output.record.value,
-                        isContainScreenshot: isContainScreenshot
-                    )
-                )
+                owner.navigation.accept(.dismiss)
             }
             .disposed(by: disposeBag)
         
@@ -101,11 +137,16 @@ extension AlbumEditViewModel {
                 let currentTitle = owner.output.titleText.value
                 let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
                 let record = (Album(title: albumTitle, trackingStartDate: owner.output.startDate.value))
-                let isContainScreenshot = owner.output.isContainScreenshot.value
-                owner.navigation.accept(.dismiss(record, isContainScreenshot: isContainScreenshot))
+                owner.navigation.accept(
+                    .dismissWithUpdate(
+                        owner.output.record.value,
+                        owner.output.mediaFetchType.value,
+                        owner.output.mediaFetchDetailType.value
+                    )
+                )
                 HapticManager.notification(type: .success)
                 UserDefaultsService.album = record
-                UserDefaultsService.isContainScreenshot = isContainScreenshot
+                UserDefaultsService.isContainScreenshot = true
             }
             .disposed(by: disposeBag)
         
@@ -119,5 +160,21 @@ extension AlbumEditViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Helper
+
+extension AlbumEditViewModel {
+    
+    /// 미디어 세부 항목을 업데이트 후 상태를 업데이트합니다.
+    private func updateMediaFetchDetailType(_ detailFetchType: MediaDetialFetchType) {
+        var details = output.mediaFetchDetailType.value
+        if details.contains(detailFetchType) {
+            details.removeAll(where: { $0 == detailFetchType })
+        } else {
+            details.append(detailFetchType)
+        }
+        output.mediaFetchDetailType.accept(details)
     }
 }

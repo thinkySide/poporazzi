@@ -53,7 +53,7 @@ extension AlbumOptionInputViewModel {
     
     enum Navigation {
         case pop
-        case pushRecord(Album)
+        case pushRecord(Album, MediaFetchType, [MediaDetialFetchType])
     }
 }
 
@@ -106,7 +106,9 @@ extension AlbumOptionInputViewModel {
         input.startButtonTapped
             .emit(with: self) { owner, _ in
                 let album = Album(title: owner.output.titleText.value, trackingStartDate: .now)
-                owner.navigation.accept(.pushRecord(album))
+                let fetchType = owner.output.mediaFetchType.value
+                let detailTypes = owner.output.mediaFetchDetailType.value
+                owner.navigation.accept(.pushRecord(album, fetchType, detailTypes))
                 owner.liveActivityService.start(to: album)
                 HapticManager.notification(type: .success)
                 UserDefaultsService.album = album

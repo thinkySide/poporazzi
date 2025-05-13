@@ -48,17 +48,6 @@ final class AlbumOptionInputView: CodeBaseUI {
     /// 동영상 선택 칩
     let videoChoiceChip = FormChoiceChip("동영상", variation: .deselected)
     
-    /// 모든 정보 수정 가능 라벨
-    private let allInfoCanChangeAnytimeSubLabel: UILabel = {
-        let label = UILabel(
-            "모든 정보는 언제든지 수정이 가능해요",
-            size: 14,
-            color: .subLabel
-        )
-        label.textAlignment = .center
-        return label
-    }()
-    
     /// 저장 옵션
     private let saveOptionsFormLabel = FormLabel(title: "저장 옵션 (1개 이상 선택)")
     
@@ -70,6 +59,17 @@ final class AlbumOptionInputView: CodeBaseUI {
     
     /// 스크린샷 항목 체크박스
     let screenshotOptionCheckBox = FormCheckBox("스크린샷", variation: .deselected)
+    
+    /// 모든 정보 수정 가능 라벨
+    private let allInfoCanChangeAnytimeSubLabel: UILabel = {
+        let label = UILabel(
+            "모든 정보는 언제든지 수정이 가능해요",
+            size: 14,
+            color: .subLabel
+        )
+        label.textAlignment = .center
+        return label
+    }()
     
     /// 시작 버튼
     let startButton = ActionButton(title: "기록 시작하기", variataion: .primary)
@@ -159,10 +159,9 @@ extension AlbumOptionInputView {
                     flex.addItem(choiceChipView).marginTop(16)
                     
                     flex.addItem(saveOptionsFormLabel).marginTop(40)
-                    
                     flex.addItem(selfShootingOptionCheckBox).marginTop(20)
-                    flex.addItem(downloadOptionCheckBox).marginTop(20)
-                    flex.addItem(screenshotOptionCheckBox).marginTop(20)
+                    flex.addItem(downloadOptionCheckBox).marginTop(16)
+                    flex.addItem(screenshotOptionCheckBox).marginTop(16)
                 }
                 
                 flex.addItem().grow(1)

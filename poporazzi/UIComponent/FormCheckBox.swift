@@ -25,7 +25,7 @@ final class FormCheckBox: CodeBaseUI {
     
     var containerView = UIView()
     
-    let title = UILabel(size: 18, color: .mainLabel)
+    let title = UILabel(size: 16, color: .mainLabel)
     
     let button: UIButton = {
         let button = UIButton()
