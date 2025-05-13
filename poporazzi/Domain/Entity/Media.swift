@@ -35,7 +35,7 @@ enum MediaType: Hashable {
 /// 미디어 검색 타입
 enum MediaFetchOption {
     case all
-    case image
+    case photo
     case video
 }
 

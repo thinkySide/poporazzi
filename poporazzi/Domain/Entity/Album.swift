@@ -9,6 +9,9 @@ import Foundation
 
 struct Album {
     
+    /// 고유 아이디
+    let id: String
+    
     /// 앨범 제목
     var title: String
     
@@ -25,12 +28,14 @@ struct Album {
     var mediaFilterOption: MediaFilterOption
     
     init(
+        id: String = UUID().uuidString,
         title: String,
         startDate: Date = .now,
         excludeMediaList: [String] = [],
         mediaFetchOption: MediaFetchOption,
         mediaFilterOption: MediaFilterOption
     ) {
+        self.id = id
         self.title = title
         self.startDate = startDate
         self.excludeMediaList = excludeMediaList

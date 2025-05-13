@@ -144,7 +144,7 @@ extension FinishConfirmModalViewModel {
         output.alertPresented.accept(saveCompleteAlert)
         HapticManager.notification(type: .success)
         UserDefaultsService.excludeAssets.removeAll()
-        UserDefaultsService.isTracking = false
+        UserDefaultsService.trackingAlbumId = ""
     }
 }
 

@@ -109,7 +109,7 @@ extension AlbumEditView {
                 videoChoiceChip.action(.updateVariation(.deselected))
                 screenshotOptionCheckBox.isHidden = false
                 
-            case .image:
+            case .photo:
                 allChoiceChip.action(.updateVariation(.deselected))
                 photoChoiceChip.action(.updateVariation(.selected))
                 videoChoiceChip.action(.updateVariation(.deselected))

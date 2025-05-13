@@ -322,7 +322,7 @@ extension PhotoKitService {
                 PHAssetMediaType.video.rawValue,
                 date as NSDate
             )
-        case .image:
+        case .photo:
             return .init(
                 format: mediaFormat + " AND " + dateFormat,
                 PHAssetMediaType.image.rawValue,

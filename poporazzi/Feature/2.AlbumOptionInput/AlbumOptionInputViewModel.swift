@@ -35,13 +35,13 @@ extension AlbumOptionInputViewModel {
     struct Input {
         let backButtonTapped: Signal<Void>
         
-        let allSaveChoiceChipTapped: Signal<Void>
-        let photoChoiceChipTapped: Signal<Void>
-        let videoChoiceChipTapped: Signal<Void>
+        let allFetchChoiceChipTapped: Signal<Void>
+        let photoFetchChoiceChipTapped: Signal<Void>
+        let videoFetchChoiceChipTapped: Signal<Void>
         
-        let selfShootingOptionCheckBoxTapped: Signal<Void>
-        let downloadOptionCheckBox: Signal<Void>
-        let screenshotOptionCheckBox: Signal<Void>
+        let selfShootingFilterCheckBoxTapped: Signal<Void>
+        let downloadFilterCheckBox: Signal<Void>
+        let screenshotFilterCheckBox: Signal<Void>
         
         let startButtonTapped: Signal<Void>
     }
@@ -69,24 +69,24 @@ extension AlbumOptionInputViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.allSaveChoiceChipTapped
+        input.allFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.all)
             }
             .disposed(by: disposeBag)
         
-        input.photoChoiceChipTapped
+        input.photoFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchOption.accept(.image)
+                owner.output.mediaFetchOption.accept(.photo)
             }
             .disposed(by: disposeBag)
-        input.videoChoiceChipTapped
+        input.videoFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.video)
             }
             .disposed(by: disposeBag)
         
-        input.selfShootingOptionCheckBoxTapped
+        input.selfShootingFilterCheckBoxTapped
             .emit(with: self) { owner, _ in
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainSelfShooting.toggle()
@@ -94,7 +94,7 @@ extension AlbumOptionInputViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.downloadOptionCheckBox
+        input.downloadFilterCheckBox
             .emit(with: self) { owner, _ in
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainDownload.toggle()
@@ -102,7 +102,7 @@ extension AlbumOptionInputViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.screenshotOptionCheckBox
+        input.screenshotFilterCheckBox
             .emit(with: self) { owner, _ in
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainScreenshot.toggle()
@@ -130,8 +130,7 @@ extension AlbumOptionInputViewModel {
                     filterOption: filterOption
                 )
                 
-                UserDefaultsService.album = album
-                UserDefaultsService.isTracking = true
+                UserDefaultsService.trackingAlbumId = album.id
             }
             .disposed(by: disposeBag)
         

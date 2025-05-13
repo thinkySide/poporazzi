@@ -12,7 +12,7 @@ import RealmSwift
 final class PersistenceAlbum: Object {
     
     /// 고유 ID
-    @Persisted(primaryKey: true) var id: ObjectId
+    @Persisted(primaryKey: true) var id: String
     
     /// 앨범 제목
     @Persisted var title: String
@@ -30,6 +30,7 @@ final class PersistenceAlbum: Object {
     @Persisted var mediaFilterOption: PersistenceMediaFilterOption?
     
     convenience init(
+        id: String,
         title: String,
         startDate: Date,
         excludeMediaList: List<String>,
@@ -37,6 +38,7 @@ final class PersistenceAlbum: Object {
         mediaFilterOption: PersistenceMediaFilterOption?
     ) {
         self.init()
+        self.id = id
         self.title = title
         self.startDate = startDate
         self.excludeMediaList = excludeMediaList

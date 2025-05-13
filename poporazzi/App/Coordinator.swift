@@ -11,6 +11,8 @@ import RxCocoa
 
 final class Coordinator {
     
+    @Dependency(\.persistenceService) var persistenceService
+    
     private var window: UIWindow?
     private var navigationController = UINavigationController()
     
@@ -20,8 +22,6 @@ final class Coordinator {
     
     /// 진입 화면을 설정합니다.
     func start() {
-        DIContainer.shared.inject(.liveValue)
-        
         let titleInputVM = TitleInputViewModel(output: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
@@ -39,11 +39,16 @@ final class Coordinator {
             }
             .disposed(by: titleInputVC.disposeBag)
         
-        if UserDefaultsService.isTracking {
-            let album = UserDefaultsService.album
-            
-            // TODO: 업데이트 필요
-            titleInputVM.navigation.accept(.pushRecord(album, .all, .init()))
+        let albumId = UserDefaultsService.trackingAlbumId
+        if !albumId.isEmpty {
+            let album = persistenceService.readAlbum(fromId: albumId)
+            titleInputVM.navigation.accept(
+                .pushRecord(
+                    album,
+                    album.mediaFetchOption,
+                    album.mediaFilterOption
+                )
+            )
         }
         
         window?.rootViewController = navigationController
@@ -124,7 +129,7 @@ extension Coordinator {
     ) {
         let editVM = AlbumEditViewModel(
             output: .init(
-                record: .init(value: album),
+                album: .init(value: album),
                 titleText: .init(value: album.title),
                 startDate: .init(value: album.startDate),
                 mediaFetchOption: .init(value: fetchOption),

@@ -12,6 +12,7 @@ import RxCocoa
 
 final class RecordViewModel: ViewModel {
     
+    @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
     
@@ -264,8 +265,7 @@ extension RecordViewModel {
                 case .finishWithoutRecord:
                     owner.navigation.accept(.pop)
                     owner.liveActivityService.stop()
-                    UserDefaultsService.excludeAssets.removeAll()
-                    UserDefaultsService.isTracking = false
+                    UserDefaultsService.trackingAlbumId = ""
                 }
             }
             .disposed(by: disposeBag)
@@ -275,7 +275,13 @@ extension RecordViewModel {
                 switch action {
                 case .exclude:
                     let assetIdentifiers = owner.selectedAssetIdentifiers()
-                    UserDefaultsService.excludeAssets.append(contentsOf: assetIdentifiers)
+                    
+                    let album = owner.output.album.value
+                    owner.persistenceService.appendExcludeMediaList(
+                        albumId: album.id,
+                        excludeList: assetIdentifiers
+                    )
+                    
                     owner.output.viewDidRefresh.accept(())
                     owner.output.selectedRecordCells.accept([])
                     
@@ -410,16 +416,15 @@ extension RecordViewModel {
             date: trackingStartDate,
             ascending: true
         )
-        .filter { !Set(UserDefaultsService.excludeAssets).contains($0.id) }
-        // TODO: 필터 로직 수정
-//        .filter {
-//            if !output.isContainScreenshot.value {
-//                if case let .photo(isScreenshot) = $0.mediaType {
-//                    return !isScreenshot
-//                }
-//            }
-//            return true
-//        }
+        .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
+        .filter {
+            if !output.album.value.mediaFilterOption.isContainScreenshot {
+                if case let .photo(isScreenshot) = $0.mediaType {
+                    return !isScreenshot
+                }
+            }
+            return true
+        }
     }
     
     /// 전체 Media 리스트를 반환합니다.

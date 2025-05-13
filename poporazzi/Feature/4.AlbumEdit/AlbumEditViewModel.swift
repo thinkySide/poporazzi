@@ -11,6 +11,8 @@ import RxCocoa
 
 final class AlbumEditViewModel: ViewModel {
     
+    @Dependency(\.persistenceService) private var persistenceDataService
+    
     let disposeBag = DisposeBag()
     
     private let output: Output
@@ -49,7 +51,7 @@ extension AlbumEditViewModel {
     }
     
     struct Output {
-        let record: BehaviorRelay<Album>
+        let album: BehaviorRelay<Album>
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
         
@@ -99,7 +101,7 @@ extension AlbumEditViewModel {
         
         input.photoChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchOption.accept(.image)
+                owner.output.mediaFetchOption.accept(.photo)
             }
             .disposed(by: disposeBag)
         input.videoChoiceChipTapped
@@ -141,19 +143,29 @@ extension AlbumEditViewModel {
         input.saveButtonTapped
             .emit(with: self) { owner, _ in
                 let currentTitle = owner.output.titleText.value
-                let albumTitle = currentTitle.isEmpty ? UserDefaultsService.albumTitle : currentTitle
+                let oldAlbum = owner.output.album.value
+                let albumTitle = currentTitle.isEmpty ? oldAlbum.title : currentTitle
                 
-                let record = Album.initialValue // (Album(title: albumTitle, startDate: owner.output.startDate.value))
+                let newAlbum = Album(
+                    id: oldAlbum.id,
+                    title: albumTitle,
+                    startDate: owner.output.startDate.value,
+                    excludeMediaList: oldAlbum.excludeMediaList,
+                    mediaFetchOption: owner.output.mediaFetchOption.value,
+                    mediaFilterOption: owner.output.mediaFilterOption.value
+                )
+                
                 owner.navigation.accept(
                     .dismissWithUpdate(
-                        owner.output.record.value,
-                        owner.output.mediaFetchOption.value,
-                        owner.output.mediaFilterOption.value
+                        newAlbum,
+                        newAlbum.mediaFetchOption,
+                        newAlbum.mediaFilterOption
                     )
                 )
+                
                 HapticManager.notification(type: .success)
-                UserDefaultsService.album = record
-                UserDefaultsService.isContainScreenshot = true
+                
+                owner.persistenceDataService.updateAlbum(newAlbum)
             }
             .disposed(by: disposeBag)
         

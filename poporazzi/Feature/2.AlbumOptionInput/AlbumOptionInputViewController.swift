@@ -42,12 +42,12 @@ extension AlbumOptionInputViewController {
     func bind() {
         let input = AlbumOptionInputViewModel.Input(
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
-            allSaveChoiceChipTapped: scene.allChoiceChip.button.rx.tap.asSignal(),
-            photoChoiceChipTapped: scene.photoChoiceChip.button.rx.tap.asSignal(),
-            videoChoiceChipTapped: scene.videoChoiceChip.button.rx.tap.asSignal(),
-            selfShootingOptionCheckBoxTapped: scene.selfShootingOptionCheckBox.button.rx.tap.asSignal(),
-            downloadOptionCheckBox: scene.downloadOptionCheckBox.button.rx.tap.asSignal(),
-            screenshotOptionCheckBox: scene.screenshotOptionCheckBox.button.rx.tap.asSignal(),
+            allFetchChoiceChipTapped: scene.allFetchChoiceChip.button.rx.tap.asSignal(),
+            photoFetchChoiceChipTapped: scene.photoFetchChoiceChip.button.rx.tap.asSignal(),
+            videoFetchChoiceChipTapped: scene.videoFetchChoiceChip.button.rx.tap.asSignal(),
+            selfShootingFilterCheckBoxTapped: scene.selfShootingFilterCheckBox.button.rx.tap.asSignal(),
+            downloadFilterCheckBox: scene.downloadFilterCheckBox.button.rx.tap.asSignal(),
+            screenshotFilterCheckBox: scene.screenshotFilterCheckBox.button.rx.tap.asSignal(),
             startButtonTapped: scene.startButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)

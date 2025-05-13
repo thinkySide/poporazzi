@@ -33,32 +33,32 @@ final class AlbumOptionInputView: CodeBaseUI {
         color: .mainLabel
     )
     
-    /// 저장 항목
-    private let saveItemFormLabel = FormLabel(title: "저장 항목")
+    /// 항목 옵션
+    private let fetchOptionFormLabel = FormLabel(title: "항목 옵션")
     
     /// 선택 칩 뷰
     private let choiceChipView = UIView()
     
     /// 전체 선택 칩
-    let allChoiceChip = FormChoiceChip("전체", variation: .selected)
+    let allFetchChoiceChip = FormChoiceChip("전체", variation: .selected)
     
     /// 사진 선택 칩
-    let photoChoiceChip = FormChoiceChip("사진", variation: .deselected)
+    let photoFetchChoiceChip = FormChoiceChip("사진", variation: .deselected)
     
     /// 동영상 선택 칩
-    let videoChoiceChip = FormChoiceChip("동영상", variation: .deselected)
+    let videoFetchChoiceChip = FormChoiceChip("동영상", variation: .deselected)
     
-    /// 저장 옵션
-    private let saveOptionsFormLabel = FormLabel(title: "저장 옵션 (1개 이상 선택)")
+    /// 필터 옵션
+    private let filterOptionsFormLabel = FormLabel(title: "필터링 옵션 (1개 이상 선택)")
     
     /// 직접 촬영한 항목 체크박스
-    let selfShootingOptionCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)
+    let selfShootingFilterCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)
     
     /// 다운로드한 항목 체크박스
-    let downloadOptionCheckBox = FormCheckBox("다운로드한 항목", variation: .deselected)
+    let downloadFilterCheckBox = FormCheckBox("다운로드한 항목", variation: .deselected)
     
     /// 스크린샷 항목 체크박스
-    let screenshotOptionCheckBox = FormCheckBox("스크린샷", variation: .deselected)
+    let screenshotFilterCheckBox = FormCheckBox("스크린샷", variation: .deselected)
     
     /// 모든 정보 수정 가능 라벨
     private let allInfoCanChangeAnytimeSubLabel: UILabel = {
@@ -104,28 +104,28 @@ extension AlbumOptionInputView {
         case let .updateMediaFetchOption(fetchType):
             switch fetchType {
             case .all:
-                allChoiceChip.action(.updateVariation(.selected))
-                photoChoiceChip.action(.updateVariation(.deselected))
-                videoChoiceChip.action(.updateVariation(.deselected))
-                screenshotOptionCheckBox.isHidden = false
+                allFetchChoiceChip.action(.updateVariation(.selected))
+                photoFetchChoiceChip.action(.updateVariation(.deselected))
+                videoFetchChoiceChip.action(.updateVariation(.deselected))
+                screenshotFilterCheckBox.isHidden = false
                 
-            case .image:
-                allChoiceChip.action(.updateVariation(.deselected))
-                photoChoiceChip.action(.updateVariation(.selected))
-                videoChoiceChip.action(.updateVariation(.deselected))
-                screenshotOptionCheckBox.isHidden = false
+            case .photo:
+                allFetchChoiceChip.action(.updateVariation(.deselected))
+                photoFetchChoiceChip.action(.updateVariation(.selected))
+                videoFetchChoiceChip.action(.updateVariation(.deselected))
+                screenshotFilterCheckBox.isHidden = false
                 
             case .video:
-                allChoiceChip.action(.updateVariation(.deselected))
-                photoChoiceChip.action(.updateVariation(.deselected))
-                videoChoiceChip.action(.updateVariation(.selected))
-                screenshotOptionCheckBox.isHidden = true
+                allFetchChoiceChip.action(.updateVariation(.deselected))
+                photoFetchChoiceChip.action(.updateVariation(.deselected))
+                videoFetchChoiceChip.action(.updateVariation(.selected))
+                screenshotFilterCheckBox.isHidden = true
             }
             
         case let .updateMediaFilterOption(details):
-            self.selfShootingOptionCheckBox.action(.updateVariation(details.isContainSelfShooting ? .selected : .deselected))
-            self.downloadOptionCheckBox.action(.updateVariation(details.isContainDownload ? .selected : .deselected))
-            self.screenshotOptionCheckBox.action(.updateVariation(details.isContainScreenshot ? .selected : .deselected))
+            self.selfShootingFilterCheckBox.action(.updateVariation(details.isContainSelfShooting ? .selected : .deselected))
+            self.downloadFilterCheckBox.action(.updateVariation(details.isContainDownload ? .selected : .deselected))
+            self.screenshotFilterCheckBox.action(.updateVariation(details.isContainScreenshot ? .selected : .deselected))
         }
     }
 }
@@ -143,13 +143,13 @@ extension AlbumOptionInputView {
                 flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
                     flex.addItem(mainLabel).marginTop(16)
                     
-                    flex.addItem(saveItemFormLabel).marginTop(40)
+                    flex.addItem(fetchOptionFormLabel).marginTop(40)
                     flex.addItem(choiceChipView).marginTop(16)
                     
-                    flex.addItem(saveOptionsFormLabel).marginTop(40)
-                    flex.addItem(selfShootingOptionCheckBox).marginTop(20)
-                    flex.addItem(downloadOptionCheckBox).marginTop(16)
-                    flex.addItem(screenshotOptionCheckBox).marginTop(16)
+                    flex.addItem(filterOptionsFormLabel).marginTop(40)
+                    flex.addItem(selfShootingFilterCheckBox).marginTop(20)
+                    flex.addItem(downloadFilterCheckBox).marginTop(16)
+                    flex.addItem(screenshotFilterCheckBox).marginTop(16)
                 }
                 
                 flex.addItem().grow(1)
@@ -161,9 +161,9 @@ extension AlbumOptionInputView {
             }
         
         choiceChipView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
-            flex.addItem(allChoiceChip).grow(1)
-            flex.addItem(photoChoiceChip).grow(1).marginHorizontal(12)
-            flex.addItem(videoChoiceChip).grow(1)
+            flex.addItem(allFetchChoiceChip).grow(1)
+            flex.addItem(photoFetchChoiceChip).grow(1).marginHorizontal(12)
+            flex.addItem(videoFetchChoiceChip).grow(1)
         }
     }
 }

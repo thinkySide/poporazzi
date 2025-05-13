@@ -11,42 +11,11 @@ import RxSwift
 /// UserDefaults 관리 객체
 struct UserDefaultsService {
     
-    @UserDefault(key: "isTracking", defaultValue: false)
-    static var isTracking: Bool
-    
-    @UserDefault(key: "albumTitle", defaultValue: "")
-    static var albumTitle: String
-    
-    @UserDefault(key: "trackingStartDate", defaultValue: .now)
-    static var trackingStartDate: Date
+    @UserDefault(key: "trackingAlbumId", defaultValue: "")
+    static var trackingAlbumId: String
     
     @UserDefault(key: "excludeAssets", defaultValue: [])
     static var excludeAssets: [String]
-    
-    @UserDefault(key: "isContainSelfShooting", defaultValue: true)
-    static var isContainSelfShooting: Bool
-    
-    @UserDefault(key: "isContainDownload", defaultValue: true)
-    static var isContainDownload: Bool
-    
-    @UserDefault(key: "isContainScreenshot", defaultValue: true)
-    static var isContainScreenshot: Bool
-}
-
-// MARK: - Syntax Sugar
-
-extension UserDefaultsService {
-    
-    /// 앨범
-    static var album: Album {
-        get {
-            .initialValue
-            // Album(title: albumTitle, startDate: trackingStartDate)
-        } set {
-            albumTitle = newValue.title
-            trackingStartDate = newValue.startDate
-        }
-    }
 }
 
 // MARK: - propertyWrapper

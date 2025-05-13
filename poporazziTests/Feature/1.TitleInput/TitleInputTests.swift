@@ -61,7 +61,7 @@ extension TitleInputTests {
         input.titleTextChanged.accept(testTitle)
         input.nextButtonTapped.accept(())
         XCTAssertTrue(UserDefaultsService.albumTitle == testTitle)
-        XCTAssertTrue(UserDefaultsService.isTracking)
+        XCTAssertTrue(UserDefaultsService.trackingAlbumId)
     }
 }
 
