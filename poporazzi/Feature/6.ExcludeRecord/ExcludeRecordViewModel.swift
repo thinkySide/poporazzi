@@ -11,6 +11,7 @@ import RxCocoa
 
 final class ExcludeRecordViewModel: ViewModel {
     
+    @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.photoKitService) private var photoKitService
     
     let disposeBag = DisposeBag()
@@ -45,7 +46,7 @@ extension ExcludeRecordViewModel {
     }
     
     struct Output {
-        let excludeList: BehaviorRelay<Set<String>>
+        let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
@@ -56,7 +57,7 @@ extension ExcludeRecordViewModel {
     }
     
     enum Navigation {
-        case dismiss(excludeList: Set<String>)
+        case dismiss(Album)
     }
     
     enum ActionSheetAction {
@@ -82,7 +83,7 @@ extension ExcludeRecordViewModel {
         
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.dismiss(excludeList: owner.output.excludeList.value))
+                owner.navigation.accept(.dismiss(owner.output.album.value))
             }
             .disposed(by: disposeBag)
         
@@ -135,12 +136,14 @@ extension ExcludeRecordViewModel {
                 case .recover:
                     let assetIdentifiers = owner.selectedAssetIdentifiers()
                     
-                    var excludeList = owner.output.excludeList.value
-                    excludeList.subtract(assetIdentifiers)
-                    owner.output.excludeList.accept(excludeList)
+                    var album = owner.output.album.value
+                    album.excludeMediaList.subtract(assetIdentifiers)
+                    owner.output.album.accept(album)
                     
                     owner.output.viewDidRefresh.accept(())
                     owner.output.selectedRecordCells.accept([])
+                    
+                    owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                     
                 case .remove:
                     owner.output.toggleLoading.accept(true)
@@ -148,12 +151,14 @@ extension ExcludeRecordViewModel {
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
                         .bind { isSuccess in
                             if isSuccess {
-                                var excludeList = owner.output.excludeList.value
-                                excludeList.subtract(assetIdentifiers)
-                                owner.output.excludeList.accept(excludeList)
+                                var album = owner.output.album.value
+                                album.excludeMediaList.subtract(assetIdentifiers)
+                                owner.output.album.accept(album)
                                 
                                 owner.output.viewDidRefresh.accept(())
                                 owner.output.selectedRecordCells.accept([])
+                                
+                                owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                             } else {
                                 owner.output.alertPresented.accept(owner.removeFailedAlert)
                             }
@@ -184,7 +189,7 @@ extension ExcludeRecordViewModel {
     
     /// 제외된 사진을 반환합니다.
     private func fetchExcludePhotos() -> Observable<[Media]> {
-        photoKitService.fetchMedias(from: Array(output.excludeList.value))
+        photoKitService.fetchMedias(from: Array(output.album.value.excludeMediaList))
     }
 }
 

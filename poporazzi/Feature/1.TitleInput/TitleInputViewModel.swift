@@ -46,7 +46,7 @@ extension TitleInputViewModel {
     
     enum Navigation {
         case pushAlbumOptionInput(title: String)
-        case pushRecord(Album, MediaFetchOption, MediaFilterOption)
+        case pushRecord(Album)
     }
     
     enum Delegate {

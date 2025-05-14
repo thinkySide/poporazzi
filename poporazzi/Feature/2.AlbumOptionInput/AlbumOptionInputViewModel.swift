@@ -54,7 +54,7 @@ extension AlbumOptionInputViewModel {
     
     enum Navigation {
         case pop
-        case pushRecord(Album, MediaFetchOption, MediaFilterOption)
+        case pushRecord(Album)
     }
 }
 
@@ -112,24 +112,17 @@ extension AlbumOptionInputViewModel {
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
-                let fetchOption = owner.output.mediaFetchOption.value
-                let filterOption = owner.output.mediaFilterOption.value
                 let album = Album(
                     title: owner.output.titleText.value,
-                    mediaFetchOption: fetchOption,
-                    mediaFilterOption: filterOption
+                    mediaFetchOption: owner.output.mediaFetchOption.value,
+                    mediaFilterOption: owner.output.mediaFilterOption.value
                 )
                 
-                owner.navigation.accept(.pushRecord(album, fetchOption, filterOption))
+                owner.navigation.accept(.pushRecord(album))
                 owner.liveActivityService.start(to: album)
                 HapticManager.notification(type: .success)
                 
-                try? owner.persistenceService.createAlbum(
-                    from: album,
-                    fetchOption: fetchOption,
-                    filterOption: filterOption
-                )
-                
+                try? owner.persistenceService.createAlbum(from: album)
                 UserDefaultsService.trackingAlbumId = album.id
             }
             .disposed(by: disposeBag)

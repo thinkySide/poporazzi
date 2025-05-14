@@ -52,6 +52,7 @@ extension AlbumEditViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
+        
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
         
@@ -64,7 +65,7 @@ extension AlbumEditViewModel {
     enum Navigation {
         case presentStartDatePicker(Date)
         case dismiss
-        case dismissWithUpdate(Album, MediaFetchOption, MediaFilterOption)
+        case dismissWithUpdate(Album)
     }
     
     enum Delegate {
@@ -155,13 +156,7 @@ extension AlbumEditViewModel {
                     mediaFilterOption: owner.output.mediaFilterOption.value
                 )
                 
-                owner.navigation.accept(
-                    .dismissWithUpdate(
-                        newAlbum,
-                        newAlbum.mediaFetchOption,
-                        newAlbum.mediaFilterOption
-                    )
-                )
+                owner.navigation.accept(.dismissWithUpdate(newAlbum))
                 
                 HapticManager.notification(type: .success)
                 

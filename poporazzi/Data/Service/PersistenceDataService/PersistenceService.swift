@@ -18,18 +18,14 @@ final class PersistenceService {
 extension PersistenceService {
     
     /// 영구 저장 앨범을 생성합니다.
-    func createAlbum(
-        from album: Album,
-        fetchOption: MediaFetchOption,
-        filterOption: MediaFilterOption
-    ) throws {
+    func createAlbum(from album: Album) throws {
         let album = PersistenceAlbum(
             id: album.id,
             title: album.title,
             startDate: album.startDate,
             excludeMediaList: .init(),
-            mediaFetchOption: toPersistence(from: fetchOption),
-            mediaFilterOption: toPersistence(from: filterOption)
+            mediaFetchOption: toPersistence(from: album.mediaFetchOption),
+            mediaFilterOption: toPersistence(from: album.mediaFilterOption)
         )
         
         try realm.write {
@@ -40,9 +36,7 @@ extension PersistenceService {
     /// ID를 기반으로 앨범을 반환합니다.
     func readAlbum(fromId: String) -> Album {
         if let persistenceAlbum = readPersistenceAlbum(fromId: fromId) {
-            let entity = toEntity(from: persistenceAlbum)
-            print(entity)
-            return entity
+            return toEntity(from: persistenceAlbum)
         } else {
             return .initialValue
         }
@@ -55,7 +49,6 @@ extension PersistenceService {
             try realm.write {
                 persistenceAlbum.title = newAlbum.title
                 persistenceAlbum.startDate = newAlbum.startDate
-                // persistenceAlbum.excludeMediaList.append(objectsIn: newAlbum.excludeMediaList)
                 persistenceAlbum.mediaFetchOption = toPersistence(from: newAlbum.mediaFetchOption)
                 persistenceAlbum.mediaFilterOption = toPersistence(from: newAlbum.mediaFilterOption)
             }
@@ -66,7 +59,7 @@ extension PersistenceService {
     }
     
     /// 제외할 미디어 목록을 업데이트합니다.
-    func appendExcludeMediaList(albumId: String, excludeList: Set<String>) {
+    func excludeMediaList(albumId: String, excludeList: Set<String>) {
         let album = readPersistenceAlbum(fromId: albumId)
         do {
             try realm.write {
@@ -74,6 +67,23 @@ extension PersistenceService {
             }
         } catch {
             print("제외할 미디어 목록 업데이트 실패: \(error)")
+        }
+    }
+    
+    /// 제외할 미디어 목록을 업데이트합니다.
+    func updateAlbumExcludeMediaList(to album: Album) {
+        guard let persistenceAlbum = readPersistenceAlbum(fromId: album.id) else {
+            print("\(#function): 영구 저장 앨범 찾기 실패")
+            return
+        }
+        
+        do {
+            try realm.write {
+                persistenceAlbum.excludeMediaList.removeAll()
+                persistenceAlbum.excludeMediaList.append(objectsIn: Array(album.excludeMediaList))
+            }
+        } catch {
+            print("복원할 미디어 목록 업데이트 실패: \(error)")
         }
     }
 }

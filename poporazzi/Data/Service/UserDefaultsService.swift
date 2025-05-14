@@ -13,9 +13,6 @@ struct UserDefaultsService {
     
     @UserDefault(key: "trackingAlbumId", defaultValue: "")
     static var trackingAlbumId: String
-    
-//    @UserDefault(key: "excludeAssets", defaultValue: [])
-//    static var excludeAssets: [String]
 }
 
 // MARK: - propertyWrapper

@@ -56,9 +56,6 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         
-        let mediaFetchOption: BehaviorRelay<MediaFetchOption>
-        let mediaFilterOption: BehaviorRelay<MediaFilterOption>
-        
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         
@@ -75,14 +72,14 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case presentAlbumEdit(Album, MediaFetchOption, MediaFilterOption)
-        case presentExcludeRecord(excludeList: Set<String>)
+        case presentAlbumEdit(Album)
+        case presentExcludeRecord(Album)
         case presentFinishModal(Album, SectionMediaList)
     }
     
     enum Delegate {
-        case albumDidEdited(Album, MediaFetchOption, MediaFilterOption)
-        case updateExcludeRecord(excludeList: Set<String>)
+        case albumDidEdited(Album)
+        case updateExcludeRecord(Album)
     }
     
     enum AlertAction {
@@ -280,7 +277,7 @@ extension RecordViewModel {
                     album.excludeMediaList.formUnion(assetIdentifiers)
                     owner.output.album.accept(album)
                     
-                    owner.persistenceService.appendExcludeMediaList(
+                    owner.persistenceService.excludeMediaList(
                         albumId: album.id,
                         excludeList: album.excludeMediaList
                     )
@@ -309,15 +306,11 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    owner.navigation.accept(.presentAlbumEdit(
-                        owner.output.album.value,
-                        owner.output.mediaFetchOption.value,
-                        owner.output.mediaFilterOption.value
-                    ))
+                    owner.navigation.accept(.presentAlbumEdit(owner.output.album.value))
                     
                 case .excludeRecord:
-                    let excludeList = owner.output.album.value.excludeMediaList
-                    owner.navigation.accept(.presentExcludeRecord(excludeList: excludeList))
+                    let album = owner.output.album.value
+                    owner.navigation.accept(.presentExcludeRecord(album))
                 }
             }
             .disposed(by: disposeBag)
@@ -325,17 +318,12 @@ extension RecordViewModel {
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
-                case let .albumDidEdited(album, fetchType, detailType):
+                case let .albumDidEdited(album):
                     owner.output.album.accept(album)
-                    owner.output.mediaFetchOption.accept(fetchType)
-                    owner.output.mediaFilterOption.accept(detailType)
                     owner.output.viewDidRefresh.accept(())
                     
-                case let .updateExcludeRecord(excludeList):
-                    var album = owner.output.album.value
-                    album.excludeMediaList = excludeList
+                case let .updateExcludeRecord(album):
                     owner.output.album.accept(album)
-                    owner.persistenceService.updateAlbum(album)
                     owner.output.viewDidRefresh.accept(())
                 }
             }

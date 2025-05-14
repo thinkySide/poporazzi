@@ -33,8 +33,8 @@ final class Coordinator {
                 case let .pushAlbumOptionInput(title):
                     owner.pushAlbumOptionInput(titleInputVM, title)
                     
-                case let .pushRecord(album, fetchOption, filterOption):
-                    owner.pushRecord(album, fetchOption, filterOption)
+                case let .pushRecord(album):
+                    owner.pushRecord(album)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
@@ -42,13 +42,7 @@ final class Coordinator {
         let albumId = UserDefaultsService.trackingAlbumId
         if !albumId.isEmpty {
             let album = persistenceService.readAlbum(fromId: albumId)
-            titleInputVM.navigation.accept(
-                .pushRecord(
-                    album,
-                    album.mediaFetchOption,
-                    album.mediaFilterOption
-                )
-            )
+            titleInputVM.navigation.accept(.pushRecord(album))
         }
         
         window?.rootViewController = navigationController
@@ -72,8 +66,8 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .pushRecord(album, fetchOption, filterOption):
-                    owner.pushRecord(album, fetchOption, filterOption)
+                case let .pushRecord(album):
+                    owner.pushRecord(album)
                     titleInputVM?.delegate.accept(.reset)
                 }
             }
@@ -81,18 +75,8 @@ extension Coordinator {
     }
     
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(
-        _ album: Album,
-        _ fetchOption: MediaFetchOption,
-        _ filterOption: MediaFilterOption
-    ) {
-        let recordVM = RecordViewModel(
-            output: .init(
-                album: .init(value: album),
-                mediaFetchOption: .init(value: fetchOption),
-                mediaFilterOption: .init(value: filterOption)
-            )
-        )
+    private func pushRecord(_ album: Album) {
+        let recordVM = RecordViewModel(output: .init(album: .init(value: album)))
         let recordVC = RecordViewController(viewModel: recordVM)
         self.navigationController.pushViewController(recordVC, animated: true)
         
@@ -102,11 +86,11 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popToRootViewController(animated: true)
                     
-                case let .presentAlbumEdit(album, fetchType, detailFetchTypes):
-                    owner.presentAlbumEdit(recordVM, album, fetchType, detailFetchTypes)
+                case let .presentAlbumEdit(album):
+                    owner.presentAlbumEdit(recordVM, album)
                     
-                case let .presentExcludeRecord(excludeList):
-                    owner.presentExcludeRecord(recordVM, excludeList)
+                case let .presentExcludeRecord(album):
+                    owner.presentExcludeRecord(recordVM, album)
                     
                 case let .presentFinishModal(album, sectionMediaList):
                     owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
@@ -123,17 +107,15 @@ extension Coordinator {
     /// 앨범 수정 화면을 Present 합니다.
     private func presentAlbumEdit(
         _ recordVM: RecordViewModel?,
-        _ album: Album,
-        _ fetchOption: MediaFetchOption,
-        _ filterOption: MediaFilterOption
+        _ album: Album
     ) {
         let editVM = AlbumEditViewModel(
             output: .init(
                 album: .init(value: album),
                 titleText: .init(value: album.title),
                 startDate: .init(value: album.startDate),
-                mediaFetchOption: .init(value: fetchOption),
-                mediaFilterOption: .init(value: filterOption)
+                mediaFetchOption: .init(value: album.mediaFetchOption),
+                mediaFilterOption: .init(value: album.mediaFilterOption)
             )
         )
         let editVC = AlbumEditViewController(viewModel: editVM)
@@ -149,8 +131,8 @@ extension Coordinator {
                 case .dismiss:
                     editVC?.dismiss(animated: true)
                     
-                case let .dismissWithUpdate(album, fetchType, detailFetchTypes):
-                    recordVM?.delegate.accept(.albumDidEdited(album, fetchType, detailFetchTypes))
+                case let .dismissWithUpdate(album):
+                    recordVM?.delegate.accept(.albumDidEdited(album))
                     editVC?.dismiss(animated: true)
                 }
             }
@@ -158,8 +140,8 @@ extension Coordinator {
     }
     
     /// 제외된 기록 화면을 Present 합니다.
-    private func presentExcludeRecord(_ recordVM: RecordViewModel?, _ excludeList: Set<String>) {
-        let excludeRecordVM = ExcludeRecordViewModel(output: .init(excludeList: .init(value: excludeList)))
+    private func presentExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
+        let excludeRecordVM = ExcludeRecordViewModel(output: .init(album: .init(value: album)))
         let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
         excludeRecordVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(excludeRecordVC, animated: true)
@@ -167,8 +149,8 @@ extension Coordinator {
         excludeRecordVM.navigation
             .bind(with: self) { [weak excludeRecordVC] owner, path in
                 switch path {
-                case let .dismiss(newExcludeList):
-                    recordVM?.delegate.accept(.updateExcludeRecord(excludeList: newExcludeList))
+                case let .dismiss(album):
+                    recordVM?.delegate.accept(.updateExcludeRecord(album))
                     excludeRecordVC?.dismiss(animated: true)
                 }
             }
