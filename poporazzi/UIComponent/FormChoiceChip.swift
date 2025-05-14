@@ -84,7 +84,7 @@ extension FormChoiceChip {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(button).width(.infinity).height(38).cornerRadius(19)
+            flex.addItem(button).height(38).paddingHorizontal(16).cornerRadius(19)
         }
     }
 }

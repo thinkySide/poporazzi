@@ -33,8 +33,8 @@ final class AlbumOptionInputView: CodeBaseUI {
         color: .mainLabel
     )
     
-    /// 항목 옵션
-    private let fetchOptionFormLabel = FormLabel(title: "항목 옵션")
+    /// 미디어 유형
+    private let fetchOptionFormLabel = FormLabel(title: "미디어 유형")
     
     /// 선택 칩 뷰
     private let choiceChipView = UIView()
@@ -49,7 +49,7 @@ final class AlbumOptionInputView: CodeBaseUI {
     let videoFetchChoiceChip = FormChoiceChip("동영상", variation: .deselected)
     
     /// 필터 옵션
-    private let filterOptionsFormLabel = FormLabel(title: "필터링 옵션 (1개 이상 선택)")
+    let filterOptionsFormLabel = FormLabel(title: "필터링 옵션", subtitle: "1개 이상 선택")
     
     /// 직접 촬영한 항목 체크박스
     let selfShootingFilterCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)
@@ -97,6 +97,7 @@ extension AlbumOptionInputView {
     enum Action {
         case updateMediaFetchOption(MediaFetchOption)
         case updateMediaFilterOption(MediaFilterOption)
+        case toggleStartButton(Bool)
     }
     
     func action(_ action: Action) {
@@ -126,6 +127,12 @@ extension AlbumOptionInputView {
             self.selfShootingFilterCheckBox.action(.updateVariation(details.isContainSelfShooting ? .selected : .deselected))
             self.downloadFilterCheckBox.action(.updateVariation(details.isContainDownload ? .selected : .deselected))
             self.screenshotFilterCheckBox.action(.updateVariation(details.isContainScreenshot ? .selected : .deselected))
+            
+        case let .toggleStartButton(isValid):
+            startButton.action(.toggleEnabled(isValid))
+            let text = isValid ? "1개 이상 선택" : "⚠️ 1개 이상 선택"
+            let color: UIColor = isValid ? .subLabel : .warning
+            filterOptionsFormLabel.action(.updateSubLabel(text: text, color: color))
         }
     }
 }
@@ -160,10 +167,10 @@ extension AlbumOptionInputView {
                 }
             }
         
-        choiceChipView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
-            flex.addItem(allFetchChoiceChip).grow(1)
-            flex.addItem(photoFetchChoiceChip).grow(1).marginHorizontal(12)
-            flex.addItem(videoFetchChoiceChip).grow(1)
+        choiceChipView.flex.direction(.row).define { flex in
+            flex.addItem(allFetchChoiceChip)
+            flex.addItem(photoFetchChoiceChip).marginLeft(12)
+            flex.addItem(videoFetchChoiceChip).marginLeft(12)
         }
     }
 }

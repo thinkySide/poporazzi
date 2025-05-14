@@ -50,6 +50,7 @@ extension AlbumOptionInputViewModel {
         let titleText: BehaviorRelay<String>
         let mediaFetchOption = BehaviorRelay<MediaFetchOption>(value: .all)
         let mediaFilterOption = BehaviorRelay<MediaFilterOption>(value: .init())
+        let isStartButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     enum Navigation {
@@ -72,17 +73,20 @@ extension AlbumOptionInputViewModel {
         input.allFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.all)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
         input.photoFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.photo)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         input.videoFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.video)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -91,6 +95,7 @@ extension AlbumOptionInputViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainSelfShooting.toggle()
                 owner.output.mediaFilterOption.accept(filter)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -99,6 +104,7 @@ extension AlbumOptionInputViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainDownload.toggle()
                 owner.output.mediaFilterOption.accept(filter)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -107,6 +113,7 @@ extension AlbumOptionInputViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainScreenshot.toggle()
                 owner.output.mediaFilterOption.accept(filter)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -128,5 +135,25 @@ extension AlbumOptionInputViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - CheckBox
+
+extension AlbumOptionInputViewModel {
+    
+    /// 현재 CheckBox 표시 상태로 유효한 상태인지 확인합니다.
+    private func isValidCheckBox() -> Bool {
+        let fetch = output.mediaFetchOption.value
+        let filter = output.mediaFilterOption.value
+        
+        if fetch == .all || fetch == .photo {
+            return filter.isContainSelfShooting
+            || filter.isContainDownload
+            || filter.isContainScreenshot
+        } else {
+            return filter.isContainSelfShooting
+            || filter.isContainDownload
+        }
     }
 }

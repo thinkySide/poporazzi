@@ -63,5 +63,11 @@ extension AlbumOptionInputViewController {
                 owner.scene.action(.updateMediaFilterOption(filterOption))
             }
             .disposed(by: disposeBag)
+        
+        output.isStartButtonEnabled
+            .bind(with: self) { owner, isValid in
+                owner.scene.action(.toggleStartButton(isValid))
+            }
+            .disposed(by: disposeBag)
     }
 }

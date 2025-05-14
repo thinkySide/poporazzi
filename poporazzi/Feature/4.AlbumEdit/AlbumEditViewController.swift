@@ -70,8 +70,8 @@ extension AlbumEditViewController {
             .disposed(by: disposeBag)
         
         output.isSaveButtonEnabled
-            .bind(with: self) { owner, isEnabled in
-                owner.scene.saveButton.action(.toggleDisabled(!isEnabled))
+            .bind(with: self) { owner, isValid in
+                owner.scene.action(.toggleSaveButton(isValid))
             }
             .disposed(by: disposeBag)
         
@@ -95,8 +95,7 @@ extension AlbumEditViewController {
         
         output.mediaFilterOption
             .bind(with: self) { owner, filterOption in
-                
-                // owner.scene.action(.updateMediaDetailFetchType(detailFetchType))
+                owner.scene.action(.updateMediaFilterOption(filterOption))
             }
             .disposed(by: disposeBag)
         

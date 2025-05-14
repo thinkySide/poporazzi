@@ -97,17 +97,20 @@ extension AlbumEditViewModel {
         input.allSaveChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.all)
+                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
         input.photoChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.photo)
+                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         input.videoChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.video)
+                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -116,6 +119,7 @@ extension AlbumEditViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainSelfShooting.toggle()
                 owner.output.mediaFilterOption.accept(filter)
+                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -124,6 +128,7 @@ extension AlbumEditViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainDownload.toggle()
                 owner.output.mediaFilterOption.accept(filter)
+                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -132,6 +137,7 @@ extension AlbumEditViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainScreenshot.toggle()
                 owner.output.mediaFilterOption.accept(filter)
+                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
@@ -174,5 +180,25 @@ extension AlbumEditViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - CheckBox
+
+extension AlbumEditViewModel {
+    
+    /// 현재 CheckBox 표시 상태로 유효한 상태인지 확인합니다.
+    private func isValidCheckBox() -> Bool {
+        let fetch = output.mediaFetchOption.value
+        let filter = output.mediaFilterOption.value
+        
+        if fetch == .all || fetch == .photo {
+            return filter.isContainSelfShooting
+            || filter.isContainDownload
+            || filter.isContainScreenshot
+        } else {
+            return filter.isContainSelfShooting
+            || filter.isContainDownload
+        }
     }
 }
