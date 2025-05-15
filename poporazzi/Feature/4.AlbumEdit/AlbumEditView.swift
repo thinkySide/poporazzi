@@ -150,9 +150,9 @@ extension AlbumEditView {
                 flex.addItem(titleTextField).marginTop(12)
                 
                 flex.addItem(startDateFormLabel).marginTop(32)
-                flex.addItem(startDatePicker).marginTop(12)
+                flex.addItem(startDatePicker).marginTop(6)
                 
-                flex.addItem(saveItemFormLabel).marginTop(40)
+                flex.addItem(saveItemFormLabel).marginTop(32)
                 flex.addItem(choiceChipView).marginTop(16)
                 
                 flex.addItem(filterOptionsFormLabel).marginTop(40)
