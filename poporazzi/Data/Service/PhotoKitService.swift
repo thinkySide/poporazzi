@@ -62,21 +62,13 @@ extension PhotoKitService {
     }
     
     /// 썸네일 없이 기록을 반환합니다.
-    func fetchMediasWithNoThumbnail(
-        mediaFetchType: MediaFetchOption = .all,
-        date: Date,
-        ascending: Bool = true
-    ) -> [Media] {
+    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
         var newMedias = [Media]()
+        let fetchResult = fetchAssetResult(from: album)
         
-        let fetchAssetResult = self.fetchAssetResult(
-            mediaFetchType: mediaFetchType,
-            date: date,
-            ascending: ascending
-        )
-        fetchResult = fetchAssetResult
+        self.fetchResult = fetchResult
         
-        fetchResult?.enumerateObjects { [weak self] asset, _, _ in
+        fetchResult.enumerateObjects { [weak self] asset, _, _ in
             guard let self else { return }
             let media = Media(
                 id: asset.localIdentifier,
@@ -86,6 +78,34 @@ extension PhotoKitService {
             )
             newMedias.append(media)
         }
+        return newMedias
+    }
+    
+    /// 썸네일 없이 기록을 반환합니다.
+    func fetchMediasWithNoThumbnail(
+        mediaFetchType: MediaFetchOption = .all,
+        date: Date,
+        ascending: Bool = true
+    ) -> [Media] {
+        var newMedias = [Media]()
+        
+//        let fetchAssetResult = self.fetchAssetResult(
+//            mediaFetchType: mediaFetchType,
+//            date: date,
+//            ascending: ascending
+//        )
+//        fetchResult = fetchAssetResult
+//        
+//        fetchResult?.enumerateObjects { [weak self] asset, _, _ in
+//            guard let self else { return }
+//            let media = Media(
+//                id: asset.localIdentifier,
+//                creationDate: asset.creationDate,
+//                mediaType: mediaType(from: asset),
+//                thumbnail: nil
+//            )
+//            newMedias.append(media)
+//        }
         return newMedias
     }
     
@@ -299,42 +319,59 @@ extension PhotoKitService {
     }
     
     /// PHFetchResult를 날짜에 맞게 반환합니다.
-    private func fetchAssetResult(
-        mediaFetchType: MediaFetchOption,
-        date: Date,
-        ascending: Bool
-    ) -> PHFetchResult<PHAsset> {
+    private func fetchAssetResult(from album: Album) -> PHFetchResult<PHAsset> {
         let fetchOptions = PHFetchOptions()
-        fetchOptions.predicate = makePredicate(mediaFetchType: mediaFetchType, date: date)
-        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: ascending)]
+        fetchOptions.predicate = makePredicate(from: album)
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         return PHAsset.fetchAssets(with: fetchOptions)
     }
     
     /// 미디어 패치를 위한 Predicate 객체를 생성합니다.
-    private func makePredicate(mediaFetchType: MediaFetchOption, date: Date) -> NSPredicate {
+    private func makePredicate(from album: Album) -> NSPredicate {
         let dateFormat = "creationDate > %@"
         let mediaFormat = "mediaType == %d"
-        switch mediaFetchType {
+        let mediaSubFormat = "mediaSubtypes != %d"
+        
+        var format = ""
+        var arguments = [CVarArg]()
+        
+        // 1. 미디어 유형 설정
+        switch album.mediaFetchOption {
         case .all:
-            return .init(
-                format: "(\(mediaFormat) OR \(mediaFormat))" + " AND " + dateFormat,
-                PHAssetMediaType.image.rawValue,
-                PHAssetMediaType.video.rawValue,
-                date as NSDate
-            )
+            format += ("(\(mediaFormat) OR \(mediaFormat))")
+            arguments.append(PHAssetMediaType.image.rawValue)
+            arguments.append(PHAssetMediaType.video.rawValue)
         case .photo:
-            return .init(
-                format: mediaFormat + " AND " + dateFormat,
-                PHAssetMediaType.image.rawValue,
-                date as NSDate
-            )
+            format += mediaFormat
+            arguments.append(PHAssetMediaType.image.rawValue)
         case .video:
-            return .init(
-                format: mediaFormat + " AND " + dateFormat,
-                PHAssetMediaType.video.rawValue,
-                date as NSDate
-            )
+            format += mediaFormat
+            arguments.append(PHAssetMediaType.video.rawValue)
         }
+        
+        // 2. 필터링 설정
+        if !album.mediaFilterOption.isContainSelfShooting {
+            // filterFormat.append(mediaSubFormat)
+            
+        }
+        
+        if !album.mediaFilterOption.isContainDownload {
+            
+        }
+        
+        if !album.mediaFilterOption.isContainScreenshot {
+            format += " AND " + mediaSubFormat
+            arguments.append(PHAssetMediaSubtype.photoScreenshot.rawValue)
+        }
+        
+        // 3. 시작 날짜 설정
+        var result = "(\(format))"
+        result.append(" AND " + dateFormat)
+        arguments.append(album.startDate as NSDate)
+        
+        print(result)
+        
+        return .init(format: result, argumentArray: arguments)
     }
     
     /// 이미지를 비동기로 요청합니다.

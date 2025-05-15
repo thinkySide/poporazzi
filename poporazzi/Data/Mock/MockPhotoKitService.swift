@@ -27,6 +27,10 @@ struct MockPhotoKitService: PhotoKitInterface {
         ), count: 30))
     }
     
+    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
+        []
+    }
+    
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
         var array = [Media]()
         for _ in 0..<30 {

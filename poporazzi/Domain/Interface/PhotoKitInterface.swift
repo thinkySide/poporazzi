@@ -24,6 +24,8 @@ protocol PhotoKitInterface {
         ascending: Bool
     ) -> [Media]
     
+    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media]
+    
     /// Media 배열 이벤트를 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>
     
