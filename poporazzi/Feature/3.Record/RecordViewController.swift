@@ -158,7 +158,7 @@ extension RecordViewController {
         output.album
             .bind(with: self) { owner, album in
                 owner.scene.action(.setAlbumTitleLabel(album.title))
-                owner.scene.action(.setStartDateLabel(album.trackingStartDate.startDateFormat))
+                owner.scene.action(.setStartDateLabel(album.startDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         

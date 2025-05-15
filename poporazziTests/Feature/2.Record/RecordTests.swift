@@ -183,7 +183,7 @@ extension RecordTests {
         wait(for: [expectation], timeout: 1.0)
         
         XCTAssertTrue(UserDefaultsService.excludeAssets.isEmpty)
-        XCTAssertTrue(!UserDefaultsService.isTracking)
+        XCTAssertTrue(!UserDefaultsService.trackingAlbumId)
     }
 }
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MockStoreKitService: StoreKitServiceInterface {
+struct MockStoreKitService: StoreKitInterface {
     
     /// 사용자에게 AppStore 리뷰 Alert를 출력합니다.
     func requestReview() {

@@ -13,19 +13,15 @@ final class FormLabel: CodeBaseUI {
     
     var containerView = UIView()
     
-    let tapGesture = UITapGestureRecognizer()
-    
     /// 앨범 제목 라벨
-    private let label: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(16)
-        label.textColor = .subLabel
-        return label
-    }()
+    private let mainLabel = UILabel(size: 16, color: .subLabel)
     
-    init(title: String) {
+    private let subLabel = UILabel(size: 16, color: .subLabel)
+    
+    init(title: String, subtitle: String = "") {
         super.init(frame: .zero)
-        label.text = title
+        mainLabel.text = title
+        self.subLabel.text = subtitle
         setup(color: .clear)
     }
     
@@ -40,13 +36,33 @@ final class FormLabel: CodeBaseUI {
     }
 }
 
+// MARK: - Action
+
+extension FormLabel {
+    
+    enum Action {
+        case updateSubLabel(text: String, color: UIColor)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .updateSubLabel(text, color):
+            subLabel.text = text
+            subLabel.textColor = color
+            subLabel.flex.markDirty()
+            setNeedsLayout()
+        }
+    }
+}
+
 // MARK: - Layout
 
 extension FormLabel {
     
     func configLayout() {
-        containerView.flex.define { flex in
-            flex.addItem(label)
+        containerView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
+            flex.addItem(mainLabel)
+            flex.addItem(subLabel)
         }
     }
 }

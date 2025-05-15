@@ -46,8 +46,8 @@ final class AlbumEditView: CodeBaseUI {
     /// 시작날짜 피커
     let startDatePicker = FormDatePicker()
     
-    /// 저장 항목
-    private let saveItemFormLabel = FormLabel(title: "저장 항목")
+    /// 미디어 유형
+    private let saveItemFormLabel = FormLabel(title: "미디어 유형")
     
     /// 선택 칩 뷰
     private let choiceChipView = UIView()
@@ -61,8 +61,8 @@ final class AlbumEditView: CodeBaseUI {
     /// 동영상 선택 칩
     let videoChoiceChip = FormChoiceChip("동영상", variation: .deselected)
     
-    /// 저장 옵션
-    private let saveOptionsFormLabel = FormLabel(title: "저장 옵션 (1개 이상 선택)")
+    /// 필터 옵션
+    private let filterOptionsFormLabel = FormLabel(title: "필터링 옵션", subtitle: "1개 이상 선택")
     
     /// 직접 촬영한 항목 체크박스
     let selfShootingOptionCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)
@@ -95,13 +95,14 @@ final class AlbumEditView: CodeBaseUI {
 extension AlbumEditView {
     
     enum Action {
-        case updateMediaFetchType(MediaFetchType)
-        case updateMediaDetailFetchType([MediaDetialFetchType])
+        case updateMediaFetchOption(MediaFetchOption)
+        case updateMediaFilterOption(MediaFilterOption)
+        case toggleSaveButton(Bool)
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .updateMediaFetchType(fetchType):
+        case let .updateMediaFetchOption(fetchType):
             switch fetchType {
             case .all:
                 allChoiceChip.action(.updateVariation(.selected))
@@ -109,7 +110,7 @@ extension AlbumEditView {
                 videoChoiceChip.action(.updateVariation(.deselected))
                 screenshotOptionCheckBox.isHidden = false
                 
-            case .image:
+            case .photo:
                 allChoiceChip.action(.updateVariation(.deselected))
                 photoChoiceChip.action(.updateVariation(.selected))
                 videoChoiceChip.action(.updateVariation(.deselected))
@@ -122,22 +123,16 @@ extension AlbumEditView {
                 screenshotOptionCheckBox.isHidden = true
             }
             
-        case let .updateMediaDetailFetchType(details):
-            for detail in MediaDetialFetchType.allCases {
-                if details.contains(detail) {
-                    switch detail {
-                    case .selfShooting: selfShootingOptionCheckBox.action(.updateVariation(.selected))
-                    case .download: downloadOptionCheckBox.action(.updateVariation(.selected))
-                    case .screenshot: screenshotOptionCheckBox.action(.updateVariation(.selected))
-                    }
-                } else {
-                    switch detail {
-                    case .selfShooting: selfShootingOptionCheckBox.action(.updateVariation(.deselected))
-                    case .download: downloadOptionCheckBox.action(.updateVariation(.deselected))
-                    case .screenshot: screenshotOptionCheckBox.action(.updateVariation(.deselected))
-                    }
-                }
-            }
+        case let .updateMediaFilterOption(details):
+            self.selfShootingOptionCheckBox.action(.updateVariation(details.isContainSelfShooting ? .selected : .deselected))
+            self.downloadOptionCheckBox.action(.updateVariation(details.isContainDownload ? .selected : .deselected))
+            self.screenshotOptionCheckBox.action(.updateVariation(details.isContainScreenshot ? .selected : .deselected))
+            
+        case let .toggleSaveButton(isValid):
+            saveButton.action(.toggleDisabled(!isValid))
+            let text = isValid ? "1개 이상 선택" : "⚠️ 1개 이상 선택"
+            let color: UIColor = isValid ? .subLabel : .warning
+            filterOptionsFormLabel.action(.updateSubLabel(text: text, color: color))
         }
     }
 }
@@ -160,17 +155,17 @@ extension AlbumEditView {
                 flex.addItem(saveItemFormLabel).marginTop(40)
                 flex.addItem(choiceChipView).marginTop(16)
                 
-                flex.addItem(saveOptionsFormLabel).marginTop(40)
+                flex.addItem(filterOptionsFormLabel).marginTop(40)
                 flex.addItem(selfShootingOptionCheckBox).marginTop(20)
                 flex.addItem(downloadOptionCheckBox).marginTop(16)
                 flex.addItem(screenshotOptionCheckBox).marginTop(16)
             }
         }
         
-        choiceChipView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
-            flex.addItem(allChoiceChip).grow(1)
-            flex.addItem(photoChoiceChip).grow(1).marginHorizontal(12)
-            flex.addItem(videoChoiceChip).grow(1)
+        choiceChipView.flex.direction(.row).define { flex in
+            flex.addItem(allChoiceChip)
+            flex.addItem(photoChoiceChip).marginLeft(12)
+            flex.addItem(videoChoiceChip).marginLeft(12)
         }
     }
 }

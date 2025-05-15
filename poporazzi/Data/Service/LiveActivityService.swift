@@ -23,7 +23,7 @@ extension LiveActivityService {
         let attributes = PoporazziWidgetAttributes()
         let contentState = PoporazziWidgetAttributes.ContentState(
             albumTitle: album.title,
-            startDate: album.trackingStartDate,
+            startDate: album.startDate,
             totalCount: 0
         )
         let content = ActivityContent(state: contentState, staleDate: nil)
@@ -45,7 +45,7 @@ extension LiveActivityService {
         
         let contentState = PoporazziWidgetAttributes.ContentState(
             albumTitle: album.title,
-            startDate: album.trackingStartDate,
+            startDate: album.startDate,
             totalCount: totalCount
         )
         let content = ActivityContent(state: contentState, staleDate: nil)

@@ -11,6 +11,8 @@ import RxCocoa
 
 final class Coordinator {
     
+    @Dependency(\.persistenceService) var persistenceService
+    
     private var window: UIWindow?
     private var navigationController = UINavigationController()
     
@@ -20,8 +22,6 @@ final class Coordinator {
     
     /// 진입 화면을 설정합니다.
     func start() {
-        DIContainer.shared.inject(.liveValue)
-        
         let titleInputVM = TitleInputViewModel(output: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
@@ -33,21 +33,16 @@ final class Coordinator {
                 case let .pushAlbumOptionInput(title):
                     owner.pushAlbumOptionInput(titleInputVM, title)
                     
-                case let .pushRecord(album, fetchType, detailFetchTypes):
-                    owner.pushRecord(album, fetchType, detailFetchTypes)
+                case let .pushRecord(album):
+                    owner.pushRecord(album)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
         
-        if UserDefaultsService.isTracking {
-            let album = UserDefaultsService.album
-            var details = [MediaDetialFetchType]()
-            if UserDefaultsService.isContainSelfShooting { details.append(.selfShooting) }
-            if UserDefaultsService.isContainDownload { details.append(.download) }
-            if UserDefaultsService.isContainScreenshot { details.append(.screenshot) }
-            
-            // TODO: 업데이트 필요
-            titleInputVM.navigation.accept(.pushRecord(album, .all, details))
+        let albumId = UserDefaultsService.trackingAlbumId
+        if !albumId.isEmpty {
+            let album = persistenceService.readAlbum(fromId: albumId)
+            titleInputVM.navigation.accept(.pushRecord(album))
         }
         
         window?.rootViewController = navigationController
@@ -71,8 +66,8 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
                     
-                case let .pushRecord(album, fetchType, detailFetchTypes):
-                    owner.pushRecord(album, fetchType, detailFetchTypes)
+                case let .pushRecord(album):
+                    owner.pushRecord(album)
                     titleInputVM?.delegate.accept(.reset)
                 }
             }
@@ -80,14 +75,8 @@ extension Coordinator {
     }
     
     /// 기록 화면으로 Push 합니다.
-    private func pushRecord(_ album: Album, _ mediaFetchType: MediaFetchType, _ mediaDetailFetchTypes: [MediaDetialFetchType]) {
-        let recordVM = RecordViewModel(
-            output: .init(
-                album: .init(value: album),
-                mediaFetchType: .init(value: mediaFetchType),
-                mediaFetchDetailType: .init(value: mediaDetailFetchTypes)
-            )
-        )
+    private func pushRecord(_ album: Album) {
+        let recordVM = RecordViewModel(output: .init(album: .init(value: album)))
         let recordVC = RecordViewController(viewModel: recordVM)
         self.navigationController.pushViewController(recordVC, animated: true)
         
@@ -97,11 +86,11 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popToRootViewController(animated: true)
                     
-                case let .presentAlbumEdit(album, fetchType, detailFetchTypes):
-                    owner.presentAlbumEdit(recordVM, album, fetchType, detailFetchTypes)
+                case let .presentAlbumEdit(album):
+                    owner.presentAlbumEdit(recordVM, album)
                     
-                case .presentExcludeRecord:
-                    owner.presentExcludeRecord(recordVM)
+                case let .presentExcludeRecord(album):
+                    owner.presentExcludeRecord(recordVM, album)
                     
                 case let .presentFinishModal(album, sectionMediaList):
                     owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
@@ -118,17 +107,15 @@ extension Coordinator {
     /// 앨범 수정 화면을 Present 합니다.
     private func presentAlbumEdit(
         _ recordVM: RecordViewModel?,
-        _ album: Album,
-        _ mediaFetchType: MediaFetchType,
-        _ mediaDetailFetchTypes: [MediaDetialFetchType]
+        _ album: Album
     ) {
         let editVM = AlbumEditViewModel(
             output: .init(
-                record: .init(value: album),
+                album: .init(value: album),
                 titleText: .init(value: album.title),
-                startDate: .init(value: album.trackingStartDate),
-                mediaFetchType: .init(value: mediaFetchType),
-                mediaFetchDetailType: .init(value: mediaDetailFetchTypes)
+                startDate: .init(value: album.startDate),
+                mediaFetchOption: .init(value: album.mediaFetchOption),
+                mediaFilterOption: .init(value: album.mediaFilterOption)
             )
         )
         let editVC = AlbumEditViewController(viewModel: editVM)
@@ -144,8 +131,8 @@ extension Coordinator {
                 case .dismiss:
                     editVC?.dismiss(animated: true)
                     
-                case let .dismissWithUpdate(album, fetchType, detailFetchTypes):
-                    recordVM?.delegate.accept(.albumDidEdited(album, fetchType, detailFetchTypes))
+                case let .dismissWithUpdate(album):
+                    recordVM?.delegate.accept(.albumDidEdited(album))
                     editVC?.dismiss(animated: true)
                 }
             }
@@ -153,8 +140,8 @@ extension Coordinator {
     }
     
     /// 제외된 기록 화면을 Present 합니다.
-    private func presentExcludeRecord(_ recordVM: RecordViewModel?) {
-        let excludeRecordVM = ExcludeRecordViewModel(output: .init())
+    private func presentExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
+        let excludeRecordVM = ExcludeRecordViewModel(output: .init(album: .init(value: album)))
         let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
         excludeRecordVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(excludeRecordVC, animated: true)
@@ -162,8 +149,8 @@ extension Coordinator {
         excludeRecordVM.navigation
             .bind(with: self) { [weak excludeRecordVC] owner, path in
                 switch path {
-                case .dismiss:
-                    recordVM?.delegate.accept(.updateExcludeRecord)
+                case let .dismiss(album):
+                    recordVM?.delegate.accept(.updateExcludeRecord(album))
                     excludeRecordVC?.dismiss(animated: true)
                 }
             }

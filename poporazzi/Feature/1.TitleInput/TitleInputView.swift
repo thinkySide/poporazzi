@@ -59,7 +59,7 @@ final class TitleInputView: CodeBaseUI {
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
         
-        keyboardAccessoryView.pin.width(bounds.width).height(88)
+        keyboardAccessoryView.pin.width(bounds.width).height(76)
         keyboardAccessoryView.flex.layout()
         
         titleTextField.action(.setupInputAccessoryView(keyboardAccessoryView))

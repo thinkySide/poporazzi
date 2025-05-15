@@ -12,6 +12,7 @@ import RxCocoa
 
 final class RecordViewModel: ViewModel {
     
+    @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
     
@@ -55,9 +56,6 @@ extension RecordViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         
-        let mediaFetchType: BehaviorRelay<MediaFetchType>
-        let mediaFetchDetailType: BehaviorRelay<[MediaDetialFetchType]>
-        
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         
@@ -74,14 +72,14 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case presentAlbumEdit(Album, MediaFetchType, [MediaDetialFetchType])
-        case presentExcludeRecord
+        case presentAlbumEdit(Album)
+        case presentExcludeRecord(Album)
         case presentFinishModal(Album, SectionMediaList)
     }
     
     enum Delegate {
-        case albumDidEdited(Album, MediaFetchType, [MediaDetialFetchType])
-        case updateExcludeRecord
+        case albumDidEdited(Album)
+        case updateExcludeRecord(Album)
     }
     
     enum AlertAction {
@@ -264,8 +262,7 @@ extension RecordViewModel {
                 case .finishWithoutRecord:
                     owner.navigation.accept(.pop)
                     owner.liveActivityService.stop()
-                    UserDefaultsService.excludeAssets.removeAll()
-                    UserDefaultsService.isTracking = false
+                    UserDefaultsService.trackingAlbumId = ""
                 }
             }
             .disposed(by: disposeBag)
@@ -275,7 +272,13 @@ extension RecordViewModel {
                 switch action {
                 case .exclude:
                     let assetIdentifiers = owner.selectedAssetIdentifiers()
-                    UserDefaultsService.excludeAssets.append(contentsOf: assetIdentifiers)
+                    
+                    var album = owner.output.album.value
+                    album.excludeMediaList.formUnion(assetIdentifiers)
+                    owner.output.album.accept(album)
+                    
+                    owner.persistenceService.updateAlbumExcludeMediaList(to: album)
+                    
                     owner.output.viewDidRefresh.accept(())
                     owner.output.selectedRecordCells.accept([])
                     
@@ -300,14 +303,11 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    owner.navigation.accept(.presentAlbumEdit(
-                        owner.output.album.value,
-                        owner.output.mediaFetchType.value,
-                        owner.output.mediaFetchDetailType.value
-                    ))
+                    owner.navigation.accept(.presentAlbumEdit(owner.output.album.value))
                     
                 case .excludeRecord:
-                    owner.navigation.accept(.presentExcludeRecord)
+                    let album = owner.output.album.value
+                    owner.navigation.accept(.presentExcludeRecord(album))
                 }
             }
             .disposed(by: disposeBag)
@@ -315,13 +315,12 @@ extension RecordViewModel {
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
-                case let .albumDidEdited(album, fetchType, detailType):
+                case let .albumDidEdited(album):
                     owner.output.album.accept(album)
-                    owner.output.mediaFetchType.accept(fetchType)
-                    owner.output.mediaFetchDetailType.accept(detailType)
                     owner.output.viewDidRefresh.accept(())
                     
-                case .updateExcludeRecord:
+                case let .updateExcludeRecord(album):
+                    owner.output.album.accept(album)
                     owner.output.viewDidRefresh.accept(())
                 }
             }
@@ -347,7 +346,7 @@ extension RecordViewModel {
         let calendar = Calendar.current
         let components = calendar.dateComponents(
             [.day],
-            from: calendar.startOfDay(for: output.album.value.trackingStartDate),
+            from: calendar.startOfDay(for: output.album.value.startDate),
             to: calendar.startOfDay(for: creationDate)
         )
         return (components.day ?? 0) + 1
@@ -404,22 +403,21 @@ extension RecordViewModel {
     /// - 제외된 사진을 필터링합니다.
     /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() -> [Media] {
-        let trackingStartDate = output.album.value.trackingStartDate
+        let trackingStartDate = output.album.value.startDate
         return photoKitService.fetchMediasWithNoThumbnail(
             mediaFetchType: .all,
             date: trackingStartDate,
             ascending: true
         )
-        .filter { !Set(UserDefaultsService.excludeAssets).contains($0.id) }
-        // TODO: 필터 로직 수정
-//        .filter {
-//            if !output.isContainScreenshot.value {
-//                if case let .photo(isScreenshot) = $0.mediaType {
-//                    return !isScreenshot
-//                }
-//            }
-//            return true
-//        }
+        .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
+        .filter {
+            if !output.album.value.mediaFilterOption.isContainScreenshot {
+                if case let .photo(isScreenshot) = $0.mediaType {
+                    return !isScreenshot
+                }
+            }
+            return true
+        }
     }
     
     /// 전체 Media 리스트를 반환합니다.

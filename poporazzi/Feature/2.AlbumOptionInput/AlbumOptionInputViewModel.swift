@@ -11,6 +11,7 @@ import RxCocoa
 
 final class AlbumOptionInputViewModel: ViewModel {
     
+    @Dependency(\.persistenceService) var persistenceService
     @Dependency(\.liveActivityService) var liveActivityService
     
     private let disposeBag = DisposeBag()
@@ -34,26 +35,27 @@ extension AlbumOptionInputViewModel {
     struct Input {
         let backButtonTapped: Signal<Void>
         
-        let allSaveChoiceChipTapped: Signal<Void>
-        let photoChoiceChipTapped: Signal<Void>
-        let videoChoiceChipTapped: Signal<Void>
+        let allFetchChoiceChipTapped: Signal<Void>
+        let photoFetchChoiceChipTapped: Signal<Void>
+        let videoFetchChoiceChipTapped: Signal<Void>
         
-        let selfShootingOptionCheckBoxTapped: Signal<Void>
-        let downloadOptionCheckBox: Signal<Void>
-        let screenshotOptionCheckBox: Signal<Void>
+        let selfShootingFilterCheckBoxTapped: Signal<Void>
+        let downloadFilterCheckBox: Signal<Void>
+        let screenshotFilterCheckBox: Signal<Void>
         
         let startButtonTapped: Signal<Void>
     }
     
     struct Output {
         let titleText: BehaviorRelay<String>
-        let mediaFetchType = BehaviorRelay<MediaFetchType>(value: .all)
-        let mediaFetchDetailType = BehaviorRelay<[MediaDetialFetchType]>(value: [.selfShooting])
+        let mediaFetchOption = BehaviorRelay<MediaFetchOption>(value: .all)
+        let mediaFilterOption = BehaviorRelay<MediaFilterOption>(value: .init())
+        let isStartButtonEnabled = BehaviorRelay<Bool>(value: true)
     }
     
     enum Navigation {
         case pop
-        case pushRecord(Album, MediaFetchType, [MediaDetialFetchType])
+        case pushRecord(Album)
     }
 }
 
@@ -68,51 +70,67 @@ extension AlbumOptionInputViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.allSaveChoiceChipTapped
+        input.allFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.all)
+                owner.output.mediaFetchOption.accept(.all)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
-        input.photoChoiceChipTapped
+        input.photoFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.image)
+                owner.output.mediaFetchOption.accept(.photo)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
-        input.videoChoiceChipTapped
+        input.videoFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
-                owner.output.mediaFetchType.accept(.video)
-            }
-            .disposed(by: disposeBag)
-        
-        input.selfShootingOptionCheckBoxTapped
-            .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.selfShooting)
+                owner.output.mediaFetchOption.accept(.video)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
-        input.downloadOptionCheckBox
+        input.selfShootingFilterCheckBoxTapped
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.download)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainSelfShooting.toggle()
+                owner.output.mediaFilterOption.accept(filter)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
-        input.screenshotOptionCheckBox
+        input.downloadFilterCheckBox
             .emit(with: self) { owner, _ in
-                owner.updateMediaFetchDetailType(.screenshot)
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainDownload.toggle()
+                owner.output.mediaFilterOption.accept(filter)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
+            }
+            .disposed(by: disposeBag)
+        
+        input.screenshotFilterCheckBox
+            .emit(with: self) { owner, _ in
+                var filter = owner.output.mediaFilterOption.value
+                filter.isContainScreenshot.toggle()
+                owner.output.mediaFilterOption.accept(filter)
+                owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
             }
             .disposed(by: disposeBag)
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
-                let album = Album(title: owner.output.titleText.value, trackingStartDate: .now)
-                let fetchType = owner.output.mediaFetchType.value
-                let detailTypes = owner.output.mediaFetchDetailType.value
-                owner.navigation.accept(.pushRecord(album, fetchType, detailTypes))
+                let album = Album(
+                    title: owner.output.titleText.value,
+                    mediaFetchOption: owner.output.mediaFetchOption.value,
+                    mediaFilterOption: owner.output.mediaFilterOption.value
+                )
+                
+                owner.navigation.accept(.pushRecord(album))
                 owner.liveActivityService.start(to: album)
                 HapticManager.notification(type: .success)
-                UserDefaultsService.album = album
-                UserDefaultsService.isTracking = true
+                
+                try? owner.persistenceService.createAlbum(from: album)
+                UserDefaultsService.trackingAlbumId = album.id
             }
             .disposed(by: disposeBag)
         
@@ -120,18 +138,22 @@ extension AlbumOptionInputViewModel {
     }
 }
 
-// MARK: - Helper
+// MARK: - CheckBox
 
 extension AlbumOptionInputViewModel {
     
-    /// 미디어 세부 항목을 업데이트 후 상태를 업데이트합니다.
-    private func updateMediaFetchDetailType(_ detailFetchType: MediaDetialFetchType) {
-        var details = output.mediaFetchDetailType.value
-        if details.contains(detailFetchType) {
-            details.removeAll(where: { $0 == detailFetchType })
+    /// 현재 CheckBox 표시 상태로 유효한 상태인지 확인합니다.
+    private func isValidCheckBox() -> Bool {
+        let fetch = output.mediaFetchOption.value
+        let filter = output.mediaFilterOption.value
+        
+        if fetch == .all || fetch == .photo {
+            return filter.isContainSelfShooting
+            || filter.isContainDownload
+            || filter.isContainScreenshot
         } else {
-            details.append(detailFetchType)
+            return filter.isContainSelfShooting
+            || filter.isContainDownload
         }
-        output.mediaFetchDetailType.accept(details)
     }
 }

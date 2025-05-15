@@ -63,7 +63,7 @@ extension PhotoKitService {
     
     /// 썸네일 없이 기록을 반환합니다.
     func fetchMediasWithNoThumbnail(
-        mediaFetchType: MediaFetchType = .all,
+        mediaFetchType: MediaFetchOption = .all,
         date: Date,
         ascending: Bool = true
     ) -> [Media] {
@@ -300,7 +300,7 @@ extension PhotoKitService {
     
     /// PHFetchResult를 날짜에 맞게 반환합니다.
     private func fetchAssetResult(
-        mediaFetchType: MediaFetchType,
+        mediaFetchType: MediaFetchOption,
         date: Date,
         ascending: Bool
     ) -> PHFetchResult<PHAsset> {
@@ -311,7 +311,7 @@ extension PhotoKitService {
     }
     
     /// 미디어 패치를 위한 Predicate 객체를 생성합니다.
-    private func makePredicate(mediaFetchType: MediaFetchType, date: Date) -> NSPredicate {
+    private func makePredicate(mediaFetchType: MediaFetchOption, date: Date) -> NSPredicate {
         let dateFormat = "creationDate > %@"
         let mediaFormat = "mediaType == %d"
         switch mediaFetchType {
@@ -322,7 +322,7 @@ extension PhotoKitService {
                 PHAssetMediaType.video.rawValue,
                 date as NSDate
             )
-        case .image:
+        case .photo:
             return .init(
                 format: mediaFormat + " AND " + dateFormat,
                 PHAssetMediaType.image.rawValue,
