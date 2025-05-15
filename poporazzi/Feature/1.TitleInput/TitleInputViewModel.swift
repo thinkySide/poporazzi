@@ -76,6 +76,7 @@ extension TitleInputViewModel {
             .emit(with: self) { owner, _ in
                 let title = owner.output.titleText.value
                 owner.navigation.accept(.pushAlbumOptionInput(title: title))
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         

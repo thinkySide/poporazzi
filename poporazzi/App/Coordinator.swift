@@ -9,7 +9,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class Coordinator {
+final class Coordinator: NSObject {
     
     @Dependency(\.persistenceService) var persistenceService
     
@@ -26,6 +26,8 @@ final class Coordinator {
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
         navigationController.setNavigationBarHidden(true, animated: false)
+        navigationController.delegate = self
+        navigationController.interactivePopGestureRecognizer?.delegate = self
         
         titleInputVM.navigation
             .bind(with: self) { [weak titleInputVM] owner, path in
@@ -47,6 +49,29 @@ final class Coordinator {
         
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
+    }
+}
+
+// MARK: - PopGesture
+
+extension Coordinator: UINavigationControllerDelegate, UIGestureRecognizerDelegate {
+    
+    func navigationController(
+        _ navigationController: UINavigationController,
+        didShow viewController: UIViewController,
+        animated: Bool
+    ) {
+        // RootViewController 비활성화
+        guard navigationController.viewControllers.first !== viewController else {
+            navigationController.interactivePopGestureRecognizer?.isEnabled = false
+            return
+        }
+        
+        if viewController is RecordViewController {
+            navigationController.interactivePopGestureRecognizer?.isEnabled = false
+        } else {
+            navigationController.interactivePopGestureRecognizer?.isEnabled = true
+        }
     }
 }
 
@@ -86,11 +111,11 @@ extension Coordinator {
                 case .pop:
                     owner.navigationController.popToRootViewController(animated: true)
                     
-                case let .presentAlbumEdit(album):
-                    owner.presentAlbumEdit(recordVM, album)
+                case let .pushAlbumEdit(album):
+                    owner.pushAlbumEdit(recordVM, album)
                     
                 case let .presentExcludeRecord(album):
-                    owner.presentExcludeRecord(recordVM, album)
+                    owner.pushExcludeRecord(recordVM, album)
                     
                 case let .presentFinishModal(album, sectionMediaList):
                     owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
@@ -98,14 +123,9 @@ extension Coordinator {
             }
             .disposed(by: recordVC.disposeBag)
     }
-}
-
-// MARK: - Sheet
-
-extension Coordinator {
     
-    /// 앨범 수정 화면을 Present 합니다.
-    private func presentAlbumEdit(
+    /// 앨범 수정 화면을 Push 합니다.
+    private func pushAlbumEdit(
         _ recordVM: RecordViewModel?,
         _ album: Album
     ) {
@@ -119,8 +139,7 @@ extension Coordinator {
             )
         )
         let editVC = AlbumEditViewController(viewModel: editVM)
-        editVC.modalPresentationStyle = .overFullScreen
-        self.navigationController.present(editVC, animated: true)
+        self.navigationController.pushViewController(editVC, animated: true)
         
         editVM.navigation
             .bind(with: self) { [weak editVC] owner, path in
@@ -128,34 +147,38 @@ extension Coordinator {
                 case .presentStartDatePicker(let date):
                     owner.presentDatePickerModal(editVC, editVM, startDate: date)
                     
-                case .dismiss:
-                    editVC?.dismiss(animated: true)
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
                     
                 case let .dismissWithUpdate(album):
                     recordVM?.delegate.accept(.albumDidEdited(album))
-                    editVC?.dismiss(animated: true)
+                    owner.navigationController.popViewController(animated: true)
                 }
             }
             .disposed(by: editVC.disposeBag)
     }
     
-    /// 제외된 기록 화면을 Present 합니다.
-    private func presentExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
+    /// 제외된 기록 화면을 Push 합니다.
+    private func pushExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
         let excludeRecordVM = ExcludeRecordViewModel(output: .init(album: .init(value: album)))
         let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
-        excludeRecordVC.modalPresentationStyle = .overFullScreen
-        self.navigationController.present(excludeRecordVC, animated: true)
+        self.navigationController.pushViewController(excludeRecordVC, animated: true)
         
         excludeRecordVM.navigation
-            .bind(with: self) { [weak excludeRecordVC] owner, path in
+            .bind(with: self) { owner, path in
                 switch path {
-                case let .dismiss(album):
+                case let .pop(album):
                     recordVM?.delegate.accept(.updateExcludeRecord(album))
-                    excludeRecordVC?.dismiss(animated: true)
+                    owner.navigationController.popViewController(animated: true)
                 }
             }
             .disposed(by: excludeRecordVC.disposeBag)
     }
+}
+
+// MARK: - Sheet
+
+extension Coordinator {
     
     /// 날짜 선택 모달을 Present 합니다.
     private func presentDatePickerModal(_ editVC: AlbumEditViewController?, _ editVM: AlbumEditViewModel, startDate: Date) {

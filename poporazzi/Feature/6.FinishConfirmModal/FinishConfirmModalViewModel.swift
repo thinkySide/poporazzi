@@ -67,18 +67,24 @@ extension FinishConfirmModalViewModel {
     
     func transform(_ input: Input) -> Output {
         input.saveAsSingleRadioButtonTapped
-            .map { AlbumSaveOption.saveAsSingle }
-            .emit(to: output.saveOption)
+            .emit(with: self) { owner, _ in
+                owner.output.saveOption.accept(.saveAsSingle)
+                HapticManager.impact(style: .soft)
+            }
             .disposed(by: disposeBag)
         
         input.saveByDayRadioButtonTapped
-            .map { AlbumSaveOption.saveByDay }
-            .emit(to: output.saveOption)
+            .emit(with: self) { owner, _ in
+                owner.output.saveOption.accept(.saveByDay)
+                HapticManager.impact(style: .soft)
+            }
             .disposed(by: disposeBag)
         
         input.noSaveRadioButtonTapped
-            .map { AlbumSaveOption.noSave }
-            .emit(to: output.saveOption)
+            .emit(with: self) { owner, _ in
+                owner.output.saveOption.accept(.noSave)
+                HapticManager.impact(style: .soft)
+            }
             .disposed(by: disposeBag)
         
         input.finishButtonTapped

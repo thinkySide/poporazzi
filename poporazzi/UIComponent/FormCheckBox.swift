@@ -25,20 +25,23 @@ final class FormCheckBox: CodeBaseUI {
     
     var containerView = UIView()
     
-    let title = UILabel(size: 16, color: .mainLabel)
+    let tapGesture = UITapGestureRecognizer()
     
-    let button: UIButton = {
-        let button = UIButton()
-        button.setImage(UIImage(symbol: .checkBox, size: 24, weight: .black), for: .normal)
-        button.backgroundColor = .white
-        return button
-    }()
+    let checkBoxIcon = UIImageView(
+        symbol: .checkBox,
+        size: 24,
+        weight: .black,
+        tintColor: .brandSecondary
+    )
+    
+    let title = UILabel(size: 16, color: .mainLabel)
     
     init(_ title: String, variation: Variation) {
         super.init(frame: .zero)
         self.title.text = title
         self.action(.updateVariation(variation))
-        setup(color: .clear)
+        addGestureRecognizer(tapGesture)
+        setup(color: .white)
     }
     
     required init?(coder: NSCoder) {
@@ -64,7 +67,7 @@ extension FormCheckBox {
         switch action {
         case let .updateVariation(variation):
             UIView.animate(withDuration: 0.2) { [weak self] in
-                self?.button.layer.opacity = variation == .selected ? 1 : 0.2
+                self?.checkBoxIcon.tintColor = variation.backgroundColor
             }
         }
     }
@@ -75,10 +78,10 @@ extension FormCheckBox {
 extension FormCheckBox {
     
     func configLayout() {
-        containerView.flex.direction(.row).define { flex in
-            flex.addItem(title)
+        containerView.flex.direction(.row).height(40).define { flex in
+            flex.addItem(checkBoxIcon)
+            flex.addItem(title).marginLeft(12)
             flex.addItem().grow(1)
-            flex.addItem(button).size(.init(width: 40, height: 40))
         }
     }
 }

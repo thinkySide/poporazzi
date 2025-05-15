@@ -74,6 +74,7 @@ extension AlbumOptionInputViewModel {
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.all)
                 owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         
@@ -81,12 +82,14 @@ extension AlbumOptionInputViewModel {
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.photo)
                 owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         input.videoFetchChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.video)
                 owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         
@@ -96,6 +99,7 @@ extension AlbumOptionInputViewModel {
                 filter.isContainSelfShooting.toggle()
                 owner.output.mediaFilterOption.accept(filter)
                 owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
+                if filter.isContainSelfShooting { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
         
@@ -105,6 +109,7 @@ extension AlbumOptionInputViewModel {
                 filter.isContainDownload.toggle()
                 owner.output.mediaFilterOption.accept(filter)
                 owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
+                if filter.isContainDownload { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
         
@@ -114,6 +119,7 @@ extension AlbumOptionInputViewModel {
                 filter.isContainScreenshot.toggle()
                 owner.output.mediaFilterOption.accept(filter)
                 owner.output.isStartButtonEnabled.accept(owner.isValidCheckBox())
+                if filter.isContainScreenshot { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
         

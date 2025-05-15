@@ -71,7 +71,7 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case presentAlbumEdit(Album)
+        case pushAlbumEdit(Album)
         case presentExcludeRecord(Album)
         case presentFinishModal(Album, SectionMediaList)
     }
@@ -248,6 +248,7 @@ extension RecordViewModel {
             .emit(with: self) { owner, _ in
                 if owner.output.mediaList.value.isEmpty {
                     owner.output.alertPresented.accept(owner.finishWithoutRecordAlert)
+                    HapticManager.notification(type: .warning)
                 } else {
                     owner.navigation.accept(.presentFinishModal(
                         owner.output.album.value,
@@ -304,7 +305,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    owner.navigation.accept(.presentAlbumEdit(owner.output.album.value))
+                    owner.navigation.accept(.pushAlbumEdit(owner.output.album.value))
                     
                 case .excludeRecord:
                     let album = owner.output.album.value

@@ -23,10 +23,7 @@ final class AlbumEditView: CodeBaseUI {
     )
     
     /// 뒤로 가기 버튼
-    let backButton = NavigationButton(
-        buttonType: .systemIcon(.dismiss, size: 12, weight: .bold),
-        variation: .secondary
-    )
+    let backButton = NavigationButton(buttonType: .back)
     
     /// 저장 버튼
     let saveButton = NavigationButton(
@@ -47,13 +44,13 @@ final class AlbumEditView: CodeBaseUI {
     let startDatePicker = FormDatePicker()
     
     /// 미디어 유형
-    private let saveItemFormLabel = FormLabel(title: "미디어 유형")
+    private let saveItemFormLabel = FormLabel(title: "미디어 종류")
     
     /// 선택 칩 뷰
     private let choiceChipView = UIView()
     
     /// 전체 선택 칩
-    let allChoiceChip = FormChoiceChip("전체", variation: .selected)
+    let allChoiceChip = FormChoiceChip("사진 및 동영상", variation: .selected)
     
     /// 사진 선택 칩
     let photoChoiceChip = FormChoiceChip("사진", variation: .deselected)
@@ -62,7 +59,7 @@ final class AlbumEditView: CodeBaseUI {
     let videoChoiceChip = FormChoiceChip("동영상", variation: .deselected)
     
     /// 필터 옵션
-    private let filterOptionsFormLabel = FormLabel(title: "필터링 옵션", subtitle: "1개 이상 선택")
+    private let filterOptionsFormLabel = FormLabel(title: "분류 기준", subtitle: "1개 이상 선택")
     
     /// 직접 촬영한 항목 체크박스
     let selfShootingOptionCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)
@@ -150,9 +147,9 @@ extension AlbumEditView {
                 flex.addItem(titleTextField).marginTop(12)
                 
                 flex.addItem(startDateFormLabel).marginTop(32)
-                flex.addItem(startDatePicker).marginTop(12)
+                flex.addItem(startDatePicker).marginTop(6)
                 
-                flex.addItem(saveItemFormLabel).marginTop(40)
+                flex.addItem(saveItemFormLabel).marginTop(32)
                 flex.addItem(choiceChipView).marginTop(16)
                 
                 flex.addItem(filterOptionsFormLabel).marginTop(40)

@@ -47,9 +47,9 @@ extension AlbumEditViewController {
             allSaveChoiceChipTapped: scene.allChoiceChip.button.rx.tap.asSignal(),
             photoChoiceChipTapped: scene.photoChoiceChip.button.rx.tap.asSignal(),
             videoChoiceChipTapped: scene.videoChoiceChip.button.rx.tap.asSignal(),
-            selfShootingOptionCheckBoxTapped: scene.selfShootingOptionCheckBox.button.rx.tap.asSignal(),
-            downloadOptionCheckBox: scene.downloadOptionCheckBox.button.rx.tap.asSignal(),
-            screenshotOptionCheckBox: scene.screenshotOptionCheckBox.button.rx.tap.asSignal(),
+            selfShootingOptionCheckBoxTapped: scene.selfShootingOptionCheckBox.tapGesture.rx.event.asVoidSignal(),
+            downloadOptionCheckBox: scene.downloadOptionCheckBox.tapGesture.rx.event.asVoidSignal(),
+            screenshotOptionCheckBox: scene.screenshotOptionCheckBox.tapGesture.rx.event.asVoidSignal(),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             saveButtonTapped: scene.saveButton.button.rx.tap.asSignal()
         )

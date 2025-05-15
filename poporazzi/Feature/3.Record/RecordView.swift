@@ -30,10 +30,7 @@ final class RecordView: CodeBaseUI {
     
     /// 더보기 버튼
     let seemoreButton: NavigationButton = {
-        let button = NavigationButton(
-            buttonType: .systemIcon(.ellipsis, size: 14, weight: .black),
-            variation: .tertiary
-        )
+        let button = NavigationButton(buttonType: .seemore)
         button.button.showsMenuAsPrimaryAction = true
         return button
     }()

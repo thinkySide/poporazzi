@@ -64,7 +64,7 @@ extension AlbumEditViewModel {
     
     enum Navigation {
         case presentStartDatePicker(Date)
-        case dismiss
+        case pop
         case dismissWithUpdate(Album)
     }
     
@@ -98,6 +98,7 @@ extension AlbumEditViewModel {
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.all)
                 owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         
@@ -105,12 +106,14 @@ extension AlbumEditViewModel {
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.photo)
                 owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         input.videoChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.video)
                 owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         
@@ -120,6 +123,7 @@ extension AlbumEditViewModel {
                 filter.isContainSelfShooting.toggle()
                 owner.output.mediaFilterOption.accept(filter)
                 owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                if filter.isContainSelfShooting { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
         
@@ -129,6 +133,7 @@ extension AlbumEditViewModel {
                 filter.isContainDownload.toggle()
                 owner.output.mediaFilterOption.accept(filter)
                 owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                if filter.isContainDownload { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
         
@@ -138,12 +143,13 @@ extension AlbumEditViewModel {
                 filter.isContainScreenshot.toggle()
                 owner.output.mediaFilterOption.accept(filter)
                 owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                if filter.isContainScreenshot { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
         
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.dismiss)
+                owner.navigation.accept(.pop)
             }
             .disposed(by: disposeBag)
         
