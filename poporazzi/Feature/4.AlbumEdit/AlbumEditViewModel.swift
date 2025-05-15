@@ -166,7 +166,7 @@ extension AlbumEditViewModel {
                 
                 HapticManager.notification(type: .success)
                 
-                owner.persistenceDataService.updateAlbum(newAlbum)
+                owner.persistenceDataService.updateAlbum(to: newAlbum)
             }
             .disposed(by: disposeBag)
         

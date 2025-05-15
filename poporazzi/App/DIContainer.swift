@@ -18,7 +18,7 @@ final class DIContainer {
     
     /// 의존성 리스트
     struct Dependencies {
-        let persistenceService: PersistenceService
+        let persistenceService: PersistenceInterface
         let liveActivityService: LiveActivityInterface
         let photoKitService: PhotoKitInterface
         let storeKitService: StoreKitInterface
@@ -49,7 +49,7 @@ extension DIContainer {
                 storeKitService: StoreKitService()
             )
             case .testValue: .init(
-                persistenceService: PersistenceService(),
+                persistenceService: MockPersistenceService(),
                 liveActivityService: MockLiveActivityService(),
                 photoKitService: MockPhotoKitService(),
                 storeKitService: MockStoreKitService()

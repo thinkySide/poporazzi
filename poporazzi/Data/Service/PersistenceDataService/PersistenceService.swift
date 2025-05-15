@@ -8,7 +8,7 @@
 import Foundation
 import RealmSwift
 
-final class PersistenceService {
+final class PersistenceService: PersistenceInterface {
     
     private let realm = try! Realm()
 }
@@ -43,7 +43,7 @@ extension PersistenceService {
     }
     
     /// 앨범을 업데이트합니다.
-    func updateAlbum(_ newAlbum: Album) {
+    func updateAlbum(to newAlbum: Album) {
         guard let persistenceAlbum = readPersistenceAlbum(fromId: newAlbum.id) else { return }
         do {
             try realm.write {
@@ -55,18 +55,6 @@ extension PersistenceService {
             print("업데이트 완료")
         } catch {
             print("앨범 업데이트 실패: \(error)")
-        }
-    }
-    
-    /// 제외할 미디어 목록을 업데이트합니다.
-    func excludeMediaList(albumId: String, excludeList: Set<String>) {
-        let album = readPersistenceAlbum(fromId: albumId)
-        do {
-            try realm.write {
-                album?.excludeMediaList.append(objectsIn: excludeList)
-            }
-        } catch {
-            print("제외할 미디어 목록 업데이트 실패: \(error)")
         }
     }
     

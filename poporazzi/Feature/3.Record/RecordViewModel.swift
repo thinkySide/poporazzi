@@ -277,10 +277,7 @@ extension RecordViewModel {
                     album.excludeMediaList.formUnion(assetIdentifiers)
                     owner.output.album.accept(album)
                     
-                    owner.persistenceService.excludeMediaList(
-                        albumId: album.id,
-                        excludeList: album.excludeMediaList
-                    )
+                    owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                     
                     owner.output.viewDidRefresh.accept(())
                     owner.output.selectedRecordCells.accept([])
