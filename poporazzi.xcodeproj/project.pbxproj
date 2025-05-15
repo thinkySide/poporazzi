@@ -82,6 +82,8 @@
 				Data/Service/LiveActivityService.swift,
 				Domain/Entity/Album.swift,
 				Domain/Entity/Media.swift,
+				Domain/Entity/MediaFetchOption.swift,
+				Domain/Entity/MediaFilterOption.swift,
 				Domain/Interface/LiveActivityInterface.swift,
 				Resource/Colors.xcassets,
 				Resource/Font/DovemayoGothic/Dovemayo_gothic.ttf,

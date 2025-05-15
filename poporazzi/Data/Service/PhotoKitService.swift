@@ -310,15 +310,14 @@ extension PhotoKitService {
 extension PhotoKitService {
     
     /// 현재 Asset의 MediaType을 반환합니다.
-    private func mediaType(from asset: PHAsset) -> MediaType {
+    private func mediaType(from asset: PHAsset) -> Media.MediaType {
         let resources = PHAssetResource.assetResources(for: asset)
         let uniformTypeIdentifier = resources.first?.uniformTypeIdentifier ?? ""
         let format = String(uniformTypeIdentifier.split(separator: ".").last ?? "")
-        print(format)
         
         switch asset.mediaType {
         case .image:
-            let photoFormat = PhotoFormat(rawValue: format) ?? .heic
+            let photoFormat = Media.MediaType.PhotoFormat(rawValue: format) ?? .heic
             
             if asset.mediaSubtypes.contains(.photoScreenshot) {
                 return.photo(.screenshot, photoFormat)
@@ -331,7 +330,7 @@ extension PhotoKitService {
             }
             
         case .video:
-            let videoFormat = VideoFormat(rawValue: format) ?? .quickTimeMovie
+            let videoFormat = Media.MediaType.VideoFormat(rawValue: format) ?? .quickTimeMovie
             
             if videoFormat == .quickTimeMovie {
                 return .video(.selfShooting, videoFormat, duration: asset.duration)

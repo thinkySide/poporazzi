@@ -406,21 +406,7 @@ extension RecordViewModel {
     private func fetchAllMediaListWithNoThumbnail() -> [Media] {
         let album = output.album.value
         return photoKitService.fetchMediaListWithNoThumbnail(from: album)
-        
-//        return photoKitService.fetchMediasWithNoThumbnail(
-//            mediaFetchType: .all,
-//            date: trackingStartDate,
-//            ascending: true
-//        )
-//        .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
-//        .filter {
-//            if !output.album.value.mediaFilterOption.isContainScreenshot {
-//                if case let .photo(isScreenshot) = $0.mediaType {
-//                    return !isScreenshot
-//                }
-//            }
-//            return true
-//        }
+            .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
     }
     
     /// 전체 Media 리스트를 반환합니다.

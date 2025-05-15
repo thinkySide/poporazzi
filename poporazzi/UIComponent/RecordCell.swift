@@ -113,7 +113,7 @@ extension RecordCell {
     
     enum Action {
         case setImage(UIImage?)
-        case setMediaType(MediaType)
+        case setMediaType(Media.MediaType)
     }
     
     func action(_ action: Action) {
