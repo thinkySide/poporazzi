@@ -25,6 +25,13 @@ final class FormCheckBox: CodeBaseUI {
     
     var containerView = UIView()
     
+    let checkIcon = UIImageView(
+        symbol: .check,
+        size: 15,
+        weight: .heavy,
+        tintColor: .brandSecondary
+    )
+    
     let title = UILabel(size: 16, color: .mainLabel)
     
     let button: UIButton = {
@@ -64,7 +71,8 @@ extension FormCheckBox {
         switch action {
         case let .updateVariation(variation):
             UIView.animate(withDuration: 0.2) { [weak self] in
-                self?.button.layer.opacity = variation == .selected ? 1 : 0.2
+                self?.checkIcon.tintColor = variation.backgroundColor
+                self?.button.tintColor = variation.backgroundColor
             }
         }
     }
@@ -76,7 +84,8 @@ extension FormCheckBox {
     
     func configLayout() {
         containerView.flex.direction(.row).define { flex in
-            flex.addItem(title)
+            flex.addItem(checkIcon)
+            flex.addItem(title).marginLeft(10)
             flex.addItem().grow(1)
             flex.addItem(button).size(.init(width: 40, height: 40))
         }
