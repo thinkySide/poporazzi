@@ -17,14 +17,7 @@ final class AlbumOptionInputView: CodeBaseUI {
     private lazy var navigationBar = NavigationBar(leading: backButton)
     
     /// 뒤로가기 버튼
-    let backButton = NavigationButton(
-        buttonType: .systemIcon(
-            .left,
-            size: 12,
-            weight: .bold
-        ),
-        variation: .secondary
-    )
+    let backButton = NavigationButton(buttonType: .back)
     
     /// 메인 라벨
     let mainLabel = UILabel(

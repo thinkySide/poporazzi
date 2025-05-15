@@ -27,10 +27,7 @@ final class ExcludeRecordView: CodeBaseUI {
     private let navigationTrailingButtons = UIView()
     
     /// 뒤로 가기 버튼
-    let backButton = NavigationButton(
-        buttonType: .systemIcon(.dismiss, size: 12, weight: .bold),
-        variation: .secondary
-    )
+    let backButton = NavigationButton(buttonType: .back)
     
     /// 선택 버튼
     let selectButton = NavigationButton(

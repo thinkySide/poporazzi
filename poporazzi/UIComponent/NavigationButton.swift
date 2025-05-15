@@ -14,7 +14,11 @@ final class NavigationButton: CodeBaseUI {
     /// 버튼 타입
     enum ButtonType {
         case text(String)
-        case systemIcon(SFSymbol, size: CGFloat, weight: UIImage.SymbolWeight)
+        case back
+        case xmark
+        case seemore
+        
+        // case systemIcon(SFSymbol, size: CGFloat, weight: UIImage.SymbolWeight)
     }
     
     enum Variation {
@@ -41,13 +45,11 @@ final class NavigationButton: CodeBaseUI {
     
     var containerView = UIView()
     
-    let tapGesture = UITapGestureRecognizer()
-    
     private let buttonType: ButtonType
     
     var button = UIButton()
     
-    init(buttonType: ButtonType, variation: Variation) {
+    init(buttonType: ButtonType, variation: Variation = .secondary) {
         self.buttonType = buttonType
         super.init(frame: .zero)
         
@@ -57,8 +59,18 @@ final class NavigationButton: CodeBaseUI {
             self.button.setTitleColor(variation.titleColor, for: .normal)
             self.button.titleLabel?.font = .setDovemayo(15)
             
-        case let .systemIcon(symbol, size, weight):
-            let symbol = UIImage(symbol: symbol, size: size, weight: weight)
+        case .back:
+            let symbol = UIImage(symbol: .left, size: 12, weight: .bold)
+            self.button.setImage(symbol, for: .normal)
+            self.button.tintColor = variation.titleColor
+            
+        case .xmark:
+            let symbol = UIImage(symbol: .dismiss, size: 12, weight: .bold)
+            self.button.setImage(symbol, for: .normal)
+            self.button.tintColor = variation.titleColor
+            
+        case .seemore:
+            let symbol = UIImage(symbol: .ellipsis, size: 14, weight: .black)
             self.button.setImage(symbol, for: .normal)
             self.button.tintColor = variation.titleColor
         }
@@ -101,7 +113,13 @@ extension NavigationButton {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(button).paddingHorizontal(12).height(32).cornerRadius(14)
+            switch buttonType {
+            case .text, .seemore:
+                flex.addItem(button).paddingHorizontal(12).height(32).cornerRadius(16)
+                
+            case .back, .xmark:
+                flex.addItem(button).width(32).height(32).cornerRadius(16)
+            }
         }
     }
 }

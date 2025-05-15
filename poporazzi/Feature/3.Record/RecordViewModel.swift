@@ -248,6 +248,7 @@ extension RecordViewModel {
             .emit(with: self) { owner, _ in
                 if owner.output.mediaList.value.isEmpty {
                     owner.output.alertPresented.accept(owner.finishWithoutRecordAlert)
+                    HapticManager.notification(type: .warning)
                 } else {
                     owner.navigation.accept(.presentFinishModal(
                         owner.output.album.value,

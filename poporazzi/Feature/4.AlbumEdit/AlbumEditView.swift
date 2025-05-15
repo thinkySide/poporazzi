@@ -23,10 +23,7 @@ final class AlbumEditView: CodeBaseUI {
     )
     
     /// 뒤로 가기 버튼
-    let backButton = NavigationButton(
-        buttonType: .systemIcon(.dismiss, size: 12, weight: .bold),
-        variation: .secondary
-    )
+    let backButton = NavigationButton(buttonType: .back)
     
     /// 저장 버튼
     let saveButton = NavigationButton(
