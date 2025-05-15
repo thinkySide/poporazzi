@@ -311,8 +311,7 @@ extension PhotoKitService {
     
     /// 현재 Asset의 MediaType을 반환합니다.
     private func mediaType(from asset: PHAsset) -> Media.MediaType {
-        let resources = PHAssetResource.assetResources(for: asset)
-        let uniformTypeIdentifier = resources.first?.uniformTypeIdentifier ?? ""
+        let uniformTypeIdentifier = asset.value(forKey: "uniformTypeIdentifier") as? String ?? ""
         let format = String(uniformTypeIdentifier.split(separator: ".").last ?? "")
         
         switch asset.mediaType {
