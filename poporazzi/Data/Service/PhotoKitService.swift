@@ -33,8 +33,8 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
         return requestOptions
     }()
     
-    /// 가장 최근의 FetchResult를 저장하는 변수
-    private var fetchResult: PHFetchResult<PHAsset>?
+    /// 감지를 위한 fetchResult
+    private var fetchResultForObserve: PHFetchResult<PHAsset>?
     
     /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
     private let photoLibraryChangeRelay = BehaviorRelay(value: ())
@@ -63,50 +63,48 @@ extension PhotoKitService {
     
     /// 썸네일 없이 기록을 반환합니다.
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
-        var newMedias = [Media]()
         let fetchResult = fetchAssetResult(from: album)
+        self.fetchResultForObserve = fetchResult
         
-        self.fetchResult = fetchResult
-        
+        var mediaList = [Media]()
         fetchResult.enumerateObjects { [weak self] asset, _, _ in
             guard let self else { return }
-            let media = Media(
-                id: asset.localIdentifier,
-                creationDate: asset.creationDate,
-                mediaType: mediaType(from: asset),
-                thumbnail: nil
-            )
-            newMedias.append(media)
+            let mediaType = self.mediaType(from: asset)
+            let option = album.mediaFilterOption
+            
+            switch mediaType {
+            case let .photo(type, _):
+                let isContain = option.isContainSelfShooting && type == .selfShooting
+                || option.isContainDownload && type == .download
+                || option.isContainScreenshot && type == .screenshot
+                
+                if isContain {
+                    let media = Media(
+                        id: asset.localIdentifier,
+                        creationDate: asset.creationDate,
+                        mediaType: mediaType,
+                        thumbnail: nil
+                    )
+                    mediaList.append(media)
+                }
+                
+            case let .video(type, _, _):
+                let isContain = option.isContainSelfShooting && type == .selfShooting
+                || option.isContainDownload && type == .download
+                
+                if isContain {
+                    let media = Media(
+                        id: asset.localIdentifier,
+                        creationDate: asset.creationDate,
+                        mediaType: mediaType,
+                        thumbnail: nil
+                    )
+                    mediaList.append(media)
+                }
+            }
         }
-        return newMedias
-    }
-    
-    /// 썸네일 없이 기록을 반환합니다.
-    func fetchMediasWithNoThumbnail(
-        mediaFetchType: MediaFetchOption = .all,
-        date: Date,
-        ascending: Bool = true
-    ) -> [Media] {
-        var newMedias = [Media]()
         
-//        let fetchAssetResult = self.fetchAssetResult(
-//            mediaFetchType: mediaFetchType,
-//            date: date,
-//            ascending: ascending
-//        )
-//        fetchResult = fetchAssetResult
-//        
-//        fetchResult?.enumerateObjects { [weak self] asset, _, _ in
-//            guard let self else { return }
-//            let media = Media(
-//                id: asset.localIdentifier,
-//                creationDate: asset.creationDate,
-//                mediaType: mediaType(from: asset),
-//                thumbnail: nil
-//            )
-//            newMedias.append(media)
-//        }
-        return newMedias
+        return mediaList
     }
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
@@ -313,9 +311,37 @@ extension PhotoKitService {
     
     /// 현재 Asset의 MediaType을 반환합니다.
     private func mediaType(from asset: PHAsset) -> MediaType {
-        asset.mediaType == .image
-        ? .photo(isScreenShot: asset.mediaSubtypes.contains(.photoScreenshot))
-        : .video(duration: asset.duration)
+        let resources = PHAssetResource.assetResources(for: asset)
+        let uniformTypeIdentifier = resources.first?.uniformTypeIdentifier ?? ""
+        let format = String(uniformTypeIdentifier.split(separator: ".").last ?? "")
+        print(format)
+        
+        switch asset.mediaType {
+        case .image:
+            let photoFormat = PhotoFormat(rawValue: format) ?? .heic
+            
+            if asset.mediaSubtypes.contains(.photoScreenshot) {
+                return.photo(.screenshot, photoFormat)
+            }
+            
+            if photoFormat == .heic {
+                return .photo(.selfShooting, photoFormat)
+            } else {
+                return .photo(.download, photoFormat)
+            }
+            
+        case .video:
+            let videoFormat = VideoFormat(rawValue: format) ?? .quickTimeMovie
+            
+            if videoFormat == .quickTimeMovie {
+                return .video(.selfShooting, videoFormat, duration: asset.duration)
+            } else {
+                return .video(.download, videoFormat, duration: asset.duration)
+            }
+            
+        default:
+            return .photo(.selfShooting, .heic)
+        }
     }
     
     /// PHFetchResult를 날짜에 맞게 반환합니다.
@@ -330,7 +356,6 @@ extension PhotoKitService {
     private func makePredicate(from album: Album) -> NSPredicate {
         let dateFormat = "creationDate > %@"
         let mediaFormat = "mediaType == %d"
-        let mediaSubFormat = "mediaSubtypes != %d"
         
         var format = ""
         var arguments = [CVarArg]()
@@ -349,27 +374,9 @@ extension PhotoKitService {
             arguments.append(PHAssetMediaType.video.rawValue)
         }
         
-        // 2. 필터링 설정
-        if !album.mediaFilterOption.isContainSelfShooting {
-            // filterFormat.append(mediaSubFormat)
-            
-        }
-        
-        if !album.mediaFilterOption.isContainDownload {
-            
-        }
-        
-        if !album.mediaFilterOption.isContainScreenshot {
-            format += " AND " + mediaSubFormat
-            arguments.append(PHAssetMediaSubtype.photoScreenshot.rawValue)
-        }
-        
-        // 3. 시작 날짜 설정
-        var result = "(\(format))"
-        result.append(" AND " + dateFormat)
+        // 2. 시작 날짜 설정
+        let result = format + " AND " + dateFormat
         arguments.append(album.startDate as NSDate)
-        
-        print(result)
         
         return .init(format: result, argumentArray: arguments)
     }
@@ -386,19 +393,6 @@ extension PhotoKitService {
                 continuation.resume(returning: image)
             }
         }
-    }
-    
-    /// 현재 에셋을 필터링 후 반환합니다.
-    private func filterExcludeAssets(_ excludeAssets: [String]) throws -> PHFetchResult<PHAsset>? {
-        guard let fetchResult else { throw PhotoKitError.emptyAssets }
-        
-        let allAssets = (0..<fetchResult.count).compactMap { fetchResult.object(at: $0) }
-        
-        let filteredIdentifiers = allAssets
-            .filter { !Set(excludeAssets).contains($0.localIdentifier) }
-            .map { $0.localIdentifier }
-        
-        return PHAsset.fetchAssets(withLocalIdentifiers: filteredIdentifiers, options: defaultFetchOptions)
     }
     
     /// 앨범에 에셋을 추가합니다.
@@ -432,8 +426,8 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
     
     /// PhotoLibrary의 변화 감지 시 호출됩니다.
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        guard let fetchResult,
-              let changeDetails = changeInstance.changeDetails(for: fetchResult) else {
+        guard let fetchResultForObserve,
+              let changeDetails = changeInstance.changeDetails(for: fetchResultForObserve) else {
             return
         }
         

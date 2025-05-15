@@ -19,16 +19,12 @@ struct MockPhotoKitService: PhotoKitInterface {
         print("[권한 허용 완료]")
     }
     
-    func fetchMediasWithNoThumbnail(mediaFetchType: MediaFetchOption, date: Date, ascending: Bool) -> [Media] {
+    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
         Array(repeatElement(.init(
             id: UUID().uuidString,
             creationDate: .now,
-            mediaType: .photo(isScreenShot: false)
+            mediaType: .photo(.selfShooting, .heic)
         ), count: 30))
-    }
-    
-    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
-        []
     }
     
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
@@ -37,7 +33,7 @@ struct MockPhotoKitService: PhotoKitInterface {
             array.append(.init(
                 id: UUID().uuidString,
                 creationDate: .now,
-                mediaType: .photo(isScreenShot: false),
+                mediaType: .photo(.selfShooting, .heic),
                 thumbnail: UIImage()
             ))
         }

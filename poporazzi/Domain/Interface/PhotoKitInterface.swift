@@ -18,12 +18,6 @@ protocol PhotoKitInterface {
     func requestAuth()
     
     /// Thumbnail 없이 Media 배열을 반환합니다.
-    func fetchMediasWithNoThumbnail(
-        mediaFetchType: MediaFetchOption,
-        date: Date,
-        ascending: Bool
-    ) -> [Media]
-    
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media]
     
     /// Media 배열 이벤트를 반환합니다.

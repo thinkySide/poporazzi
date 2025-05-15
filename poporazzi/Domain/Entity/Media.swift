@@ -28,8 +28,30 @@ struct Media: Hashable, Equatable {
 
 /// 미디어 타입
 enum MediaType: Hashable {
-    case photo(isScreenShot: Bool)
-    case video(duration: TimeInterval)
+    case photo(PhotoType, PhotoFormat)
+    case video(VideoType, VideoFormat, duration: TimeInterval)
+}
+
+enum PhotoType {
+    case selfShooting
+    case download
+    case screenshot
+}
+
+enum PhotoFormat: String {
+    case heic
+    case png
+    case jpeg
+}
+
+enum VideoType {
+    case selfShooting
+    case download
+}
+
+enum VideoFormat: String {
+    case quickTimeMovie = "quicktime-movie"
+    case mpeg4 = "mpeg-4"
 }
 
 /// 미디어 검색 타입
