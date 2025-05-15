@@ -61,7 +61,6 @@ extension Coordinator: UINavigationControllerDelegate, UIGestureRecognizerDelega
         didShow viewController: UIViewController,
         animated: Bool
     ) {
-        
         // RootViewController 비활성화
         guard navigationController.viewControllers.first !== viewController else {
             navigationController.interactivePopGestureRecognizer?.isEnabled = false
@@ -116,7 +115,7 @@ extension Coordinator {
                     owner.pushAlbumEdit(recordVM, album)
                     
                 case let .presentExcludeRecord(album):
-                    owner.presentExcludeRecord(recordVM, album)
+                    owner.pushExcludeRecord(recordVM, album)
                     
                 case let .presentFinishModal(album, sectionMediaList):
                     owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
@@ -125,7 +124,7 @@ extension Coordinator {
             .disposed(by: recordVC.disposeBag)
     }
     
-    /// 앨범 수정 화면을 Present 합니다.
+    /// 앨범 수정 화면을 Push 합니다.
     private func pushAlbumEdit(
         _ recordVM: RecordViewModel?,
         _ album: Album
@@ -158,29 +157,28 @@ extension Coordinator {
             }
             .disposed(by: editVC.disposeBag)
     }
+    
+    /// 제외된 기록 화면을 Push 합니다.
+    private func pushExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
+        let excludeRecordVM = ExcludeRecordViewModel(output: .init(album: .init(value: album)))
+        let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
+        self.navigationController.pushViewController(excludeRecordVC, animated: true)
+        
+        excludeRecordVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case let .pop(album):
+                    recordVM?.delegate.accept(.updateExcludeRecord(album))
+                    owner.navigationController.popViewController(animated: true)
+                }
+            }
+            .disposed(by: excludeRecordVC.disposeBag)
+    }
 }
 
 // MARK: - Sheet
 
 extension Coordinator {
-    
-    /// 제외된 기록 화면을 Present 합니다.
-    private func presentExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
-        let excludeRecordVM = ExcludeRecordViewModel(output: .init(album: .init(value: album)))
-        let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
-        excludeRecordVC.modalPresentationStyle = .overFullScreen
-        self.navigationController.present(excludeRecordVC, animated: true)
-        
-        excludeRecordVM.navigation
-            .bind(with: self) { [weak excludeRecordVC] owner, path in
-                switch path {
-                case let .dismiss(album):
-                    recordVM?.delegate.accept(.updateExcludeRecord(album))
-                    excludeRecordVC?.dismiss(animated: true)
-                }
-            }
-            .disposed(by: excludeRecordVC.disposeBag)
-    }
     
     /// 날짜 선택 모달을 Present 합니다.
     private func presentDatePickerModal(_ editVC: AlbumEditViewController?, _ editVM: AlbumEditViewModel, startDate: Date) {

@@ -57,7 +57,7 @@ extension ExcludeRecordViewModel {
     }
     
     enum Navigation {
-        case dismiss(Album)
+        case pop(Album)
     }
     
     enum ActionSheetAction {
@@ -83,7 +83,7 @@ extension ExcludeRecordViewModel {
         
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.dismiss(owner.output.album.value))
+                owner.navigation.accept(.pop(owner.output.album.value))
             }
             .disposed(by: disposeBag)
         
