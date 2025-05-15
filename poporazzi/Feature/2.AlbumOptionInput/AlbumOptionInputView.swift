@@ -33,7 +33,7 @@ final class AlbumOptionInputView: CodeBaseUI {
     private let choiceChipView = UIView()
     
     /// 전체 선택 칩
-    let allFetchChoiceChip = FormChoiceChip("전체", variation: .selected)
+    let allFetchChoiceChip = FormChoiceChip("사진 및 동영상", variation: .selected)
     
     /// 사진 선택 칩
     let photoFetchChoiceChip = FormChoiceChip("사진", variation: .deselected)

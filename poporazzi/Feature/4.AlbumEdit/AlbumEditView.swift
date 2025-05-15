@@ -50,7 +50,7 @@ final class AlbumEditView: CodeBaseUI {
     private let choiceChipView = UIView()
     
     /// 전체 선택 칩
-    let allChoiceChip = FormChoiceChip("전체", variation: .selected)
+    let allChoiceChip = FormChoiceChip("사진 및 동영상", variation: .selected)
     
     /// 사진 선택 칩
     let photoChoiceChip = FormChoiceChip("사진", variation: .deselected)
