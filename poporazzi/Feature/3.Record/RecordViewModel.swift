@@ -5,7 +5,6 @@
 //  Created by 김민준 on 4/5/25.
 //
 
-import UIKit
 import Foundation
 import RxSwift
 import RxCocoa
@@ -126,13 +125,15 @@ extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
         
+        input.viewDidLoad
+            .emit(with: self) { owner, _ in
+                owner.output.setupSeeMoreMenu.accept(self.seemoreMenu)
+            }
+            .disposed(by: disposeBag)
+        
         // 1. 화면 진입 시 기본 이미지 로드
         input.viewDidLoad
             .asObservable()
-            .do { [weak self] _ in
-                guard let self else { return }
-                self.output.setupSeeMoreMenu.accept(self.seemoreMenu)
-            }
             .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, _ in
                 owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
@@ -403,21 +404,9 @@ extension RecordViewModel {
     /// - 제외된 사진을 필터링합니다.
     /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() -> [Media] {
-        let trackingStartDate = output.album.value.startDate
-        return photoKitService.fetchMediasWithNoThumbnail(
-            mediaFetchType: .all,
-            date: trackingStartDate,
-            ascending: true
-        )
-        .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
-        .filter {
-            if !output.album.value.mediaFilterOption.isContainScreenshot {
-                if case let .photo(isScreenshot) = $0.mediaType {
-                    return !isScreenshot
-                }
-            }
-            return true
-        }
+        let album = output.album.value
+        return photoKitService.fetchMediaListWithNoThumbnail(from: album)
+            .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
     }
     
     /// 전체 Media 리스트를 반환합니다.

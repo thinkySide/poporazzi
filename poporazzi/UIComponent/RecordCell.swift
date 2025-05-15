@@ -113,7 +113,7 @@ extension RecordCell {
     
     enum Action {
         case setImage(UIImage?)
-        case setMediaType(MediaType)
+        case setMediaType(Media.MediaType)
     }
     
     func action(_ action: Action) {
@@ -132,7 +132,7 @@ extension RecordCell {
                 videoOverlay.isHidden = true
                 videoDurationLabel.flex.markDirty()
                 
-            case let .video(duration):
+            case let .video(_, _, duration):
                 videoDurationLabel.text = duration.videoDurationFormat
                 videoOverlay.isHidden = false
                 videoDurationLabel.flex.markDirty()

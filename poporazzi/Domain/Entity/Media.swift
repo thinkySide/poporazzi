@@ -10,9 +10,18 @@ import UIKit
 /// 미디어
 struct Media: Hashable, Equatable {
     
+    /// 고유 ID
+    ///
+    /// - Asset의 ID 저장
     let id: String
+    
+    /// 생성일
     let creationDate: Date?
+    
+    /// 미디어 타입
     let mediaType: MediaType
+    
+    /// 썸네일
     var thumbnail: UIImage?
     
     func hash(into hasher: inout Hasher) {
@@ -24,19 +33,42 @@ struct Media: Hashable, Equatable {
         && lhs.mediaType == rhs.mediaType
         && lhs.thumbnail != rhs.thumbnail
     }
-}
-
-/// 미디어 타입
-enum MediaType: Hashable {
-    case photo(isScreenShot: Bool)
-    case video(duration: TimeInterval)
-}
-
-/// 미디어 검색 타입
-enum MediaFetchOption {
-    case all
-    case photo
-    case video
+    
+    /// 미디어 타입
+    enum MediaType: Hashable {
+        
+        /// 사진
+        case photo(PhotoType, PhotoFormat)
+        
+        /// 비디오
+        case video(VideoType, VideoFormat, duration: TimeInterval)
+        
+        /// 사진 타입
+        enum PhotoType {
+            case selfShooting
+            case download
+            case screenshot
+        }
+        
+        /// 사진 확장자
+        enum PhotoFormat: String {
+            case heic
+            case png
+            case jpeg
+        }
+        
+        /// 비디오 타입
+        enum VideoType {
+            case selfShooting
+            case download
+        }
+        
+        /// 비디오 확장자
+        enum VideoFormat: String {
+            case quickTimeMovie = "quicktime-movie"
+            case mpeg4 = "mpeg-4"
+        }
+    }
 }
 
 // MARK: - Helper
