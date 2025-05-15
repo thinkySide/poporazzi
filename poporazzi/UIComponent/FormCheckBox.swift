@@ -27,21 +27,14 @@ final class FormCheckBox: CodeBaseUI {
     
     let tapGesture = UITapGestureRecognizer()
     
-    let checkIcon = UIImageView(
-        symbol: .check,
-        size: 15,
-        weight: .heavy,
-        tintColor: .brandSecondary
-    )
-    
-    let title = UILabel(size: 16, color: .mainLabel)
-    
     let checkBoxIcon = UIImageView(
         symbol: .checkBox,
         size: 24,
         weight: .black,
         tintColor: .brandSecondary
     )
+    
+    let title = UILabel(size: 16, color: .mainLabel)
     
     init(_ title: String, variation: Variation) {
         super.init(frame: .zero)
@@ -74,7 +67,6 @@ extension FormCheckBox {
         switch action {
         case let .updateVariation(variation):
             UIView.animate(withDuration: 0.2) { [weak self] in
-                self?.checkIcon.tintColor = variation.backgroundColor
                 self?.checkBoxIcon.tintColor = variation.backgroundColor
             }
         }
@@ -87,10 +79,9 @@ extension FormCheckBox {
     
     func configLayout() {
         containerView.flex.direction(.row).height(40).define { flex in
-            flex.addItem(checkIcon)
-            flex.addItem(title).marginLeft(10)
-            flex.addItem().grow(1)
             flex.addItem(checkBoxIcon)
+            flex.addItem(title).marginLeft(12)
+            flex.addItem().grow(1)
         }
     }
 }
