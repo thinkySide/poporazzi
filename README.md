@@ -1,9 +1,9 @@
 # 🥷📸 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.4.2)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.4.3)|
 |:--|:--|
-|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Xcode Cloud|
+|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Realm, Xcode Cloud|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11), [Instagram](https://www.instagram.com/poporazzzzzi?igsh=MWV1cDl4ZWU2b2p0bQ%3D%3D&utm_source=qr)|
 |이메일 문의|eunlyuing@gmail.com|
 
@@ -71,7 +71,7 @@
 |[#67 유닛 테스트 환경 세팅 및 작성](https://github.com/thinkySide/poporazzi/pull/67)|Unit Test Target 추가, Live Activity 및 PhotoKit Service 인터페이스 구현 및 Mock 객체 생성, XCTest를 활용한 테스트 코드 작성|
 |[#69 앨범 저장 오류 해결](https://github.com/thinkySide/poporazzi/pull/69)|동일한 이름의 앨범 생성 시, 저장 후 덮어씌워지는 문제 해결, 제외된 기록이 추가되었음에도 종료 시 반영되지 않는 문제 해결|
 
-#### v1.4.0 ~ 1.4.2 / 25.05.09 ~
+#### v1.4.0 ~ 1.4.3 / 25.05.09 ~
 > MVP 개발 때 부터 생각했던 일자별로 앨범을 나누는 기능이 기술적으로 가능함을 확인했다. 이제 하루 이상 기록하게 되면 일차별로 나눠보자!
 
 |PR 제목|주요 구현 내용|
@@ -86,3 +86,7 @@
 |[#87 저장 없이 기록 종료 기능 추가](https://github.com/thinkySide/poporazzi/pull/87)|앨범을 생성하지 않고 기록 종료 기능 추가|
 |[#89 스크린샷 제외 기능 구현](https://github.com/thinkySide/poporazzi/pull/89)|PHMediaSubtypes를 이용한 스크린샷 제외 기능 구현| 
 |[#91 1.4.2 배포 전 QA](https://github.com/thinkySide/poporazzi/pull/91)|TitleInputView UI 업데이트|
+|[#93 앨범 저장 옵션 선택 UI 구현 및 연결](https://github.com/thinkySide/poporazzi/pull/93)|AlbumOptionInput 화면 구현, FormChoiceChip 및 FormCheckBox UIComponent 구현|
+|[#95 Realm을 이용한 영구 저장 데이터 모델 설계 및 적용](https://github.com/thinkySide/poporazzi/pull/95)|Realm 의존성 추가, 확장성을 위해 UserDefaults를 Realm으로 전환|
+|[#97 미디어 유형 및 필터링 옵션 추가에 따른 기능 구현](https://github.com/thinkySide/poporazzi/pull/97)|직접 촬영한 사진, 다운로드한 사진, 스크린샷 필터링 기능 구현|
+|[#99 1.4.3 배포 전 QA](https://github.com/thinkySide/poporazzi/pull/99)|UX 개선, Navigation PopGesture 설정|
