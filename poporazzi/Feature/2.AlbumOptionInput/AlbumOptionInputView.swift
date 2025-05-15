@@ -27,7 +27,7 @@ final class AlbumOptionInputView: CodeBaseUI {
     )
     
     /// 미디어 유형
-    private let fetchOptionFormLabel = FormLabel(title: "미디어 유형")
+    private let fetchOptionFormLabel = FormLabel(title: "미디어 종류")
     
     /// 선택 칩 뷰
     private let choiceChipView = UIView()
@@ -42,7 +42,7 @@ final class AlbumOptionInputView: CodeBaseUI {
     let videoFetchChoiceChip = FormChoiceChip("동영상", variation: .deselected)
     
     /// 필터 옵션
-    let filterOptionsFormLabel = FormLabel(title: "필터링 옵션", subtitle: "1개 이상 선택")
+    let filterOptionsFormLabel = FormLabel(title: "분류 기준", subtitle: "1개 이상 선택")
     
     /// 직접 촬영한 항목 체크박스
     let selfShootingFilterCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)

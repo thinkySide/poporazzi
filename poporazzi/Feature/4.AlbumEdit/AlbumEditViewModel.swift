@@ -64,7 +64,7 @@ extension AlbumEditViewModel {
     
     enum Navigation {
         case presentStartDatePicker(Date)
-        case dismiss
+        case pop
         case dismissWithUpdate(Album)
     }
     
@@ -149,7 +149,7 @@ extension AlbumEditViewModel {
         
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.dismiss)
+                owner.navigation.accept(.pop)
             }
             .disposed(by: disposeBag)
         

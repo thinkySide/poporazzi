@@ -71,7 +71,7 @@ extension RecordViewModel {
     
     enum Navigation {
         case pop
-        case presentAlbumEdit(Album)
+        case pushAlbumEdit(Album)
         case presentExcludeRecord(Album)
         case presentFinishModal(Album, SectionMediaList)
     }
@@ -305,7 +305,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    owner.navigation.accept(.presentAlbumEdit(owner.output.album.value))
+                    owner.navigation.accept(.pushAlbumEdit(owner.output.album.value))
                     
                 case .excludeRecord:
                     let album = owner.output.album.value
