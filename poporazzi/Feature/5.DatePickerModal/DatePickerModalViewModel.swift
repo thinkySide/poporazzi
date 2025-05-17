@@ -18,10 +18,6 @@ final class DatePickerModalViewModel: ViewModel {
     
     init(output: Output) {
         self.output = output
-//        switch output.modalState.value {
-//        case let .startDate(date): output.selectedDate.accept(date)
-//        case let .endDate(date): output.selectedDate.accept(date)
-//        }
     }
     
     deinit {
@@ -34,7 +30,7 @@ final class DatePickerModalViewModel: ViewModel {
 extension DatePickerModalViewModel {
     
     struct Input {
-        let viewDidLoad: Signal<Void>
+        let viewWillAppear: Signal<Void>
         let datePickerChanged: Signal<Date>
         let confirmButtonTapped: Signal<Void>
     }
@@ -43,6 +39,9 @@ extension DatePickerModalViewModel {
         let modalState: BehaviorRelay<ModalState>
         let startDate: BehaviorRelay<Date>
         let endDate: BehaviorRelay<Date?>
+        
+        let setupSelectableStartDateRange = PublishRelay<Date?>()
+        let setupSelectableEndDateRange = PublishRelay<Date>()
     }
     
     enum Navigation {
@@ -61,6 +60,22 @@ extension DatePickerModalViewModel {
 extension DatePickerModalViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.viewWillAppear
+            .asObservable()
+            .take(1)
+            .bind(with: self) { owner, _ in
+                switch owner.output.modalState.value {
+                case .startDate:
+                    let endDate = owner.output.endDate.value
+                    owner.output.setupSelectableStartDateRange.accept(endDate)
+                    
+                case .endDate:
+                    let startDate = owner.output.startDate.value
+                    owner.output.setupSelectableEndDateRange.accept(startDate)
+                }
+            }
+            .disposed(by: disposeBag)
+        
         input.datePickerChanged
             .emit(with: self) { owner, date in
                 switch owner.output.modalState.value {

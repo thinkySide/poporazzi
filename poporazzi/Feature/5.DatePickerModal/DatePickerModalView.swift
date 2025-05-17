@@ -50,7 +50,6 @@ final class DatePickerModalView: CodeBaseUI {
         datePicker.datePickerMode = .dateAndTime
         datePicker.preferredDatePickerStyle = .inline
         datePicker.locale = Locale(identifier: "ko-KR")
-        datePicker.maximumDate = .now
         datePicker.tintColor = .brandPrimary
         datePicker.minuteInterval = 10
         return datePicker
@@ -58,7 +57,7 @@ final class DatePickerModalView: CodeBaseUI {
     
     let endOfRecordCheckBox = FormCheckBox("기록 종료 시 까지", variation: .deselected)
     
-    let actionbuttonView = UIView()
+    private let actionbuttonView = UIView()
     
     let cancelButton = ActionButton(title: "취소", variataion: .secondary)
     
@@ -80,6 +79,26 @@ final class DatePickerModalView: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
+    }
+}
+
+// MARK: - Action
+
+extension DatePickerModalView {
+    
+    enum Action {
+        case setupSelectableStartDateRange(endDate: Date?)
+        case setupSelectableEndDateRange(startDate: Date)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .setupSelectableStartDateRange(endDate):
+            self.datePicker.maximumDate = endDate
+            
+        case let .setupSelectableEndDateRange(startDate):
+            self.datePicker.minimumDate = startDate
+        }
     }
 }
 
