@@ -104,7 +104,7 @@ extension DatePickerModalViewModel {
                 if isActive {
                     owner.output.endDate.accept(nil)
                 } else {
-                    owner.output.endDate.accept(.now)
+                    owner.output.endDate.accept(.now.roundDownMinutes)
                 }
             }
             .disposed(by: disposeBag)
