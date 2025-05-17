@@ -352,13 +352,11 @@ extension PhotoKitService {
     
     /// 미디어 패치를 위한 Predicate 객체를 생성합니다.
     private func makePredicate(from album: Album) -> NSPredicate {
-        let dateFormat = "creationDate > %@"
-        let mediaFormat = "mediaType == %d"
-        
         var format = ""
         var arguments = [CVarArg]()
         
         // 1. 미디어 유형 설정
+        let mediaFormat = "mediaType == %d"
         switch album.mediaFetchOption {
         case .all:
             format += ("(\(mediaFormat) OR \(mediaFormat))")
@@ -373,8 +371,14 @@ extension PhotoKitService {
         }
         
         // 2. 시작 날짜 설정
-        let result = format + " AND " + dateFormat
+        var result = format + " AND " + "creationDate >= %@"
         arguments.append(album.startDate as NSDate)
+        
+        // 3. 종료 날짜 설정
+        if let endDate = album.endDate {
+            result += " AND " + "creationDate <= %@"
+            arguments.append(endDate as NSDate)
+        }
         
         return .init(format: result, argumentArray: arguments)
     }

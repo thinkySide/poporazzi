@@ -10,7 +10,7 @@ import RealmSwift
 
 final class PersistenceService: PersistenceInterface {
     
-    private let realm = try! Realm()
+    private let realm = try? Realm()
 }
 
 // MARK: - Album
@@ -23,13 +23,14 @@ extension PersistenceService {
             id: album.id,
             title: album.title,
             startDate: album.startDate,
+            endDate: album.endDate,
             excludeMediaList: .init(),
             mediaFetchOption: toPersistence(from: album.mediaFetchOption),
             mediaFilterOption: toPersistence(from: album.mediaFilterOption)
         )
         
-        try realm.write {
-            realm.add(album)
+        try realm?.write {
+            realm?.add(album)
         }
     }
     
@@ -46,9 +47,10 @@ extension PersistenceService {
     func updateAlbum(to newAlbum: Album) {
         guard let persistenceAlbum = readPersistenceAlbum(fromId: newAlbum.id) else { return }
         do {
-            try realm.write {
+            try realm?.write {
                 persistenceAlbum.title = newAlbum.title
                 persistenceAlbum.startDate = newAlbum.startDate
+                persistenceAlbum.endDate = newAlbum.endDate
                 persistenceAlbum.mediaFetchOption = toPersistence(from: newAlbum.mediaFetchOption)
                 persistenceAlbum.mediaFilterOption = toPersistence(from: newAlbum.mediaFilterOption)
             }
@@ -66,7 +68,7 @@ extension PersistenceService {
         }
         
         do {
-            try realm.write {
+            try realm?.write {
                 persistenceAlbum.excludeMediaList.removeAll()
                 persistenceAlbum.excludeMediaList.append(objectsIn: Array(album.excludeMediaList))
             }
@@ -81,8 +83,8 @@ extension PersistenceService {
 extension PersistenceService {
     
     private func readPersistenceAlbum(fromId: String) -> PersistenceAlbum? {
-        let albums = realm.objects(PersistenceAlbum.self)
-        return albums.filter({ $0.id == fromId }).first
+        let albums = realm?.objects(PersistenceAlbum.self)
+        return albums?.filter({ $0.id == fromId }).first
     }
 }
 
@@ -111,6 +113,7 @@ extension PersistenceService {
             id: album.id,
             title: album.title,
             startDate: album.startDate,
+            endDate: album.endDate,
             excludeMediaList: Set(album.excludeMediaList),
             mediaFetchOption: toEntity(from: album.mediaFetchOption),
             mediaFilterOption: toEntity(from: album.mediaFilterOption)

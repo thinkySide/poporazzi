@@ -134,6 +134,7 @@ extension Coordinator {
                 album: .init(value: album),
                 titleText: .init(value: album.title),
                 startDate: .init(value: album.startDate),
+                endDate: .init(value: album.endDate),
                 mediaFetchOption: .init(value: album.mediaFetchOption),
                 mediaFilterOption: .init(value: album.mediaFilterOption)
             )
@@ -144,8 +145,11 @@ extension Coordinator {
         editVM.navigation
             .bind(with: self) { [weak editVC] owner, path in
                 switch path {
-                case .presentStartDatePicker(let date):
-                    owner.presentDatePickerModal(editVC, editVM, startDate: date)
+                case let .presentStartDatePicker(startDate, endDate):
+                    owner.presentDatePickerModal(editVC, editVM, .startDate, startDate, endDate)
+                    
+                case let .presentEndDatePicker(startDate, endDate):
+                    owner.presentDatePickerModal(editVC, editVM, .endDate, startDate, endDate)
                     
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
@@ -181,19 +185,48 @@ extension Coordinator {
 extension Coordinator {
     
     /// 날짜 선택 모달을 Present 합니다.
-    private func presentDatePickerModal(_ editVC: AlbumEditViewController?, _ editVM: AlbumEditViewModel, startDate: Date) {
-        let datePickerVM = DatePickerModalViewModel(output: .init(selectedDate: .init(value: startDate)))
-        let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)
-        datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
-        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
+    private func presentDatePickerModal(
+        _ editVC: AlbumEditViewController?,
+        _ editVM: AlbumEditViewModel,
+        _ modalState: DatePickerModalViewModel.ModalState,
+        _ startDate: Date,
+        _ endDate: Date?
+    ) {
+        let isEndofRecordActive: Bool = {
+            switch modalState {
+            case .startDate: return false
+            case .endDate: return endDate == nil
+            }
+        }()
+        
+        let datePickerVM = DatePickerModalViewModel(
+            output: .init(
+                modalState: .init(value: modalState),
+                startDate: .init(value: startDate),
+                endDate: .init(value: endDate),
+                isEndOfRecordActive: .init(value: isEndofRecordActive)
+            )
+        )
+        let datePickerVC = DatePickerModalViewController(
+            viewModel: datePickerVM,
+            variation: modalState == .startDate ? .startDate : .endDate
+        )
+        datePickerVC.sheetPresentationController?.preferredCornerRadius = 40
         datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
         editVC?.present(datePickerVC, animated: true)
         
         datePickerVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
-                case let .pop(date):
+                case .pop:
+                    editVC?.dismiss(animated: true)
+                    
+                case let .popFromStartDate(date):
                     editVM.delegate.accept(.startDateDidChanged(date))
+                    editVC?.dismiss(animated: true)
+                    
+                case let .popFromEndDate(date):
+                    editVM.delegate.accept(.endDateDidChanged(date))
                     editVC?.dismiss(animated: true)
                 }
             }

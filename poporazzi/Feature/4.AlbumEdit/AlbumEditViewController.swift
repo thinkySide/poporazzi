@@ -44,6 +44,7 @@ extension AlbumEditViewController {
             viewDidLoad: .just(()),
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
             startDatePickerTapped: scene.startDatePicker.tapGesture.rx.event.asVoidSignal(),
+            endDatePickerTapped: scene.endDatePicker.tapGesture.rx.event.asVoidSignal(),
             allSaveChoiceChipTapped: scene.allChoiceChip.button.rx.tap.asSignal(),
             photoChoiceChipTapped: scene.photoChoiceChip.button.rx.tap.asSignal(),
             videoChoiceChipTapped: scene.videoChoiceChip.button.rx.tap.asSignal(),
@@ -59,13 +60,22 @@ extension AlbumEditViewController {
             .bind(with: self) { owner, record in
                 owner.scene.titleTextField.action(.updateText(record.title))
                 owner.scene.titleTextField.action(.updatePlaceholder(record.title))
-                owner.scene.startDatePicker.action(.updateDate(record.startDate))
             }
             .disposed(by: disposeBag)
         
         output.startDate
-            .bind(with: self) { owner, date in
-                owner.scene.startDatePicker.action(.updateDate(date))
+            .bind(with: self) { owner, startDate in
+                owner.scene.startDatePicker.action(.updateDateLabel(startDate.startDateFullFormat))
+            }
+            .disposed(by: disposeBag)
+        
+        output.endDate
+            .bind(with: self) { owner, endDate in
+                if let endDate = endDate {
+                    owner.scene.endDatePicker.action(.updateDateLabel(endDate.endDateFullFormat))
+                } else {
+                    owner.scene.endDatePicker.action(.updateDateLabel("기록 종료 시 까지"))
+                }
             }
             .disposed(by: disposeBag)
         

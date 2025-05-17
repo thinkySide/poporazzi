@@ -19,6 +19,9 @@ struct Album {
     /// 시작 날짜
     var startDate: Date
     
+    /// 종료 날짜
+    var endDate: Date?
+    
     /// 제외된 미디어 리스트
     var excludeMediaList: Set<String>
     
@@ -32,6 +35,7 @@ struct Album {
         id: String = UUID().uuidString,
         title: String,
         startDate: Date = .now,
+        endDate: Date? = nil,
         excludeMediaList: Set<String> = [],
         mediaFetchOption: MediaFetchOption,
         mediaFilterOption: MediaFilterOption
@@ -39,6 +43,7 @@ struct Album {
         self.id = id
         self.title = title
         self.startDate = startDate
+        self.endDate = endDate
         self.excludeMediaList = excludeMediaList
         self.mediaFetchOption = mediaFetchOption
         self.mediaFilterOption = mediaFilterOption

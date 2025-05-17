@@ -17,12 +17,7 @@ final class FormDatePicker: CodeBaseUI {
     let tapGesture = UITapGestureRecognizer()
     
     /// 날짜 라벨
-    private let dateLabel: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(18)
-        label.textColor = .mainLabel
-        return label
-    }()
+    private let dateLabel = UILabel(size: 18, color: .mainLabel)
     
     /// 오른쪽 화살표
     private let chevronRight = UIImageView(
@@ -32,11 +27,16 @@ final class FormDatePicker: CodeBaseUI {
         tintColor: .subLabel
     )
     
-    init() {
+    init(title: String = "") {
         super.init(frame: .zero)
         setup()
         addGestureRecognizer(tapGesture)
-        action(.updateDate(.now))
+        
+//        if title.isEmpty {
+//            action(.updateDate(.now))
+//        } else {
+//            action(.setTitle(title))
+//        }
     }
     
     required init?(coder: NSCoder) {
@@ -55,13 +55,18 @@ final class FormDatePicker: CodeBaseUI {
 extension FormDatePicker {
     
     enum Action {
-        case updateDate(Date)
+        case setTitle(String)
+        case updateDateLabel(String)
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .updateDate(date):
-            dateLabel.text = date.startDateFullFormat
+        case let .setTitle(title):
+            dateLabel.text = title
+            dateLabel.flex.markDirty()
+            
+        case let .updateDateLabel(title):
+            dateLabel.text = title
             dateLabel.flex.markDirty()
         }
     }

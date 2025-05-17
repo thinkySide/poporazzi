@@ -37,11 +37,17 @@ final class AlbumEditView: CodeBaseUI {
     /// 제목 텍스트필드
     let titleTextField = LineTextField(size: 20, placeholder: "플레이스홀더")
     
-    /// 시작날짜 양식 라벨
-    let startDateFormLabel = FormLabel(title: "시작 날짜")
+    /// 시작시간 양식 라벨
+    let startDateFormLabel = FormLabel(title: "시작 시간")
     
-    /// 시작날짜 피커
+    /// 시작시간 피커
     let startDatePicker = FormDatePicker()
+    
+    /// 종료시간 양식 라벨
+    let endDateFormLabel = FormLabel(title: "종료 시간")
+    
+    /// 종료시간 피커
+    let endDatePicker = FormDatePicker(title: "~ 기록 종료 시 까지")
     
     /// 미디어 유형
     private let saveItemFormLabel = FormLabel(title: "미디어 종류")
@@ -148,6 +154,9 @@ extension AlbumEditView {
                 
                 flex.addItem(startDateFormLabel).marginTop(32)
                 flex.addItem(startDatePicker).marginTop(6)
+                
+                flex.addItem(endDateFormLabel).marginTop(24)
+                flex.addItem(endDatePicker).marginTop(6)
                 
                 flex.addItem(saveItemFormLabel).marginTop(32)
                 flex.addItem(choiceChipView).marginTop(16)

@@ -32,7 +32,13 @@ extension Date {
     
     /// 시작 날짜 전체 포맷을 반환합니다.
     var startDateFullFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 EEEE a h시 mm분~"
+        Date.dateFormatter.dateFormat = "yyyy. M. d(E) a h:mm 부터"
+        return Date.dateFormatter.string(from: self)
+    }
+    
+    /// 종료 날짜 전체 포맷을 반환합니다.
+    var endDateFullFormat: String {
+        Date.dateFormatter.dateFormat = "yyyy. M. d(E) a h:mm 까지"
         return Date.dateFormatter.string(from: self)
     }
     

@@ -36,7 +36,9 @@ extension AlbumEditViewModel {
     struct Input {
         let viewDidLoad: Signal<Void>
         let titleTextChanged: Signal<String>
+        
         let startDatePickerTapped: Signal<Void>
+        let endDatePickerTapped: Signal<Void>
         
         let allSaveChoiceChipTapped: Signal<Void>
         let photoChoiceChipTapped: Signal<Void>
@@ -55,6 +57,7 @@ extension AlbumEditViewModel {
         
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
+        let endDate: BehaviorRelay<Date?>
         
         let mediaFetchOption: BehaviorRelay<MediaFetchOption>
         let mediaFilterOption: BehaviorRelay<MediaFilterOption>
@@ -63,13 +66,15 @@ extension AlbumEditViewModel {
     }
     
     enum Navigation {
-        case presentStartDatePicker(Date)
+        case presentStartDatePicker(startDate: Date, endDate: Date?)
+        case presentEndDatePicker(startDate: Date, endDate: Date?)
         case pop
         case dismissWithUpdate(Album)
     }
     
     enum Delegate {
         case startDateDidChanged(Date)
+        case endDateDidChanged(Date?)
     }
 }
 
@@ -90,7 +95,16 @@ extension AlbumEditViewModel {
         input.startDatePickerTapped
             .emit(with: self) { owner, _ in
                 let startDate = owner.output.startDate.value
-                owner.navigation.accept(.presentStartDatePicker(startDate))
+                let endDate = owner.output.endDate.value
+                owner.navigation.accept(.presentStartDatePicker(startDate: startDate, endDate: endDate))
+            }
+            .disposed(by: disposeBag)
+        
+        input.endDatePickerTapped
+            .emit(with: self) { owner, _ in
+                let startDate = owner.output.startDate.value
+                let endDate = owner.output.endDate.value
+                owner.navigation.accept(.presentEndDatePicker(startDate: startDate, endDate: endDate))
             }
             .disposed(by: disposeBag)
         
@@ -163,6 +177,7 @@ extension AlbumEditViewModel {
                     id: oldAlbum.id,
                     title: albumTitle,
                     startDate: owner.output.startDate.value,
+                    endDate: owner.output.endDate.value,
                     excludeMediaList: oldAlbum.excludeMediaList,
                     mediaFetchOption: owner.output.mediaFetchOption.value,
                     mediaFilterOption: owner.output.mediaFilterOption.value
@@ -181,6 +196,9 @@ extension AlbumEditViewModel {
                 switch delegate {
                 case .startDateDidChanged(let date):
                     owner.output.startDate.accept(date)
+                    
+                case .endDateDidChanged(let date):
+                    owner.output.endDate.accept(date)
                 }
             }
             .disposed(by: disposeBag)
