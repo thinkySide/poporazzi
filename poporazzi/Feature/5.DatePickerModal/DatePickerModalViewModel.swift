@@ -18,6 +18,10 @@ final class DatePickerModalViewModel: ViewModel {
     
     init(output: Output) {
         self.output = output
+//        switch output.modalState.value {
+//        case let .startDate(date): output.selectedDate.accept(date)
+//        case let .endDate(date): output.selectedDate.accept(date)
+//        }
     }
     
     deinit {
@@ -36,11 +40,19 @@ extension DatePickerModalViewModel {
     }
     
     struct Output {
-        let selectedDate: BehaviorRelay<Date>
+        let modalState: BehaviorRelay<ModalState>
+        let startDate: BehaviorRelay<Date>
+        let endDate: BehaviorRelay<Date?>
     }
     
     enum Navigation {
-        case pop(Date)
+        case popFromStartDate(Date)
+        case popFromEndDate(Date?)
+    }
+    
+    enum ModalState {
+        case startDate
+        case endDate
     }
 }
 
@@ -51,13 +63,23 @@ extension DatePickerModalViewModel {
     func transform(_ input: Input) -> Output {
         input.datePickerChanged
             .emit(with: self) { owner, date in
-                owner.output.selectedDate.accept(date)
+                switch owner.output.modalState.value {
+                case .startDate: owner.output.startDate.accept(date)
+                case .endDate: owner.output.endDate.accept(date)
+                }
             }
             .disposed(by: disposeBag)
         
         input.confirmButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.pop(owner.output.selectedDate.value))
+                switch owner.output.modalState.value {
+                case .startDate:
+                    owner.navigation.accept(.popFromStartDate(owner.output.startDate.value))
+                    
+                case .endDate:
+                    owner.navigation.accept(.popFromEndDate(owner.output.endDate.value))
+                }
+                
                 HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)

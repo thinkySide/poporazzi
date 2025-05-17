@@ -11,14 +11,16 @@ import RxCocoa
 
 final class DatePickerModalViewController: ViewController {
     
-    private let scene = DatePickerModalView()
+    private let scene: DatePickerModalView
     private let viewModel: DatePickerModalViewModel
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: DatePickerModalViewModel) {
+    init(viewModel: DatePickerModalViewModel, variation: DatePickerModalView.Variation) {
         self.viewModel = viewModel
+        self.scene = DatePickerModalView(variation: variation)
         super.init(nibName: nil, bundle: nil)
+        self.sheetPresentationController?.detents = [.custom(resolver: { _ in variation.sheetHeight })]
     }
     
     override func loadView() {
@@ -47,10 +49,10 @@ extension DatePickerModalViewController {
         )
         let state = viewModel.transform(action)
         
-        state.selectedDate
-            .bind(with: self) { owner, date in
-                owner.scene.datePicker.date = date
-            }
-            .disposed(by: disposeBag)
+//        state.selectedDate
+//            .bind(with: self) { owner, date in
+//                owner.scene.datePicker.date = date ?? .now
+//            }
+//            .disposed(by: disposeBag)
     }
 }

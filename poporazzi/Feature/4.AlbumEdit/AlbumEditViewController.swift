@@ -44,6 +44,7 @@ extension AlbumEditViewController {
             viewDidLoad: .just(()),
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
             startDatePickerTapped: scene.startDatePicker.tapGesture.rx.event.asVoidSignal(),
+            endDatePickerTapped: scene.finishDatePicker.tapGesture.rx.event.asVoidSignal(),
             allSaveChoiceChipTapped: scene.allChoiceChip.button.rx.tap.asSignal(),
             photoChoiceChipTapped: scene.photoChoiceChip.button.rx.tap.asSignal(),
             videoChoiceChipTapped: scene.videoChoiceChip.button.rx.tap.asSignal(),

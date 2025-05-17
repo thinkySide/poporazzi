@@ -11,9 +11,39 @@ import FlexLayout
 
 final class DatePickerModalView: CodeBaseUI {
     
+    enum Variation {
+        case startDate
+        case endDate
+        
+        var sheetHeight: CGFloat {
+            switch self {
+            case .startDate: 504
+            case .endDate: 544
+            }
+        }
+        
+        var title: String {
+            switch self {
+            case .startDate: "시작 시간 설정"
+            case .endDate: "종료 시간 설정"
+            }
+        }
+        
+        var info: String {
+            switch self {
+            case .startDate: "선택한 시간부터 앨범이 기록돼요"
+            case .endDate: "선택한 시간까지 앨범이 기록돼요"
+            }
+        }
+    }
+    
     var containerView = UIView()
     
-    let tapGesture = UITapGestureRecognizer()
+    var variation: Variation
+    
+    private let titleLabel = UILabel(size: 18, color: .mainLabel)
+    
+    private let infoLabel = UILabel(size: 14, color: .subLabel)
     
     let datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
@@ -26,14 +56,19 @@ final class DatePickerModalView: CodeBaseUI {
         return datePicker
     }()
     
+    let endOfRecordCheckBox = FormCheckBox("기록 종료 시 까지", variation: .deselected)
+    
     let actionbuttonView = UIView()
     
     let cancelButton = ActionButton(title: "취소", variataion: .secondary)
     
-    let confirmButton = ActionButton(title: "시작 시간 저장", variataion: .primary)
+    let confirmButton = ActionButton(title: "확인", variataion: .primary)
     
-    init() {
+    init(variation: Variation) {
+        self.variation = variation
         super.init(frame: .zero)
+        self.titleLabel.text = variation.title
+        self.infoLabel.text = variation.info
         setup()
     }
     
@@ -54,8 +89,15 @@ extension DatePickerModalView {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in
-            flex.addItem(datePicker).position(.absolute).top(12).horizontally(20).bottom(24)
-            flex.addItem(actionbuttonView).position(.absolute).bottom(8).horizontally(20)
+            flex.addItem(titleLabel).marginTop(28).alignSelf(.center)
+            flex.addItem(infoLabel).marginTop(6).alignSelf(.center)
+            flex.addItem(datePicker).marginTop(0).alignSelf(.center)
+            
+            if variation == .endDate {
+                flex.addItem(endOfRecordCheckBox).marginTop(0).alignSelf(.center)
+            }
+            
+            flex.addItem(actionbuttonView).marginTop(16).marginHorizontal(20)
         }
         
         actionbuttonView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
