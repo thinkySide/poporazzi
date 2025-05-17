@@ -36,6 +36,12 @@ extension Date {
         return Date.dateFormatter.string(from: self)
     }
     
+    /// 종료 날짜 전체 포맷을 반환합니다.
+    var endDateFullFormat: String {
+        Date.dateFormatter.dateFormat = "~ yyyy년 M월 d일 EEEE a h시 mm분"
+        return Date.dateFormatter.string(from: self)
+    }
+    
     /// Section의 Header 포맷을 반환합니다.
     var sectionHeaderFormat: String {
         Date.dateFormatter.dateFormat = "M월 d일 EEEE"

@@ -51,19 +51,32 @@ extension DatePickerModalViewController {
         let action = DatePickerModalViewModel.Input(
             viewWillAppear: viewWillAppear.asSignal(),
             datePickerChanged: scene.datePicker.rx.value.changed.asSignal(),
+            endOfRecordCheckBoxTapped: scene.endOfRecordCheckBox.tapGesture.rx.event.asVoidSignal(),
             confirmButtonTapped: scene.confirmButton.button.rx.tap.asSignal()
         )
-        let state = viewModel.transform(action)
+        let output = viewModel.transform(action)
         
-        state.setupSelectableStartDateRange
+        output.updateDate
+            .bind(with: self) { owner, date in
+                owner.scene.datePicker.setDate(date, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
+        output.setupSelectableStartDateRange
             .bind(with: self) { owner, date in
                 owner.scene.action(.setupSelectableStartDateRange(endDate: date))
             }
             .disposed(by: disposeBag)
         
-        state.setupSelectableEndDateRange
+        output.setupSelectableEndDateRange
             .bind(with: self) { owner, date in
                 owner.scene.action(.setupSelectableEndDateRange(startDate: date))
+            }
+            .disposed(by: disposeBag)
+        
+        output.isEndOfRecordActive
+            .bind(with: self) { owner, isActive in
+                owner.scene.action(.toggleEndOfRecordCheckBox(isActive))
             }
             .disposed(by: disposeBag)
     }

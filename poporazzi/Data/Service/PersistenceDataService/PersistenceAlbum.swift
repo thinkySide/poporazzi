@@ -20,6 +20,9 @@ final class PersistenceAlbum: Object {
     /// 시작 날짜
     @Persisted var startDate: Date
     
+    /// 종료 날짜
+    @Persisted var endDate: Date?
+    
     /// 제외된 미디어 리스트
     @Persisted var excludeMediaList: List<String>
     
@@ -33,6 +36,7 @@ final class PersistenceAlbum: Object {
         id: String,
         title: String,
         startDate: Date,
+        endDate: Date?,
         excludeMediaList: List<String>,
         mediaFetchOption: PersistenceMediaFetchOption,
         mediaFilterOption: PersistenceMediaFilterOption?
@@ -41,6 +45,7 @@ final class PersistenceAlbum: Object {
         self.id = id
         self.title = title
         self.startDate = startDate
+        self.endDate = endDate
         self.excludeMediaList = excludeMediaList
         self.mediaFetchOption = mediaFetchOption
         self.mediaFilterOption = mediaFilterOption

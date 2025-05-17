@@ -32,11 +32,11 @@ final class FormDatePicker: CodeBaseUI {
         setup()
         addGestureRecognizer(tapGesture)
         
-        if title.isEmpty {
-            action(.updateDate(.now))
-        } else {
-            action(.setTitle(title))
-        }
+//        if title.isEmpty {
+//            action(.updateDate(.now))
+//        } else {
+//            action(.setTitle(title))
+//        }
     }
     
     required init?(coder: NSCoder) {
@@ -56,7 +56,7 @@ extension FormDatePicker {
     
     enum Action {
         case setTitle(String)
-        case updateDate(Date)
+        case updateDateLabel(String)
     }
     
     func action(_ action: Action) {
@@ -65,8 +65,8 @@ extension FormDatePicker {
             dateLabel.text = title
             dateLabel.flex.markDirty()
             
-        case let .updateDate(date):
-            dateLabel.text = date.startDateFullFormat
+        case let .updateDateLabel(title):
+            dateLabel.text = title
             dateLabel.flex.markDirty()
         }
     }

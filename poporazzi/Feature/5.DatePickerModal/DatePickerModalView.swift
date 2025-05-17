@@ -89,6 +89,7 @@ extension DatePickerModalView {
     enum Action {
         case setupSelectableStartDateRange(endDate: Date?)
         case setupSelectableEndDateRange(startDate: Date)
+        case toggleEndOfRecordCheckBox(Bool)
     }
     
     func action(_ action: Action) {
@@ -98,6 +99,19 @@ extension DatePickerModalView {
             
         case let .setupSelectableEndDateRange(startDate):
             self.datePicker.minimumDate = startDate
+            
+        case let .toggleEndOfRecordCheckBox(isActive):
+            if isActive {
+                self.endOfRecordCheckBox.action(.updateVariation(.selected))
+                UIView.animate(withDuration: 0.2) { [weak self] in
+                    self?.datePicker.isEnabled = false
+                }
+            } else {
+                self.endOfRecordCheckBox.action(.updateVariation(.deselected))
+                UIView.animate(withDuration: 0.2) { [weak self] in
+                    self?.datePicker.isEnabled = true
+                }
+            }
         }
     }
 }

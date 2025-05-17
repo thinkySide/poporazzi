@@ -134,7 +134,7 @@ extension Coordinator {
                 album: .init(value: album),
                 titleText: .init(value: album.title),
                 startDate: .init(value: album.startDate),
-                endDate: .init(value: nil), // TODO: 고치기
+                endDate: .init(value: album.endDate),
                 mediaFetchOption: .init(value: album.mediaFetchOption),
                 mediaFilterOption: .init(value: album.mediaFilterOption)
             )
@@ -192,11 +192,19 @@ extension Coordinator {
         _ startDate: Date,
         _ endDate: Date?
     ) {
+        let isEndofRecordActive: Bool = {
+            switch modalState {
+            case .startDate: return false
+            case .endDate: return endDate == nil
+            }
+        }()
+        
         let datePickerVM = DatePickerModalViewModel(
             output: .init(
                 modalState: .init(value: modalState),
                 startDate: .init(value: startDate),
-                endDate: .init(value: endDate)
+                endDate: .init(value: endDate),
+                isEndOfRecordActive: .init(value: isEndofRecordActive)
             )
         )
         let datePickerVC = DatePickerModalViewController(
