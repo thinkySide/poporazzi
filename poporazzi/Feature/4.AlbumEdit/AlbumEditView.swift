@@ -37,10 +37,10 @@ final class AlbumEditView: CodeBaseUI {
     /// 제목 텍스트필드
     let titleTextField = LineTextField(size: 20, placeholder: "플레이스홀더")
     
-    /// 시작날짜 양식 라벨
-    let startDateFormLabel = FormLabel(title: "시작 날짜")
+    /// 시작시간 양식 라벨
+    let startDateFormLabel = FormLabel(title: "시작 시간")
     
-    /// 시작날짜 피커
+    /// 시작시간 피커
     let startDatePicker = FormDatePicker()
     
     /// 미디어 유형

@@ -18,13 +18,19 @@ final class DatePickerModalView: CodeBaseUI {
     let datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .dateAndTime
-        datePicker.preferredDatePickerStyle = .wheels
+        datePicker.preferredDatePickerStyle = .inline
         datePicker.locale = Locale(identifier: "ko-KR")
         datePicker.maximumDate = .now
+        datePicker.tintColor = .brandPrimary
+        datePicker.minuteInterval = 10
         return datePicker
     }()
     
-    let confirmButton = ActionButton(title: "확인", variataion: .secondary)
+    let actionbuttonView = UIView()
+    
+    let cancelButton = ActionButton(title: "취소", variataion: .secondary)
+    
+    let confirmButton = ActionButton(title: "시작 시간 저장", variataion: .primary)
     
     init() {
         super.init(frame: .zero)
@@ -47,10 +53,14 @@ final class DatePickerModalView: CodeBaseUI {
 extension DatePickerModalView {
     
     func configLayout() {
-        containerView.flex.direction(.column).paddingHorizontal(20).define { flex in
-            flex.addItem(datePicker).alignSelf(.center).marginTop(24)
-            flex.addItem().grow(1)
-            flex.addItem(confirmButton).marginBottom(8)
+        containerView.flex.direction(.column).define { flex in
+            flex.addItem(datePicker).position(.absolute).top(12).horizontally(20).bottom(24)
+            flex.addItem(actionbuttonView).position(.absolute).bottom(8).horizontally(20)
+        }
+        
+        actionbuttonView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
+            flex.addItem(cancelButton).grow(1).maxWidth(50%)
+            flex.addItem(confirmButton).grow(1).maxWidth(50%).marginLeft(12)
         }
     }
 }

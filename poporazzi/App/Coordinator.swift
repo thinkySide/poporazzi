@@ -184,8 +184,8 @@ extension Coordinator {
     private func presentDatePickerModal(_ editVC: AlbumEditViewController?, _ editVM: AlbumEditViewModel, startDate: Date) {
         let datePickerVM = DatePickerModalViewModel(output: .init(selectedDate: .init(value: startDate)))
         let datePickerVC = DatePickerModalViewController(viewModel: datePickerVM)
-        datePickerVC.sheetPresentationController?.preferredCornerRadius = 20
-        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 300 })]
+        datePickerVC.sheetPresentationController?.preferredCornerRadius = 40
+        datePickerVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 480 })]
         datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
         editVC?.present(datePickerVC, animated: true)
         
