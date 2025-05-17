@@ -52,6 +52,7 @@ extension DatePickerModalViewController {
             viewWillAppear: viewWillAppear.asSignal(),
             datePickerChanged: scene.datePicker.rx.value.changed.asSignal(),
             endOfRecordCheckBoxTapped: scene.endOfRecordCheckBox.tapGesture.rx.event.asVoidSignal(),
+            cancelButtonTapped: scene.cancelButton.button.rx.tap.asSignal(),
             confirmButtonTapped: scene.confirmButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(action)

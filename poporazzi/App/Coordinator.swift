@@ -218,6 +218,9 @@ extension Coordinator {
         datePickerVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
+                case .pop:
+                    editVC?.dismiss(animated: true)
+                    
                 case let .popFromStartDate(date):
                     editVM.delegate.accept(.startDateDidChanged(date))
                     editVC?.dismiss(animated: true)

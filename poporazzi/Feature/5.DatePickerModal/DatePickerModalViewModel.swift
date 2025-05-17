@@ -33,6 +33,7 @@ extension DatePickerModalViewModel {
         let viewWillAppear: Signal<Void>
         let datePickerChanged: Signal<Date>
         let endOfRecordCheckBoxTapped: Signal<Void>
+        let cancelButtonTapped: Signal<Void>
         let confirmButtonTapped: Signal<Void>
     }
     
@@ -48,6 +49,7 @@ extension DatePickerModalViewModel {
     }
     
     enum Navigation {
+        case pop
         case popFromStartDate(Date)
         case popFromEndDate(Date?)
     }
@@ -103,9 +105,16 @@ extension DatePickerModalViewModel {
                 
                 if isActive {
                     owner.output.endDate.accept(nil)
+                    HapticManager.impact(style: .soft)
                 } else {
                     owner.output.endDate.accept(.now.roundDownMinutes)
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        input.cancelButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.pop)
             }
             .disposed(by: disposeBag)
         

@@ -17,8 +17,8 @@ final class DatePickerModalView: CodeBaseUI {
         
         var sheetHeight: CGFloat {
             switch self {
-            case .startDate: 504
-            case .endDate: 544
+            case .startDate: 512
+            case .endDate: 552
             }
         }
         
