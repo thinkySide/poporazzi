@@ -16,7 +16,10 @@ final class RecordViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<RecordSection, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    private var cache = [String: UIImage?]()
+    
+    private var albumCache = Album.initialValue
+    private var totalCount = 0
+    private var imageCache = [String: UIImage?]()
     
     let disposeBag = DisposeBag()
     
@@ -76,7 +79,7 @@ extension RecordViewController {
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            if let cacheThumbnail = self.cache[media.id] {
+            if let cacheThumbnail = self.imageCache[media.id] {
                 cell.action(.setImage(cacheThumbnail))
             }
             
@@ -87,27 +90,53 @@ extension RecordViewController {
         
         dataSource.supplementaryViewProvider = {
             [weak self] (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
-            let header = collectionView.dequeueReusableSupplementaryView(
-                ofKind: elementKind,
-                withReuseIdentifier: RecordHeader.identifier,
-                for: indexPath
-            ) as? RecordHeader
+            guard let self else { return nil }
             
-            if let section = self?.dataSource.sectionIdentifier(for: indexPath.section) {
-                switch section {
-                case let .day(order, date):
-                    header?.action(.updateDayCountLabel(order))
-                    header?.action(.updateDateLabel(date))
+            if elementKind == CollectionViewLayout.mainHeaderKind && indexPath.section == 0 {
+                let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: elementKind,
+                    withReuseIdentifier: RecordTitleHeader.identifier,
+                    for: indexPath
+                ) as? RecordTitleHeader
+                
+                header?.action(.updateAlbumTitleLabel(albumCache.title))
+                header?.action(.updateStartDateLabel(albumCache.startDate.startDateFormat))
+                header?.action(.updateTotalImageCountLabel(totalCount))
+                
+                return header
+            } else {
+                let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: elementKind,
+                    withReuseIdentifier: RecordDateHeader.identifier,
+                    for: indexPath
+                ) as? RecordDateHeader
+                
+                if let section = dataSource.sectionIdentifier(for: indexPath.section) {
+                    switch section {
+                    case let .day(order, date):
+                        header?.action(.updateDayCountLabel(order))
+                        header?.action(.updateDateLabel(date))
+                    }
                 }
+                
+                return header
             }
-            
-            return header
+        }
+    }
+    
+    /// Title Header를 업데이트합니다.
+    private func updateTitleHeader() {
+        var snapshot = dataSource.snapshot()
+        if let firstSection = snapshot.sectionIdentifiers.first {
+            snapshot.reloadSections([firstSection])
+            dataSource.apply(snapshot, animatingDifferences: true)
         }
     }
     
     /// 기본 DataSource를 업데이트합니다.
     private func updateInitialDataSource(to sections: SectionMediaList) {
         var snapshot = NSDiffableDataSourceSnapshot<RecordSection, Media>()
+        
         for (section, medias) in sections {
             snapshot.appendSections([section])
             snapshot.appendItems(medias, toSection: section)
@@ -121,7 +150,7 @@ extension RecordViewController {
         guard !mediaList.isEmpty else { return }
         
         for media in mediaList {
-            cache.updateValue(media.thumbnail, forKey: media.id)
+            imageCache.updateValue(media.thumbnail, forKey: media.id)
         }
         
         var snapshot = dataSource.snapshot()
@@ -157,15 +186,16 @@ extension RecordViewController {
         
         output.album
             .bind(with: self) { owner, album in
-                owner.scene.action(.setAlbumTitleLabel(album.title))
-                owner.scene.action(.setStartDateLabel(album.startDate.startDateFormat))
+                owner.albumCache = album
             }
             .disposed(by: disposeBag)
         
         output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
-                owner.scene.action(.setTotalImageCountLabel(medias.count))
+                owner.totalCount = medias.count
+                owner.updateTitleHeader()
+                owner.scene.action(.toggleEmptyLabel(medias.isEmpty))
             }
             .disposed(by: disposeBag)
         

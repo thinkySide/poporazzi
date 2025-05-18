@@ -9,6 +9,9 @@ import UIKit
 
 struct CollectionViewLayout {
     
+    static let mainHeaderKind = "mainHeaderKind"
+    static let subHeaderKind = "subHeaderKind"
+    
     private static var section: NSCollectionLayoutSection {
         
         // 1. 기본값 변수 저장
@@ -49,20 +52,36 @@ struct CollectionViewLayout {
     
     /// Header가 포함된 레이아웃을 반환합니다.
     static var headerSection: UICollectionViewCompositionalLayout {
-        let headerSection = section
-        
-        let headerSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1),
-            heightDimension: .absolute(32)
-        )
-        let header = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: headerSize,
-            elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top
-        )
-        header.pinToVisibleBounds = true
-        headerSection.boundarySupplementaryItems = [header]
-        
-        return UICollectionViewCompositionalLayout(section: headerSection)
+        UICollectionViewCompositionalLayout { sectionIndex, environment in
+            let section = section
+            var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
+            
+            let subHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1),
+                    heightDimension: .absolute(32)
+                ),
+                elementKind: CollectionViewLayout.subHeaderKind,
+                alignment: .topLeading
+            )
+            subHeader.pinToVisibleBounds = true
+            
+            if sectionIndex == 0 {
+                let mainHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1),
+                        heightDimension: .absolute(104)
+                    ),
+                    elementKind: CollectionViewLayout.mainHeaderKind,
+                    alignment: .top
+                )
+                mainHeader.zIndex = -1
+                supplementaryItems = [mainHeader, subHeader]
+            } else {
+                supplementaryItems = [subHeader]
+            }
+            section.boundarySupplementaryItems = supplementaryItems
+            return section
+        }
     }
 }
