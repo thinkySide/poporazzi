@@ -47,12 +47,10 @@ struct CollectionViewLayout {
         UICollectionViewCompositionalLayout(section: section)
     }
     
-    /// Header가 포함된 기본 3단 레이아웃을 반환합니다.
-    static var threeColumnsWithHeader: UICollectionViewCompositionalLayout {
-        
+    /// Header가 포함된 레이아웃을 반환합니다.
+    static var headerSection: UICollectionViewCompositionalLayout {
         let headerSection = section
         
-        // 헤더 설정
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
             heightDimension: .absolute(32)
@@ -62,6 +60,7 @@ struct CollectionViewLayout {
             elementKind: UICollectionView.elementKindSectionHeader,
             alignment: .top
         )
+        header.pinToVisibleBounds = true
         headerSection.boundarySupplementaryItems = [header]
         
         return UICollectionViewCompositionalLayout(section: headerSection)

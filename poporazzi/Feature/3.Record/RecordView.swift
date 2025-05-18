@@ -16,6 +16,9 @@ final class RecordView: CodeBaseUI {
     /// 로딩 인디케이터
     private let loadingIndicator = LoadingIndicator()
     
+    /// Header
+    let headerView = UIView()
+    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         trailing: navigationTrailingButtons
@@ -110,7 +113,7 @@ final class RecordView: CodeBaseUI {
     let recordCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: CollectionViewLayout.threeColumnsWithHeader
+            collectionViewLayout: CollectionViewLayout.headerSection
         )
         collectionView.backgroundColor = .white
         collectionView.allowsSelection = false
@@ -213,15 +216,9 @@ extension RecordView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                flex.addItem(albumTitleLabel).marginTop(4)
-                
-                flex.addItem().direction(.row).marginTop(6).define { flex in
-                    flex.addItem(startDateLabel)
-                    flex.addItem().grow(1)
-                    flex.addItem(totalRecordCountLabel)
-                }
-            }
+            flex.addItem(headerView)
+                .marginTop(4)
+                .paddingHorizontal(20)
             
             flex.addItem().grow(1).marginTop(24).define { flex in
                 flex.addItem(recordCollectionView).position(.absolute).all(0)
@@ -235,6 +232,16 @@ extension RecordView {
                 }
             
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
+        }
+        
+        headerView.flex.direction(.column).define { flex in
+            flex.addItem(albumTitleLabel)
+            
+            flex.addItem().direction(.row).marginTop(6).define { flex in
+                flex.addItem(startDateLabel)
+                flex.addItem().grow(1)
+                flex.addItem(totalRecordCountLabel)
+            }
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
