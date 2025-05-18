@@ -14,7 +14,7 @@ final class SymbolLabel: CodeBaseUI {
     var containerView = UIView()
     
     /// 아이콘
-    private let symbolView = UIImageView(symbol: .check, size: 12, weight: .black, tintColor: .brandPrimary)
+    private let symbolView: UIImageView
     
     /// 정보 라벨
     let label: UILabel = {
@@ -25,6 +25,12 @@ final class SymbolLabel: CodeBaseUI {
     }()
     
     init(title: String = "", symbol: SFSymbol, tintColor: UIColor) {
+        self.symbolView = UIImageView(
+            symbol: symbol,
+            size: 12,
+            weight: .black,
+            tintColor: tintColor
+        )
         super.init(frame: .zero)
         label.text = title
         setup()
