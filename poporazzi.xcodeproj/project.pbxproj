@@ -453,7 +453,7 @@
 				DEVELOPMENT_TEAM = 9XG4S4XZWN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = poporazzi/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = poporazzi;
+				INFOPLIST_KEY_CFBundleDisplayName = "포포라치";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "기록을 시작한 날짜로부터 모든 최신 사진 및 동영상을 받아오고, 앨범에 저장하기 위한 접근 권한이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -466,7 +466,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.3;
+				MARKETING_VERSION = 1.4.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.thinkyside.poporazzi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -489,7 +489,7 @@
 				DEVELOPMENT_TEAM = 9XG4S4XZWN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = poporazzi/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = poporazzi;
+				INFOPLIST_KEY_CFBundleDisplayName = "포포라치";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "기록을 시작한 날짜로부터 모든 최신 사진 및 동영상을 받아오고, 앨범에 저장하기 위한 접근 권한이 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -502,7 +502,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.3;
+				MARKETING_VERSION = 1.4.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.thinkyside.poporazzi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
