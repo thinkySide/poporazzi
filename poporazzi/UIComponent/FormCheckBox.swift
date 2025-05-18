@@ -36,9 +36,12 @@ final class FormCheckBox: CodeBaseUI {
     
     let title = UILabel(size: 16, color: .mainLabel)
     
-    init(_ title: String, variation: Variation) {
+    let subtitle = UILabel(size: 13, color: .placeholder)
+    
+    init(_ title: String, subtitle: String = "", variation: Variation) {
         super.init(frame: .zero)
         self.title.text = title
+        self.subtitle.text = subtitle
         self.action(.updateVariation(variation))
         addGestureRecognizer(tapGesture)
         setup(color: .white)
@@ -82,6 +85,7 @@ extension FormCheckBox {
             flex.addItem(checkBoxIcon)
             flex.addItem(title).marginLeft(12)
             flex.addItem().grow(1)
+            flex.addItem(subtitle)
         }
     }
 }

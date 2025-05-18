@@ -211,7 +211,7 @@ extension Coordinator {
             viewModel: datePickerVM,
             variation: modalState == .startDate ? .startDate : .endDate
         )
-        datePickerVC.sheetPresentationController?.preferredCornerRadius = 40
+        datePickerVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
         datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
         editVC?.present(datePickerVC, animated: true)
         
@@ -242,8 +242,8 @@ extension Coordinator {
             )
         )
         let finishVC = FinishConfirmModalViewController(viewModel: finishVM)
-        finishVC.sheetPresentationController?.preferredCornerRadius = 20
-        finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 428 })]
+        finishVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
+        finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 340 })]
         finishVC.sheetPresentationController?.prefersGrabberVisible = true
         self.navigationController.present(finishVC, animated: true)
         

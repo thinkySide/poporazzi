@@ -84,6 +84,12 @@ extension AlbumEditViewController {
                 owner.scene.action(.toggleSaveButton(isValid))
             }
             .disposed(by: disposeBag)
+
+        output.isValidCheckBox
+            .bind(with: self) { owner, isValid in
+                owner.scene.action(.toggleFilterOptionsFormLabel(isValid))
+            }
+            .disposed(by: disposeBag)
         
         scene.titleTextField.textField.rx.text
             .subscribe(with: self) { owner, title in

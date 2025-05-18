@@ -43,7 +43,11 @@ final class ExcludeRecordView: CodeBaseUI {
     }()
     
     /// 정보 라벨
-    let infoLabel = InfoLabel(title: "종료 시 앨범에 저장되지 않는 기록이에요")
+    let infoLabel = SymbolLabel(
+        title: "종료 시 앨범에 저장되지 않는 기록이에요",
+        symbol: .info,
+        tintColor: .subLabel
+    )
     
     /// 제외된 사진이 없을 때 라벨
     private let emptyLabel: UILabel = {

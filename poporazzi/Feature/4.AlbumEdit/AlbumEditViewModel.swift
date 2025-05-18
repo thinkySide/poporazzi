@@ -63,6 +63,7 @@ extension AlbumEditViewModel {
         let mediaFilterOption: BehaviorRelay<MediaFilterOption>
         
         let isSaveButtonEnabled = BehaviorRelay<Bool>(value: true)
+        let isValidCheckBox = BehaviorRelay<Bool>(value: true)
     }
     
     enum Navigation {
@@ -111,7 +112,11 @@ extension AlbumEditViewModel {
         input.allSaveChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.all)
-                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                
+                let isValid = owner.isValidCheckBox()
+                owner.output.isSaveButtonEnabled.accept(isValid)
+                owner.output.isValidCheckBox.accept(isValid)
+                
                 HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
@@ -119,14 +124,23 @@ extension AlbumEditViewModel {
         input.photoChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.photo)
-                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                
+                let isValid = owner.isValidCheckBox()
+                owner.output.isSaveButtonEnabled.accept(isValid)
+                owner.output.isValidCheckBox.accept(isValid)
+                
                 HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
+        
         input.videoChoiceChipTapped
             .emit(with: self) { owner, _ in
                 owner.output.mediaFetchOption.accept(.video)
-                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                
+                let isValid = owner.isValidCheckBox()
+                owner.output.isSaveButtonEnabled.accept(isValid)
+                owner.output.isValidCheckBox.accept(isValid)
+                
                 HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
@@ -136,7 +150,11 @@ extension AlbumEditViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainSelfShooting.toggle()
                 owner.output.mediaFilterOption.accept(filter)
-                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                
+                let isValid = owner.isValidCheckBox()
+                owner.output.isSaveButtonEnabled.accept(isValid)
+                owner.output.isValidCheckBox.accept(isValid)
+                
                 if filter.isContainSelfShooting { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
@@ -146,7 +164,11 @@ extension AlbumEditViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainDownload.toggle()
                 owner.output.mediaFilterOption.accept(filter)
-                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                
+                let isValid = owner.isValidCheckBox()
+                owner.output.isSaveButtonEnabled.accept(isValid)
+                owner.output.isValidCheckBox.accept(isValid)
+                
                 if filter.isContainDownload { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)
@@ -156,7 +178,11 @@ extension AlbumEditViewModel {
                 var filter = owner.output.mediaFilterOption.value
                 filter.isContainScreenshot.toggle()
                 owner.output.mediaFilterOption.accept(filter)
-                owner.output.isSaveButtonEnabled.accept(owner.isValidCheckBox())
+                
+                let isValid = owner.isValidCheckBox()
+                owner.output.isSaveButtonEnabled.accept(isValid)
+                owner.output.isValidCheckBox.accept(isValid)
+                
                 if filter.isContainScreenshot { HapticManager.impact(style: .soft) }
             }
             .disposed(by: disposeBag)

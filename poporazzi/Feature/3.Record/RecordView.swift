@@ -91,6 +91,8 @@ final class RecordView: CodeBaseUI {
         return label
     }()
     
+    private let emptyView = UIView()
+    
     /// 앱 아이콘
     private let appIconImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(resource: .appIcon))
@@ -99,15 +101,25 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 촬영된 사진이 없을 때 라벨
-    private let emptyLabel: UILabel = {
-        let label = UILabel()
-        label.text = "지금부터 촬영한 모든 사진과\n영상을 포포라치가 기록할 거에요!"
-        label.numberOfLines = 3
-        label.setLine(alignment: .center, spacing: 8)
-        label.font = .setDovemayo(16)
-        label.textColor = .mainLabel
-        return label
-    }()
+    private let emptyLabel = UILabel("지금부터 포포라치가 기록을 시작할게요!", size: 16, color: .mainLabel)
+    
+    /// 직접 촬영 라벨
+    let selfShootingInfoLabel = SymbolLabel(
+        symbol: .check,
+        tintColor: .brandPrimary
+    )
+    
+    /// 다운로드 라벨
+    let downloadInfoLabel = SymbolLabel(
+        symbol: .check,
+        tintColor: .brandPrimary
+    )
+    
+    /// 스크린샷 라벨
+    let screenshotInfoLabel = SymbolLabel(
+        symbol: .check,
+        tintColor: .brandPrimary
+    )
     
     /// 기록 컬렉션 뷰
     let recordCollectionView: UICollectionView = {
@@ -160,6 +172,7 @@ extension RecordView {
     enum Action {
         case updateTitleLabel(String)
         case updateStartDateLabel(String)
+        case updateInfoLabel(Album)
         case toggleEmptyLabel(Bool)
         case toggleSelectMode(Bool)
         case updateSelectedCountLabel(Int)
@@ -179,11 +192,49 @@ extension RecordView {
             startDateLabel.flex.markDirty()
             containerView.flex.layout()
             
+        case let .updateInfoLabel(album):
+            let fetchOption = album.mediaFetchOption.title
+            
+            if album.mediaFilterOption.isContainSelfShooting {
+                selfShootingInfoLabel.action(.updateLabel("직접 촬영한 \(fetchOption)"))
+                selfShootingInfoLabel.action(.toggleSymbol(true))
+                selfShootingInfoLabel.flex.display(.flex)
+            } else {
+                selfShootingInfoLabel.action(.updateLabel(""))
+                selfShootingInfoLabel.action(.toggleSymbol(false))
+                selfShootingInfoLabel.flex.display(.none)
+            }
+            
+            if album.mediaFilterOption.isContainDownload {
+                downloadInfoLabel.action(.updateLabel("다운로드한 \(fetchOption)"))
+                downloadInfoLabel.action(.toggleSymbol(true))
+                downloadInfoLabel.flex.display(.flex)
+            } else {
+                downloadInfoLabel.action(.updateLabel(""))
+                downloadInfoLabel.action(.toggleSymbol(false))
+                downloadInfoLabel.flex.display(.none)
+            }
+            
+            if album.mediaFilterOption.isContainScreenshot && album.mediaFetchOption != .video {
+                screenshotInfoLabel.action(.updateLabel("스크린샷"))
+                screenshotInfoLabel.action(.toggleSymbol(true))
+                screenshotInfoLabel.flex.display(.flex)
+            } else {
+                screenshotInfoLabel.action(.updateLabel(""))
+                screenshotInfoLabel.action(.toggleSymbol(false))
+                screenshotInfoLabel.flex.display(.none)
+            }
+            
         case let .toggleEmptyLabel(isEmpty):
             let display: Flex.Display = isEmpty ? .flex : .none
-            appIconImageView.flex.display(display)
-            emptyLabel.flex.display(display)
             headerView.flex.display(display)
+            emptyView.flex.display(display)
+            
+            if !isEmpty {
+                selfShootingInfoLabel.action(.toggleSymbol(false))
+                downloadInfoLabel.action(.toggleSymbol(false))
+                screenshotInfoLabel.action(.toggleSymbol(false))
+            }
             
         case let .toggleSelectMode(bool):
             recordCollectionView.contentInset.bottom = bool ? 56 : 0
@@ -230,12 +281,11 @@ extension RecordView {
                 flex.addItem(recordCollectionView).position(.absolute).all(0)
             }
             
-            flex.addItem().direction(.column)
-                .position(.absolute).alignSelf(.center).alignItems(.center).top(40%)
-                .define { flex in
-                    flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
-                    flex.addItem(emptyLabel).marginTop(16)
-                }
+            flex.addItem(emptyView)
+                .position(.absolute)
+                .alignSelf(.center)
+                .alignItems(.center)
+                .top(40%)
             
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
         }
@@ -248,6 +298,14 @@ extension RecordView {
                 flex.addItem().grow(1)
                 flex.addItem(totalRecordCountLabel)
             }
+        }
+        
+        emptyView.flex.define { flex in
+            flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
+            flex.addItem(emptyLabel).marginTop(16)
+            flex.addItem(selfShootingInfoLabel).marginTop(12)
+            flex.addItem(downloadInfoLabel).marginTop(10)
+            flex.addItem(screenshotInfoLabel).marginTop(10)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
