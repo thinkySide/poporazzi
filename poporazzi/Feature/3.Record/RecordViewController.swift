@@ -187,6 +187,8 @@ extension RecordViewController {
         output.album
             .bind(with: self) { owner, album in
                 owner.albumCache = album
+                owner.scene.action(.updateTitleLabel(album.title))
+                owner.scene.action(.updateStartDateLabel(album.startDate.startDateFormat))
             }
             .disposed(by: disposeBag)
         
