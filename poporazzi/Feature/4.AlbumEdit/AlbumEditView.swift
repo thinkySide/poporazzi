@@ -68,10 +68,10 @@ final class AlbumEditView: CodeBaseUI {
     private let filterOptionsFormLabel = FormLabel(title: "분류 기준", subtitle: "1개 이상 선택")
     
     /// 직접 촬영한 항목 체크박스
-    let selfShootingOptionCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)
+    let selfShootingOptionCheckBox = FormCheckBox("직접 촬영한 항목", subtitle: "HEIC / MOV", variation: .selected)
     
     /// 다운로드한 항목 체크박스
-    let downloadOptionCheckBox = FormCheckBox("다운로드한 항목", variation: .deselected)
+    let downloadOptionCheckBox = FormCheckBox("다운로드한 항목", subtitle: "PNG / JPEG / MP4", variation: .deselected)
     
     /// 스크린샷 항목 체크박스
     let screenshotOptionCheckBox = FormCheckBox("스크린샷", variation: .deselected)
@@ -101,6 +101,7 @@ extension AlbumEditView {
         case updateMediaFetchOption(MediaFetchOption)
         case updateMediaFilterOption(MediaFilterOption)
         case toggleSaveButton(Bool)
+        case toggleFilterOptionsFormLabel(Bool)
     }
     
     func action(_ action: Action) {
@@ -133,6 +134,8 @@ extension AlbumEditView {
             
         case let .toggleSaveButton(isValid):
             saveButton.action(.toggleDisabled(!isValid))
+            
+        case let .toggleFilterOptionsFormLabel(isValid):
             let text = isValid ? "1개 이상 선택" : "⚠️ 1개 이상 선택"
             let color: UIColor = isValid ? .subLabel : .warning
             filterOptionsFormLabel.action(.updateSubLabel(text: text, color: color))
