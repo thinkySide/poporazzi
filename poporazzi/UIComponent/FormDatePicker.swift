@@ -31,12 +31,6 @@ final class FormDatePicker: CodeBaseUI {
         super.init(frame: .zero)
         setup()
         addGestureRecognizer(tapGesture)
-        
-//        if title.isEmpty {
-//            action(.updateDate(.now))
-//        } else {
-//            action(.setTitle(title))
-//        }
     }
     
     required init?(coder: NSCoder) {
@@ -64,10 +58,12 @@ extension FormDatePicker {
         case let .setTitle(title):
             dateLabel.text = title
             dateLabel.flex.markDirty()
+            containerView.flex.layout()
             
         case let .updateDateLabel(title):
             dateLabel.text = title
             dateLabel.flex.markDirty()
+            containerView.flex.layout()
         }
     }
 }

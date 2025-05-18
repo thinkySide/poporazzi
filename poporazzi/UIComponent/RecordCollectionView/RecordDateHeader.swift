@@ -1,17 +1,17 @@
 //
-//  RecordHeader.swift
+//  RecordDateHeader.swift
 //  poporazzi
 //
-//  Created by 김민준 on 5/10/25.
+//  Created by 김민준 on 5/18/25.
 //
 
 import UIKit
 import PinLayout
 import FlexLayout
 
-final class RecordHeader: UICollectionReusableView {
+final class RecordDateHeader: UICollectionReusableView {
     
-    static let identifier = "RecordHeader"
+    static let identifier = "RecordDateHeader"
     
     var containerView = UIView()
 
@@ -50,7 +50,7 @@ final class RecordHeader: UICollectionReusableView {
 
 // MARK: - Action
 
-extension RecordHeader {
+extension RecordDateHeader {
     
     enum Action {
         case updateDayCountLabel(Int)
@@ -74,10 +74,10 @@ extension RecordHeader {
 
 // MARK: - Layout
 
-extension RecordHeader {
+extension RecordDateHeader {
     
     func configLayout() {
-        containerView.flex.direction(.row).paddingLeft(4).define { flex in
+        containerView.flex.direction(.row).backgroundColor(.white).paddingLeft(4).define { flex in
             flex.addItem(dayCountLabel)
             flex.addItem(dateLabel).marginLeft(8)
         }

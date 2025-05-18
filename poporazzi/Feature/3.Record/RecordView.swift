@@ -16,6 +16,9 @@ final class RecordView: CodeBaseUI {
     /// 로딩 인디케이터
     private let loadingIndicator = LoadingIndicator()
     
+    /// Header
+    let headerView = UIView()
+    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         trailing: navigationTrailingButtons
@@ -110,7 +113,7 @@ final class RecordView: CodeBaseUI {
     let recordCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: CollectionViewLayout.threeColumnsWithHeader
+            collectionViewLayout: CollectionViewLayout.headerSection
         )
         collectionView.backgroundColor = .white
         collectionView.allowsSelection = false
@@ -119,9 +122,14 @@ final class RecordView: CodeBaseUI {
             forCellWithReuseIdentifier: RecordCell.identifier
         )
         collectionView.register(
-            RecordHeader.self,
-            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-            withReuseIdentifier: RecordHeader.identifier
+            RecordTitleHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
+            withReuseIdentifier: RecordTitleHeader.identifier
+        )
+        collectionView.register(
+            RecordDateHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
+            withReuseIdentifier: RecordDateHeader.identifier
         )
         return collectionView
     }()
@@ -150,9 +158,9 @@ final class RecordView: CodeBaseUI {
 extension RecordView {
     
     enum Action {
-        case setAlbumTitleLabel(String)
-        case setStartDateLabel(String)
-        case setTotalImageCountLabel(Int)
+        case updateTitleLabel(String)
+        case updateStartDateLabel(String)
+        case toggleEmptyLabel(Bool)
         case toggleSelectMode(Bool)
         case updateSelectedCountLabel(Int)
         case toggleLoading(Bool)
@@ -161,20 +169,21 @@ extension RecordView {
     func action(_ action: Action) {
         defer { containerView.flex.layout() }
         switch action {
-        case let .setAlbumTitleLabel(title):
-            albumTitleLabel.text = title
+        case let .updateTitleLabel(text):
+            albumTitleLabel.text = text
             albumTitleLabel.flex.markDirty()
+            containerView.flex.layout()
             
-        case let .setStartDateLabel(text):
+        case let .updateStartDateLabel(text):
             startDateLabel.text = text
             startDateLabel.flex.markDirty()
+            containerView.flex.layout()
             
-        case let .setTotalImageCountLabel(count):
-            totalRecordCountLabel.text = count > 0 ? "총 \(count)장" : ""
-            totalRecordCountLabel.flex.markDirty()
-            let display: Flex.Display = count > 0 ? .none : .flex
+        case let .toggleEmptyLabel(isEmpty):
+            let display: Flex.Display = isEmpty ? .flex : .none
             appIconImageView.flex.display(display)
             emptyLabel.flex.display(display)
+            headerView.flex.display(display)
             
         case let .toggleSelectMode(bool):
             recordCollectionView.contentInset.bottom = bool ? 56 : 0
@@ -213,17 +222,11 @@ extension RecordView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
-                flex.addItem(albumTitleLabel).marginTop(4)
-                
-                flex.addItem().direction(.row).marginTop(6).define { flex in
-                    flex.addItem(startDateLabel)
-                    flex.addItem().grow(1)
-                    flex.addItem(totalRecordCountLabel)
-                }
-            }
+            flex.addItem(headerView)
+                .marginTop(4)
+                .paddingHorizontal(20)
             
-            flex.addItem().grow(1).marginTop(24).define { flex in
+            flex.addItem().grow(1).marginTop(12).define { flex in
                 flex.addItem(recordCollectionView).position(.absolute).all(0)
             }
             
@@ -235,6 +238,16 @@ extension RecordView {
                 }
             
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
+        }
+        
+        headerView.flex.direction(.column).define { flex in
+            flex.addItem(albumTitleLabel)
+            
+            flex.addItem().direction(.row).marginTop(6).define { flex in
+                flex.addItem(startDateLabel)
+                flex.addItem().grow(1)
+                flex.addItem(totalRecordCountLabel)
+            }
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in

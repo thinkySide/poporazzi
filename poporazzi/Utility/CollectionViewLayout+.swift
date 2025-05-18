@@ -9,11 +9,62 @@ import UIKit
 
 struct CollectionViewLayout {
     
+    static let mainHeaderKind = "mainHeaderKind"
+    static let subHeaderKind = "subHeaderKind"
+    
+    /// 기본 3단 레이아웃을 반환합니다.
+    static var threeColumns: UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout(section: section)
+    }
+    
+    /// Header가 포함된 레이아웃을 반환합니다.
+    static var headerSection: UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout { sectionIndex, environment in
+            let section = section
+            var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
+            
+            let subHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1),
+                    heightDimension: .absolute(32)
+                ),
+                elementKind: CollectionViewLayout.subHeaderKind,
+                alignment: .top
+            )
+            subHeader.pinToVisibleBounds = true
+            
+            // 최상단 Section에만 mainHeader 적용
+            if sectionIndex == 0 {
+                let mainHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1),
+                        heightDimension: .absolute(104)
+                    ),
+                    elementKind: CollectionViewLayout.mainHeaderKind,
+                    alignment: .top
+                )
+                mainHeader.zIndex = -1
+                supplementaryItems = [mainHeader, subHeader]
+            } else {
+                // 이후에는 subHeader만 적용
+                supplementaryItems = [subHeader]
+            }
+            section.boundarySupplementaryItems = supplementaryItems
+            return section
+        }
+    }
+}
+
+// MARK: -
+
+extension CollectionViewLayout {
+    
+    /// 기본 3단 레이아웃 Section을 반환합니다.
     private static var section: NSCollectionLayoutSection {
         
         // 1. 기본값 변수 저장
         let numberOfRows: CGFloat = 3
-        let itemInset: CGFloat = 2
+        let itemInset: CGFloat = 3
         
         // 2. 아이템(Cell) 설정
         let itemSize = NSCollectionLayoutSize(
@@ -40,30 +91,5 @@ struct CollectionViewLayout {
         section.contentInsets = .init(top: 8, leading: 16, bottom: 32, trailing: 16)
         
         return section
-    }
-    
-    /// 기본 3단 레이아웃을 반환합니다.
-    static var threeColumns: UICollectionViewCompositionalLayout {
-        UICollectionViewCompositionalLayout(section: section)
-    }
-    
-    /// Header가 포함된 기본 3단 레이아웃을 반환합니다.
-    static var threeColumnsWithHeader: UICollectionViewCompositionalLayout {
-        
-        let headerSection = section
-        
-        // 헤더 설정
-        let headerSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1),
-            heightDimension: .absolute(32)
-        )
-        let header = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: headerSize,
-            elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top
-        )
-        headerSection.boundarySupplementaryItems = [header]
-        
-        return UICollectionViewCompositionalLayout(section: headerSection)
     }
 }
