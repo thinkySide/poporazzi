@@ -93,6 +93,7 @@ extension RecordViewModel {
     enum MenuAction {
         case editAlbum
         case excludeRecord
+        case noSave
     }
 }
 
@@ -310,6 +311,10 @@ extension RecordViewModel {
                 case .excludeRecord:
                     let album = owner.output.album.value
                     owner.navigation.accept(.presentExcludeRecord(album))
+                    
+                case .noSave:
+                    owner.output.alertPresented.accept(owner.finishWithNoSaveAlert)
+                    HapticManager.notification(type: .warning)
                 }
             }
             .disposed(by: disposeBag)
@@ -425,7 +430,19 @@ extension RecordViewModel {
         AlertModel(
             title: "기록을 종료할까요?",
             message: "촬영된 기록이 없어 앨범 저장 없이 종료돼요",
-            eventButton: .init(title: "종료") { [weak self] in
+            eventButton: .init(title: "종료", isDestructive: true) { [weak self] in
+                self?.alertAction.accept(.finishWithoutRecord)
+            },
+            cancelButton: .init(title: "취소")
+        )
+    }
+    
+    /// 저장 없이 종료 Alert
+    private var finishWithNoSaveAlert: AlertModel {
+        AlertModel(
+            title: "저장 없이 종료할까요?",
+            message: "앨범 저장 없이 기록이 종료돼요",
+            eventButton: .init(title: "종료", isDestructive: true) { [weak self] in
                 self?.alertAction.accept(.finishWithoutRecord)
             },
             cancelButton: .init(title: "취소")
@@ -488,6 +505,9 @@ extension RecordViewModel {
         let excludeRecord = MenuModel(symbol: .exclude, title: "제외된 기록") { [weak self] in
             self?.menuAction.accept(.excludeRecord)
         }
-        return [editAlbum, excludeRecord]
+        let noSave = MenuModel(symbol: .noSave, title: "저장 없이 종료", attributes: .destructive) { [weak self] in
+            self?.menuAction.accept(.noSave)
+        }
+        return [editAlbum, excludeRecord, noSave]
     }
 }

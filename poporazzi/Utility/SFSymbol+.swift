@@ -20,6 +20,7 @@ enum SFSymbol: String {
     case info = "info.circle.fill"
     case check = "checkmark"
     case checkBox = "checkmark.square.fill"
+    case noSave = "xmark.bin"
 }
 
 // MARK: - initializer

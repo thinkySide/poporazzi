@@ -30,13 +30,16 @@ struct AlertModel {
 /// Alert 버튼
 struct AlertButton {
     let title: String
+    let isDestructive: Bool
     let action: (() -> Void)?
     
     init(
         title: String,
+        isDestructive: Bool = false,
         action: (() -> Void)? = nil
     ) {
         self.title = title
+        self.isDestructive = isDestructive
         self.action = action
     }
 }
@@ -53,7 +56,10 @@ extension UIViewController {
             preferredStyle: .alert
         )
         
-        let action = UIAlertAction(title: alert.eventButton.title, style: .default) { _ in
+        let action = UIAlertAction(
+            title: alert.eventButton.title,
+            style: alert.eventButton.isDestructive ? .destructive : .default
+        ) { _ in
             alert.eventButton.action?()
         }
         alertController.addAction(action)
