@@ -189,6 +189,7 @@ extension RecordViewController {
                 owner.albumCache = album
                 owner.scene.action(.updateTitleLabel(album.title))
                 owner.scene.action(.updateStartDateLabel(album.startDate.startDateFormat))
+                owner.scene.action(.updateInfoLabel(album))
             }
             .disposed(by: disposeBag)
         

@@ -18,4 +18,13 @@ enum MediaFetchOption {
     
     /// 비디오 검색
     case video
+    
+    /// 각 검색 타입 별 제목
+    var title: String {
+        switch self {
+        case .all: "사진 및 동영상"
+        case .photo: "사진"
+        case .video: "동영상"
+        }
+    }
 }
