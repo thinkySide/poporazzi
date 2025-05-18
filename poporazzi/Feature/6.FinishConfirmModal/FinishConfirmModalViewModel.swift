@@ -37,7 +37,6 @@ extension FinishConfirmModalViewModel {
     struct Input {
         let saveAsSingleRadioButtonTapped: Signal<Void>
         let saveByDayRadioButtonTapped: Signal<Void>
-        let noSaveRadioButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
         let cancelButtonTapped: Signal<Void>
     }
@@ -76,13 +75,6 @@ extension FinishConfirmModalViewModel {
         input.saveByDayRadioButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.saveOption.accept(.saveByDay)
-                HapticManager.impact(style: .soft)
-            }
-            .disposed(by: disposeBag)
-        
-        input.noSaveRadioButtonTapped
-            .emit(with: self) { owner, _ in
-                owner.output.saveOption.accept(.noSave)
                 HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
