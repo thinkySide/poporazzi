@@ -84,18 +84,25 @@ final class ExcludeRecordView: CodeBaseUI {
     /// ToolBar
     lazy var toolBar: ToolBar = {
         let toolBar = ToolBar(
-            leading: recoverButton,
-            trailing: removeButton
+            leading: favoriteToolBarButton,
+            centers: [recoverToolBarButton, seemoreToolBarButton],
+            trailing: removeToolBarButton
         )
         toolBar.isHidden = true
         return toolBar
     }()
     
-    /// 앨범으로 복구 버튼
-    let recoverButton = ToolBarButton(title: "앨범으로 복구")
+    /// 즐겨찾기 툴 바 버튼
+    let favoriteToolBarButton = ToolBarButton(.favorite)
     
-    /// 삭제 버튼
-    let removeButton = ToolBarButton(title: "삭제")
+    /// 앨범으로 복구 툴 바 버튼
+    let recoverToolBarButton = ToolBarButton(.title("앨범으로 복구"))
+    
+    /// 더보기 툴 바 버튼
+    let seemoreToolBarButton = ToolBarButton(.seemore)
+    
+    /// 삭제 툴 바 버튼
+    let removeToolBarButton = ToolBarButton(.remove)
     
     init() {
         super.init(frame: .zero)
@@ -135,24 +142,28 @@ extension ExcludeRecordView {
             emptyLabel.isHidden = count > 0
             
         case let .toggleSelectMode(bool):
-            recordCollectionView.contentInset.bottom = bool ? 56 : 0
             recordCollectionView.allowsSelection = bool
             recordCollectionView.allowsMultipleSelection = bool
             [selectButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.recordCollectionView.contentInset.bottom = bool ? 80 : 0
+            }
             
         case let .updateSelectedCountLabel(count):
             if count == 0 {
-                toolBar.action(.updateTitle("기록 선택"))
-                [recoverButton, removeButton].forEach {
-                    $0.alpha = 0.3
-                    $0.isUserInteractionEnabled = false
+                toolBar.action(.updateTitle("기록을 선택해주세요"))
+                [favoriteToolBarButton, recoverToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(true))
                 }
             } else {
-                toolBar.action(.updateTitle("\(count)장의 기록이 선택됨"))
-                [recoverButton, removeButton].forEach {
-                    $0.alpha = 1
-                    $0.isUserInteractionEnabled = true
+                let attributedText = NSMutableAttributedString()
+                    .tint("\(count)장", color: .brandPrimary)
+                    .tint("의 기록이 선택됨", color: .mainLabel)
+                
+                toolBar.action(.updateTitle(AttributedString(attributedText)))
+                [favoriteToolBarButton, recoverToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(false))
                 }
             }
             

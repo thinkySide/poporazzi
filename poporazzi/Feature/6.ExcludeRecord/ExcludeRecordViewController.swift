@@ -83,8 +83,9 @@ extension ExcludeRecordViewController {
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
             recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
-            recoverButtonTapped: scene.recoverButton.button.rx.tap.asSignal(),
-            removeButtonTapped: scene.removeButton.button.rx.tap.asSignal()
+            favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
+            recoverButtonTapped: scene.recoverToolBarButton.button.rx.tap.asSignal(),
+            removeButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
@@ -120,6 +121,13 @@ extension ExcludeRecordViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, actionSheet in
                 owner.showActionSheet(actionSheet)
+            }
+            .disposed(by: disposeBag)
+        
+        output.setupSeeMoreToolbarMenu
+            .bind(with: self) { owner, menu in
+                owner.scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
+                owner.scene.seemoreToolBarButton.button.menu = menu.toUIMenu
             }
             .disposed(by: disposeBag)
         

@@ -171,8 +171,9 @@ extension RecordViewController {
             recentIndexPath: recentIndexPath,
             recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
-            excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
-            removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
+            favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
+            excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
+            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -225,7 +226,15 @@ extension RecordViewController {
         
         output.setupSeeMoreMenu
             .bind(with: self) { owner, menus in
+                owner.scene.seemoreButton.button.showsMenuAsPrimaryAction = true
                 owner.scene.seemoreButton.button.menu = menus.toUIMenu
+            }
+            .disposed(by: disposeBag)
+        
+        output.setupSeeMoreToolbarMenu
+            .bind(with: self) { owner, menus in
+                owner.scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
+                owner.scene.seemoreToolBarButton.button.menu = menus.toUIMenu
             }
             .disposed(by: disposeBag)
         

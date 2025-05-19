@@ -11,17 +11,41 @@ import FlexLayout
 
 final class ToolBarButton: CodeBaseUI {
     
+    enum Variation {
+        case title(String)
+        case favorite
+        case seemore
+        case remove
+    }
+    
     var containerView = UIView()
     
     let tapGesture = UITapGestureRecognizer()
     
     var button = UIButton()
     
-    init(title: String) {
+    init(_ variation: Variation) {
         super.init(frame: .zero)
-        button.setTitle(title, for: .normal)
-        button.setTitleColor(.brandPrimary, for: .normal)
-        button.titleLabel?.font = .setDovemayo(15)
+        
+        switch variation {
+        case let .title(text):
+            button.setTitle(text, for: .normal)
+            button.setTitleColor(.subLabel, for: .normal)
+            button.titleLabel?.font = .setDovemayo(16)
+            
+        case .favorite:
+            button.setImage(UIImage(symbol: .likeActive, size: 16, weight: .bold), for: .normal)
+            button.tintColor = .subLabel
+            
+        case .seemore:
+            button.setImage(UIImage(symbol: .ellipsis, size: 16, weight: .black), for: .normal)
+            button.tintColor = .subLabel
+            
+        case .remove:
+            button.setImage(UIImage(symbol: .remove, size: 16, weight: .bold), for: .normal)
+            button.tintColor = .subLabel
+        }
+        
         setup()
         backgroundColor = .clear
         containerView.backgroundColor = .clear
@@ -49,8 +73,10 @@ extension ToolBarButton {
     func action(_ action: Action) {
         switch action {
         case let .toggleDisabled(bool):
-            self.alpha = bool ? 0.3 : 1
-            self.isUserInteractionEnabled = !bool
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.alpha = bool ? 0.4 : 1
+                self?.isUserInteractionEnabled = !bool
+            }
         }
     }
 }
@@ -61,7 +87,11 @@ extension ToolBarButton {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(button).height(40)
+            flex.addItem(button)
+                .paddingHorizontal(16)
+                .backgroundColor(.brandSecondary)
+                .cornerRadius(19)
+                .height(38)
         }
     }
 }

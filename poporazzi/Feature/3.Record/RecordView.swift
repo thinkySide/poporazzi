@@ -32,11 +32,7 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 더보기 버튼
-    let seemoreButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .seemore)
-        button.button.showsMenuAsPrimaryAction = true
-        return button
-    }()
+    let seemoreButton = NavigationButton(buttonType: .seemore)
     
     /// 선택 버튼
     let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
@@ -54,18 +50,25 @@ final class RecordView: CodeBaseUI {
     /// ToolBar
     lazy var toolBar: ToolBar = {
         let toolBar = ToolBar(
-            leading: excludeButton,
-            trailing: removeButton
+            leading: favoriteToolBarButton,
+            centers: [excludeToolBarButton, seemoreToolBarButton],
+            trailing: removeToolBarButton
         )
         toolBar.isHidden = true
         return toolBar
     }()
     
-    /// 앨범에서 제외 버튼
-    let excludeButton = ToolBarButton(title: "앨범에서 제외")
+    /// 즐겨찾기 툴 바 버튼
+    let favoriteToolBarButton = ToolBarButton(.favorite)
     
-    /// 삭제 버튼
-    let removeButton = ToolBarButton(title: "삭제")
+    /// 앨범에서 제외 툴 바 버튼
+    let excludeToolBarButton = ToolBarButton(.title("앨범에서 제외"))
+    
+    /// 더보기 툴 바 버튼
+    let seemoreToolBarButton = ToolBarButton(.seemore)
+    
+    /// 삭제 툴 바 버튼
+    let removeToolBarButton = ToolBarButton(.remove)
     
     /// 앨범 제목 라벨
     private let albumTitleLabel: UILabel = {
@@ -237,24 +240,28 @@ extension RecordView {
             }
             
         case let .toggleSelectMode(bool):
-            recordCollectionView.contentInset.bottom = bool ? 56 : 0
             recordCollectionView.allowsSelection = bool
             recordCollectionView.allowsMultipleSelection = bool
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.recordCollectionView.contentInset.bottom = bool ? 80 : 0
+            }
             
         case let .updateSelectedCountLabel(count):
             if count == 0 {
-                toolBar.action(.updateTitle("기록 선택"))
-                [excludeButton, removeButton].forEach {
-                    $0.alpha = 0.3
-                    $0.isUserInteractionEnabled = false
+                toolBar.action(.updateTitle("기록을 선택해주세요"))
+                [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(true))
                 }
             } else {
-                toolBar.action(.updateTitle("\(count)장의 기록이 선택됨"))
-                [excludeButton, removeButton].forEach {
-                    $0.alpha = 1
-                    $0.isUserInteractionEnabled = true
+                let attributedText = NSMutableAttributedString()
+                    .tint("\(count)장", color: .brandPrimary)
+                    .tint("의 기록이 선택됨", color: .mainLabel)
+                
+                toolBar.action(.updateTitle(AttributedString(attributedText)))
+                [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(false))
                 }
             }
             

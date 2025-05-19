@@ -20,6 +20,7 @@ final class ExcludeRecordViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
+    let menuAction = PublishRelay<MenuAction>()
     
     init(output: Output) {
         self.output = output
@@ -41,6 +42,7 @@ extension ExcludeRecordViewModel {
         let selectCancelButtonTapped: Signal<Void>
         let recordCellSelected: Signal<IndexPath>
         let recordCellDeselected: Signal<IndexPath>
+        let favoriteToolbarButtonTapped: Signal<Void>
         let recoverButtonTapped: Signal<Void>
         let removeButtonTapped: Signal<Void>
     }
@@ -53,6 +55,7 @@ extension ExcludeRecordViewModel {
         let viewDidRefresh = PublishRelay<Void>()
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
+        let setupSeeMoreToolbarMenu = BehaviorRelay<[MenuModel]>(value: [])
         let toggleLoading = PublishRelay<Bool>()
     }
     
@@ -64,6 +67,10 @@ extension ExcludeRecordViewModel {
         case recover
         case remove
     }
+    
+    enum MenuAction {
+        case share
+    }
 }
 
 // MARK: - Transform
@@ -71,6 +78,12 @@ extension ExcludeRecordViewModel {
 extension ExcludeRecordViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.viewDidLoad
+            .emit(with: self) { owner, _ in
+                owner.output.setupSeeMoreToolbarMenu.accept(owner.seemoreToolbarMenu)
+            }
+            .disposed(by: disposeBag)
+        
         Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal())
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
@@ -115,6 +128,12 @@ extension ExcludeRecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
+            }
+            .disposed(by: disposeBag)
+        
+        input.favoriteToolbarButtonTapped
+            .emit(with: self) { owner, _ in
+                print("좋아요!")
             }
             .disposed(by: disposeBag)
         
@@ -165,6 +184,15 @@ extension ExcludeRecordViewModel {
                             owner.output.toggleLoading.accept(false)
                         }
                         .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        menuAction
+            .bind(with: self) { owne , action in
+                switch action {
+                case .share:
+                    print("공유하기!")
                 }
             }
             .disposed(by: disposeBag)
@@ -236,5 +264,18 @@ extension ExcludeRecordViewModel {
                 .init(title: "취소", style: .cancel)
             ]
         )
+    }
+}
+
+// MARK: - Menu
+
+extension ExcludeRecordViewModel {
+    
+    /// 더보기 툴바 버튼 Menu
+    private var seemoreToolbarMenu: [MenuModel] {
+        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+            self?.menuAction.accept(.share)
+        }
+        return [share]
     }
 }
