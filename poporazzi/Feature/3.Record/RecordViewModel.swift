@@ -77,6 +77,7 @@ extension RecordViewModel {
         case pushAlbumEdit(Album)
         case presentExcludeRecord(Album)
         case presentFinishModal(Album, SectionMediaList)
+        case presentMediaShareSheet([Any])
     }
     
     enum Delegate {
@@ -333,7 +334,11 @@ extension RecordViewModel {
                     HapticManager.notification(type: .warning)
                     
                 case .share:
-                    print("공유하기!")
+                    owner.photoKitService.fetchShareItemList(from: owner.selectedAssetIdentifiers())
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
                 }
             }
             .disposed(by: disposeBag)

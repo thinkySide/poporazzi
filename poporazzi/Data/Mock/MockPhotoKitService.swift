@@ -59,4 +59,8 @@ struct MockPhotoKitService: PhotoKitInterface {
     func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
         .just(true)
     }
+    
+    func fetchShareItemList(from assetIdentifiers: [String]) -> Observable<[Any]> {
+        .just([])
+    }
 }
