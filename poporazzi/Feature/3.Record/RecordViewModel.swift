@@ -47,8 +47,9 @@ extension RecordViewModel {
         let recentIndexPath: BehaviorRelay<IndexPath>
         let recordCellSelected: Signal<IndexPath>
         let recordCellDeselected: Signal<IndexPath>
-        let excludeButtonTapped: Signal<Void>
-        let removeButtonTapped: Signal<Void>
+        let favoriteToolbarButtonTapped: Signal<Void>
+        let excludeToolbarButtonTapped: Signal<Void>
+        let removeToolbarButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
     }
     
@@ -63,6 +64,7 @@ extension RecordViewModel {
         
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
+        let setupSeeMoreToolbarMenu = BehaviorRelay<[MenuModel]>(value: [])
         let switchSelectMode = PublishRelay<Bool>()
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
@@ -128,7 +130,8 @@ extension RecordViewModel {
         
         input.viewDidLoad
             .emit(with: self) { owner, _ in
-                owner.output.setupSeeMoreMenu.accept(self.seemoreMenu)
+                owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
+                owner.output.setupSeeMoreToolbarMenu.accept(owner.seemoreToolbarMenu)
             }
             .disposed(by: disposeBag)
         
@@ -231,14 +234,21 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.excludeButtonTapped
+        input.favoriteToolbarButtonTapped
+            .emit(with: self) { owner, _ in
+                print("좋아요")
+                // TODO: 좋아요
+            }
+            .disposed(by: disposeBag)
+        
+        input.excludeToolbarButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.actionSheetPresented.accept(owner.excludeActionSheet)
                 HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
         
-        input.removeButtonTapped
+        input.removeToolbarButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.actionSheetPresented.accept(owner.removeActionSheet)
                 HapticManager.notification(type: .warning)
@@ -509,5 +519,13 @@ extension RecordViewModel {
             self?.menuAction.accept(.noSave)
         }
         return [editAlbum, excludeRecord, noSave]
+    }
+    
+    /// 더보기 툴바 버튼 Menu
+    private var seemoreToolbarMenu: [MenuModel] {
+        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+            print("공유하기!")
+        }
+        return [share]
     }
 }

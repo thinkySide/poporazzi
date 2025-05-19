@@ -32,11 +32,7 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 더보기 버튼
-    let seemoreButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .seemore)
-        button.button.showsMenuAsPrimaryAction = true
-        return button
-    }()
+    let seemoreButton = NavigationButton(buttonType: .seemore)
     
     /// 선택 버튼
     let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
@@ -244,11 +240,13 @@ extension RecordView {
             }
             
         case let .toggleSelectMode(bool):
-            recordCollectionView.contentInset.bottom = bool ? 56 : 0
             recordCollectionView.allowsSelection = bool
             recordCollectionView.allowsMultipleSelection = bool
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.recordCollectionView.contentInset.bottom = bool ? 80 : 0
+            }
             
         case let .updateSelectedCountLabel(count):
             if count == 0 {

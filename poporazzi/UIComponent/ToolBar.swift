@@ -55,7 +55,7 @@ final class ToolBar: CodeBaseUI {
         containerView.flex.layout()
         containerView.layer.shadowOffset = .init(width: 0, height: -1)
         containerView.layer.shadowColor = UIColor.mainLabel.cgColor
-        containerView.layer.shadowOpacity = 0.08
+        containerView.layer.shadowOpacity = 0.1
         containerView.layer.shadowRadius = 10
     }
 }

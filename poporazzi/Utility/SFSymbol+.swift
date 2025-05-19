@@ -24,6 +24,7 @@ enum SFSymbol: String {
     case likeInactive = "heart"
     case likeActive = "heart.fill"
     case remove = "trash.fill"
+    case share = "square.and.arrow.up"
 }
 
 // MARK: - initializer
