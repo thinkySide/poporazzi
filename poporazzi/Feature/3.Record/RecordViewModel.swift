@@ -96,6 +96,7 @@ extension RecordViewModel {
         case editAlbum
         case excludeRecord
         case noSave
+        case share
     }
 }
 
@@ -325,6 +326,9 @@ extension RecordViewModel {
                 case .noSave:
                     owner.output.alertPresented.accept(owner.finishWithNoSaveAlert)
                     HapticManager.notification(type: .warning)
+                    
+                case .share:
+                    print("공유하기!")
                 }
             }
             .disposed(by: disposeBag)
@@ -524,7 +528,7 @@ extension RecordViewModel {
     /// 더보기 툴바 버튼 Menu
     private var seemoreToolbarMenu: [MenuModel] {
         let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
-            print("공유하기!")
+            self?.menuAction.accept(.share)
         }
         return [share]
     }
