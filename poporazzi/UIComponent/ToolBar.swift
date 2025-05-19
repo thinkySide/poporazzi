@@ -24,19 +24,25 @@ final class ToolBar: CodeBaseUI {
         return label
     }()
     
-    private let leadingView: UIView
-    private let trailingView: UIView
+    private let leadings: UIView
+    private let centers: [UIView]
+    private let trailings: UIView
+    
+    private let buttons = UIView()
+    private let centerView = UIView()
     
     init(
         title: String = "",
         leading: UIView = UIView(),
+        centers: [UIView] = [],
         trailing: UIView = UIView()
     ) {
         self.titleLabel.text = title
-        self.leadingView = leading
-        self.trailingView = trailing
+        self.leadings = leading
+        self.centers = centers
+        self.trailings = trailing
         super.init(frame: .zero)
-        setup(color: .brandTertiary)
+        setup(color: .white)
     }
     
     required init?(coder: NSCoder) {
@@ -47,7 +53,10 @@ final class ToolBar: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
-        containerView.addStroke([.top], color: .line, thickness: 1.5)
+        containerView.layer.shadowOffset = .init(width: 0, height: -1)
+        containerView.layer.shadowColor = UIColor.mainLabel.cgColor
+        containerView.layer.shadowOpacity = 0.08
+        containerView.layer.shadowRadius = 10
     }
 }
 
@@ -73,19 +82,25 @@ extension ToolBar {
 extension ToolBar {
     
     func configLayout() {
-        let bottomPadding: CGFloat = 16
-        containerView.flex.height(88)
-            .direction(.row)
-            .justifyContent(.center)
-            .alignItems(.center)
-            .paddingHorizontal(20)
-            .paddingBottom(bottomPadding)
+        containerView.flex.height(128)
+            .direction(.column)
+            .paddingHorizontal(16)
             .define { flex in
-                flex.addItem()
-                flex.addItem(titleLabel).position(.absolute).alignSelf(.center).horizontally(32).marginBottom(bottomPadding)
-                flex.addItem(leadingView)
-                flex.addItem().grow(1)
-                flex.addItem(trailingView)
+                flex.addItem(titleLabel).marginTop(16)
+                flex.addItem(buttons).marginTop(16)
             }
+        
+        centerView.flex.direction(.row).define { flex in
+            for (index, view) in centers.enumerated() {
+                flex.addItem(view)
+                    .marginLeft(index > 0 ? 8 : 0)
+            }
+        }
+        
+        buttons.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
+            flex.addItem(leadings)
+            flex.addItem(centerView)
+            flex.addItem(trailings)
+        }
     }
 }

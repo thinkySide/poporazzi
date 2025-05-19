@@ -54,18 +54,25 @@ final class RecordView: CodeBaseUI {
     /// ToolBar
     lazy var toolBar: ToolBar = {
         let toolBar = ToolBar(
-            leading: excludeButton,
-            trailing: removeButton
+            leading: favoriteToolBarButton,
+            centers: [excludeToolBarButton, seemoreToolBarButton],
+            trailing: removeToolBarButton
         )
         toolBar.isHidden = true
         return toolBar
     }()
     
-    /// 앨범에서 제외 버튼
-    let excludeButton = ToolBarButton(title: "앨범에서 제외")
+    /// 즐겨찾기 툴 바 버튼
+    let favoriteToolBarButton = ToolBarButton(.favorite)
     
-    /// 삭제 버튼
-    let removeButton = ToolBarButton(title: "삭제")
+    /// 앨범에서 제외 툴 바 버튼
+    let excludeToolBarButton = ToolBarButton(.title("앨범에서 제외"))
+    
+    /// 더보기 툴 바 버튼
+    let seemoreToolBarButton = ToolBarButton(.seemore)
+    
+    /// 삭제 툴 바 버튼
+    let removeToolBarButton = ToolBarButton(.remove)
     
     /// 앨범 제목 라벨
     private let albumTitleLabel: UILabel = {
@@ -245,16 +252,14 @@ extension RecordView {
             
         case let .updateSelectedCountLabel(count):
             if count == 0 {
-                toolBar.action(.updateTitle("기록 선택"))
-                [excludeButton, removeButton].forEach {
-                    $0.alpha = 0.3
-                    $0.isUserInteractionEnabled = false
+                toolBar.action(.updateTitle("기록을 선택해주세요"))
+                [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(true))
                 }
             } else {
                 toolBar.action(.updateTitle("\(count)장의 기록이 선택됨"))
-                [excludeButton, removeButton].forEach {
-                    $0.alpha = 1
-                    $0.isUserInteractionEnabled = true
+                [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(false))
                 }
             }
             

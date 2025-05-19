@@ -171,8 +171,8 @@ extension RecordViewController {
             recentIndexPath: recentIndexPath,
             recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
-            excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
-            removeButtonTapped: scene.removeButton.button.rx.tap.asSignal(),
+            excludeButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
+            removeButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)

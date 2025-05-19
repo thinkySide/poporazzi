@@ -92,10 +92,10 @@ final class ExcludeRecordView: CodeBaseUI {
     }()
     
     /// 앨범으로 복구 버튼
-    let recoverButton = ToolBarButton(title: "앨범으로 복구")
+    let recoverButton = ToolBarButton(.title("앨범으로 복구"))
     
     /// 삭제 버튼
-    let removeButton = ToolBarButton(title: "삭제")
+    let removeButton = ToolBarButton(.remove)
     
     init() {
         super.init(frame: .zero)
