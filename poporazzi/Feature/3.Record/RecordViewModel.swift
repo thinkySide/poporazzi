@@ -61,6 +61,7 @@ extension RecordViewModel {
         
         let updateRecordCells = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
+        let shoudBeFavorite = BehaviorRelay<Bool>(value: true)
         
         let viewDidRefresh = PublishRelay<Void>()
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
@@ -207,15 +208,14 @@ extension RecordViewModel {
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.switchSelectMode.accept(true)
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
         
         input.selectCancelButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.selectedRecordCells.accept([])
-                owner.output.switchSelectMode.accept(false)
-                HapticManager.impact(style: .light)
+                owner.cancelSelectMode()
             }
             .disposed(by: disposeBag)
         
@@ -224,6 +224,7 @@ extension RecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.append(indexPath)
                 owner.output.selectedRecordCells.accept(currentCells)
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
             }
             .disposed(by: disposeBag)
         
@@ -232,25 +233,17 @@ extension RecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
             }
             .disposed(by: disposeBag)
         
         input.favoriteToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                let selectedMediaList = owner.selectedMediaList()
-                let isFavoriteSet = Set(selectedMediaList.map(\.isFavorite))
-                
-                var isFavorite = false
-                if isFavoriteSet.count > 1 {
-                    isFavorite = isFavoriteSet.contains(true)
-                } else {
-                    isFavorite = !(isFavoriteSet.first ?? false)
-                }
-                
                 owner.photoKitService.toggleFavorite(
-                    from: selectedMediaList.map(\.id),
-                    isFavorite: isFavorite
+                    from: owner.selectedAssetIdentifiers(),
+                    isFavorite: owner.shouldBeFavorite()
                 )
+                owner.cancelSelectMode()
             }
             .disposed(by: disposeBag)
         
@@ -306,7 +299,7 @@ extension RecordViewModel {
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                     
                     owner.output.viewDidRefresh.accept(())
-                    owner.output.selectedRecordCells.accept([])
+                    owner.cancelSelectMode()
                     
                 case .remove:
                     owner.output.toggleLoading.accept(true)
@@ -314,7 +307,7 @@ extension RecordViewModel {
                     owner.photoKitService.deletePhotos(from: assetIdentifiers)
                         .bind { isSuccess in
                             if isSuccess {
-                                owner.output.selectedRecordCells.accept([])
+                                owner.cancelSelectMode()
                             } else {
                                 owner.output.alertPresented.accept(owner.removeFailedAlert)
                             }
@@ -431,6 +424,25 @@ extension RecordViewModel {
             count += mediaList.count
         }
         return count
+    }
+    
+    /// 선택한 Media의 다음 즐겨찾기 값을 계산합니다.
+    private func shouldBeFavorite() -> Bool {
+        let selectedMediaList = selectedMediaList()
+        let isFavoriteSet = Set(selectedMediaList.map(\.isFavorite))
+        
+        if isFavoriteSet.count > 1 {
+            return isFavoriteSet.contains(true)
+        } else {
+            return !(isFavoriteSet.first ?? false)
+        }
+    }
+    
+    /// 선택 모드를 취소합니다.
+    private func cancelSelectMode() {
+        output.selectedRecordCells.accept([])
+        output.switchSelectMode.accept(false)
+        HapticManager.impact(style: .light)
     }
 }
 

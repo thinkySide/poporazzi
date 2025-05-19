@@ -34,7 +34,7 @@ final class ToolBarButton: CodeBaseUI {
             button.titleLabel?.font = .setDovemayo(16)
             
         case .favorite:
-            button.setImage(UIImage(symbol: .likeActive, size: 16, weight: .bold), for: .normal)
+            button.setImage(UIImage(symbol: .favoriteActive, size: 16, weight: .bold), for: .normal)
             button.tintColor = .subLabel
             
         case .seemore:

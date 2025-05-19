@@ -66,7 +66,7 @@ final class RecordCell: UICollectionViewCell {
     /// 셀 즐겨찾기 아이콘
     private let favoriteIcon: UIImageView = {
         let imageView = UIImageView(
-            symbol: .likeActive,
+            symbol: .favoriteActive,
             size: 12,
             weight: .bold,
             tintColor: .white

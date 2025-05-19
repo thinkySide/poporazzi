@@ -238,7 +238,15 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
+        output.shoudBeFavorite
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, bool in
+                owner.scene.action(.toggleFavoriteMode(bool))
+            }
+            .disposed(by: disposeBag)
+        
         output.switchSelectMode
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, bool in
                 owner.scene.action(.toggleSelectMode(bool))
             }
