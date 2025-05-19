@@ -71,7 +71,7 @@
 |[#67 유닛 테스트 환경 세팅 및 작성](https://github.com/thinkySide/poporazzi/pull/67)|Unit Test Target 추가, Live Activity 및 PhotoKit Service 인터페이스 구현 및 Mock 객체 생성, XCTest를 활용한 테스트 코드 작성|
 |[#69 앨범 저장 오류 해결](https://github.com/thinkySide/poporazzi/pull/69)|동일한 이름의 앨범 생성 시, 저장 후 덮어씌워지는 문제 해결, 제외된 기록이 추가되었음에도 종료 시 반영되지 않는 문제 해결|
 
-#### v1.4.0 ~ 1.4.4 / 25.05.20 ~
+#### v1.4.0 ~ 1.4.4 / 25.05.19 ~
 > MVP 개발 때 부터 생각했던 일자별로 앨범을 나누는 기능이 기술적으로 가능함을 확인했다. 이제 하루 이상 기록하게 되면 일차별로 나눠보자!
 
 |PR 제목|주요 구현 내용|
@@ -93,3 +93,12 @@
 |[#101 앨범 시작 및 종료 시간 선택 기능 업데이트](https://github.com/thinkySide/poporazzi/pull/101)|종료 시간 추가 기능 구현, DatePickerModalView 업데이트|
 |[#103 RecordCollectionView Sticky Header 기능 구현](https://github.com/thinkySide/poporazzi/pull/103)|CompositionalLayout Section Header를 활용한 StickyHeader 구현|
 |[#105 1.4.4 Minor 업데이트](https://github.com/thinkySide/poporazzi/pull/105)|저장 없이 종료 기능 버튼 이동, 기록 비어있을 경우 출력되는 UI 업데이트, 분류 기준 도움말 라벨 추가|
+
+#### v1.5.0 ~ / 25.05.19 ~
+> 상호작용 가능한 것 같은 부분들에 신경써 디테일을 올릭자 합니다.
+
+|PR 제목|주요 구현 내용|
+|:--|:--|
+|[#107 선택모드 UI 업데이트](https://github.com/thinkySide/poporazzi/pull/107)|선택모드 ToolBar UI 업데이트, AttributedString 적용|
+|[#109 미디어 즐겨찾기 기능 구현](https://github.com/thinkySide/poporazzi/pull/109)|에셋 즐겨찾기 토글 기능 구현|
+|[#111 미디어 공유하기 기능 구현](https://github.com/thinkySide/poporazzi/pull/111)|UIActivityViewController를 이용한 에셋 공유 기능 구현|
