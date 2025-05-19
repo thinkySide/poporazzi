@@ -122,7 +122,17 @@ extension Coordinator {
                     owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
                     
                 case let .presentMediaShareSheet(shareItemList):
-                    owner.presentMediaShareSheet(shareItemList)
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
+                    
+                    activityController.completionWithItemsHandler = { _, isComplete, _, _ in
+                        if isComplete {
+                            recordVM?.delegate.accept(.completeSharing)
+                        }
+                    }
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -263,19 +273,5 @@ extension Coordinator {
                 }
             }
             .disposed(by: finishVC.disposeBag)
-    }
-}
-
-// MARK: - ActivityView
-
-extension Coordinator {
-    
-    /// Media 공유 Sheet를 출력합니다.
-    private func presentMediaShareSheet(_ shareItemList: [Any]) {
-        let activityController = UIActivityViewController(
-            activityItems: shareItemList,
-            applicationActivities: nil
-        )
-        self.navigationController.present(activityController, animated: true)
     }
 }

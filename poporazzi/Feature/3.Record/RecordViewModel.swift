@@ -83,6 +83,7 @@ extension RecordViewModel {
     enum Delegate {
         case albumDidEdited(Album)
         case updateExcludeRecord(Album)
+        case completeSharing
     }
     
     enum AlertAction {
@@ -353,6 +354,9 @@ extension RecordViewModel {
                 case let .updateExcludeRecord(album):
                     owner.output.album.accept(album)
                     owner.output.viewDidRefresh.accept(())
+                    
+                case .completeSharing:
+                    owner.cancelSelectMode()
                 }
             }
             .disposed(by: disposeBag)
