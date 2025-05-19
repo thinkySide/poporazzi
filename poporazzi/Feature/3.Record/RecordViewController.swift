@@ -83,7 +83,7 @@ extension RecordViewController {
                 cell.action(.setImage(cacheThumbnail))
             }
             
-            cell.action(.setMediaType(media.mediaType))
+            cell.action(.setMediaInfo(media))
             
             return cell
         }

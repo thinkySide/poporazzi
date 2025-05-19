@@ -56,7 +56,7 @@ extension ExcludeRecordViewController {
             ) as? RecordCell else { return nil }
             
             cell.action(.setImage(media.thumbnail))
-            cell.action(.setMediaType(media.mediaType))
+            cell.action(.setMediaInfo(media))
             
             return cell
         }

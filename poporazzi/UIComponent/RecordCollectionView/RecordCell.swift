@@ -15,11 +15,21 @@ final class RecordCell: UICollectionViewCell {
     
     var containerView = UIView()
     
-    /// 영상 전용 오버레이
-    private let videoOverlay: UIView = {
+    /// 기본 오버레이
+    private let defaultoverlay: UIView = {
         let view = UIView()
         view.clipsToBounds = true
         return view
+    }()
+    
+    /// 오버레이 전용 그라디언트 레이어
+    private let overlayGradientLayer: CAGradientLayer = {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [UIColor.clear.cgColor, UIColor.mainLabel.withAlphaComponent(0.4).cgColor]
+        gradientLayer.locations = [0.0, 1.0]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+        return gradientLayer
     }()
     
     /// 선택 전용 오버레이
@@ -38,16 +48,6 @@ final class RecordCell: UICollectionViewCell {
         return imageView
     }()
     
-    /// 영상 전용 그라디언트 레이어
-    private let videoGradientLayer: CAGradientLayer = {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [UIColor.clear.cgColor, UIColor.mainLabel.withAlphaComponent(0.4).cgColor]
-        gradientLayer.locations = [0.0, 1.0]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        return gradientLayer
-    }()
-    
     /// 영상 길이 라벨
     private let videoDurationLabel: UILabel = {
         let label = UILabel()
@@ -63,25 +63,37 @@ final class RecordCell: UICollectionViewCell {
         return imageView
     }()
     
+    /// 셀 즐겨찾기 아이콘
+    private let favoriteIcon: UIImageView = {
+        let imageView = UIImageView(
+            symbol: .likeActive,
+            size: 12,
+            weight: .bold,
+            tintColor: .white
+        )
+        imageView.isHidden = true
+        return imageView
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.addSubview(containerView)
-        contentView.addSubview(videoOverlay)
+        contentView.addSubview(defaultoverlay)
         contentView.addSubview(selectOverlay)
-        videoOverlay.layer.addSublayer(videoGradientLayer)
+        defaultoverlay.layer.addSublayer(overlayGradientLayer)
         configLayout()
-        [containerView, videoOverlay, selectOverlay, thumbnail, videoDurationLabel]
+        [containerView, defaultoverlay, selectOverlay, thumbnail, videoDurationLabel]
             .forEach { $0.isUserInteractionEnabled = false }
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.all()
-        videoOverlay.pin.all()
+        defaultoverlay.pin.all()
         selectOverlay.pin.all()
-        videoGradientLayer.frame = videoOverlay.bounds
+        overlayGradientLayer.frame = defaultoverlay.bounds
         containerView.flex.layout()
-        videoOverlay.flex.layout()
+        defaultoverlay.flex.layout()
         selectOverlay.flex.layout()
     }
     
@@ -113,7 +125,7 @@ extension RecordCell {
     
     enum Action {
         case setImage(UIImage?)
-        case setMediaType(Media.MediaType)
+        case setMediaInfo(Media)
     }
     
     func action(_ action: Action) {
@@ -125,16 +137,18 @@ extension RecordCell {
                 self.backgroundColor = .brandTertiary
             }
             
-        case let .setMediaType(mediaType):
-            switch mediaType {
+        case let .setMediaInfo(media):
+            switch media.mediaType {
             case .photo:
                 videoDurationLabel.text = ""
-                videoOverlay.isHidden = true
+                defaultoverlay.isHidden = !media.isFavorite
+                favoriteIcon.isHidden = !media.isFavorite
                 videoDurationLabel.flex.markDirty()
                 
             case let .video(_, _, duration):
                 videoDurationLabel.text = duration.videoDurationFormat
-                videoOverlay.isHidden = false
+                defaultoverlay.isHidden = false
+                favoriteIcon.isHidden = !media.isFavorite
                 videoDurationLabel.flex.markDirty()
             }
         }
@@ -152,7 +166,8 @@ extension RecordCell {
             flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }
         
-        videoOverlay.flex.cornerRadius(cornerRadius).define { flex in
+        defaultoverlay.flex.cornerRadius(cornerRadius).define { flex in
+            flex.addItem(favoriteIcon).position(.absolute).bottom(8).left(10)
             flex.addItem(videoDurationLabel).position(.absolute).bottom(6).right(10)
         }
     }
