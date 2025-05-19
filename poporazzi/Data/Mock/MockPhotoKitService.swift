@@ -42,6 +42,10 @@ struct MockPhotoKitService: PhotoKitInterface {
         return .just(array)
     }
     
+    func toggleFavorite(from assetIdentifiers: [String], isFavorite: Bool) {
+        print("즐겨찾기 완료")
+    }
+    
     func saveAlbumAsSingle(title: String, sectionMediaList: SectionMediaList)  -> Observable<Void> {
         print("[하나의 앨범으로 저장 완료] - \(title)")
         return .just(())

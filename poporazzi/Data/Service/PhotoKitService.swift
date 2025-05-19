@@ -156,6 +156,17 @@ extension PhotoKitService {
         }
     }
     
+    /// 즐겨찾기 상태를 전환합니다.
+    func toggleFavorite(from assetIdentifiers: [String], isFavorite: Bool) {
+        let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+        PHPhotoLibrary.shared().performChanges {
+            assets.enumerateObjects { asset, _, _ in
+                let request = PHAssetChangeRequest(for: asset)
+                request.isFavorite = isFavorite
+            }
+        }
+    }
+    
     /// 하나의 앨범으로 만들어 저장합니다.
     func saveAlbumAsSingle(title: String, sectionMediaList: SectionMediaList) -> Observable<Void> {
         Observable.create { [weak self] observer in
@@ -436,7 +447,7 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
             return
         }
         
-        /// 변화가 일어났는지 확인
+        // 변화가 일어났는지 확인
         if changeDetails.hasIncrementalChanges {
             
             // 변경 추가 또는 삭제된 에셋이 있다면

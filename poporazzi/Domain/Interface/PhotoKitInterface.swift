@@ -23,6 +23,9 @@ protocol PhotoKitInterface {
     /// Media 배열 이벤트를 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>
     
+    /// 즐겨찾기 상태를 전환합니다.
+    func toggleFavorite(from assetIdentifiers: [String], isFavorite: Bool)
+    
     /// 하나의 앨범으로 만들어 저장합니다.
     func saveAlbumAsSingle(title: String, sectionMediaList: SectionMediaList) -> Observable<Void>
     

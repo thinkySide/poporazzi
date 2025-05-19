@@ -237,8 +237,20 @@ extension RecordViewModel {
         
         input.favoriteToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                print("좋아요")
-                // TODO: 좋아요
+                let selectedMediaList = owner.selectedMediaList()
+                let isFavoriteSet = Set(selectedMediaList.map(\.isFavorite))
+                
+                var isFavorite = false
+                if isFavoriteSet.count > 1 {
+                    isFavorite = isFavoriteSet.contains(true)
+                } else {
+                    isFavorite = !(isFavoriteSet.first ?? false)
+                }
+                
+                owner.photoKitService.toggleFavorite(
+                    from: selectedMediaList.map(\.id),
+                    isFavorite: isFavorite
+                )
             }
             .disposed(by: disposeBag)
         
@@ -354,6 +366,13 @@ extension RecordViewModel {
 // MARK: - Helper
 
 extension RecordViewModel {
+    
+    /// IndexPath에 대응되는 Media를 반환합니다.
+    private func selectedMediaList() -> [Media] {
+        output.selectedRecordCells.value.compactMap {
+            output.mediaList.value[index(from: $0)]
+        }
+    }
     
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
