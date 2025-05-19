@@ -255,7 +255,11 @@ extension RecordView {
                     $0.action(.toggleDisabled(true))
                 }
             } else {
-                toolBar.action(.updateTitle("\(count)장의 기록이 선택됨"))
+                let attributedText = NSMutableAttributedString()
+                    .tint("\(count)장", color: .brandPrimary)
+                    .tint("의 기록이 선택됨", color: .mainLabel)
+                
+                toolBar.action(.updateTitle(AttributedString(attributedText)))
                 [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
                     $0.action(.toggleDisabled(false))
                 }

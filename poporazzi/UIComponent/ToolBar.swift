@@ -65,14 +65,14 @@ final class ToolBar: CodeBaseUI {
 extension ToolBar {
     
     enum Action {
-        case updateTitle(String)
+        case updateTitle(AttributedString)
     }
     
     func action(_ action: Action) {
         switch action {
         case .updateTitle(let title):
             titleLabel.flex.markDirty()
-            titleLabel.text = title
+            titleLabel.attributedText = NSAttributedString(title)
         }
     }
 }
