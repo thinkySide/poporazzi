@@ -118,22 +118,12 @@ extension PhotoKitService {
                     return
                 }
                 
-                let fetchResult = PHAsset.fetchAssets(
-                    withLocalIdentifiers: assetIdentifiers,
-                    options: nil
-                )
-                
-                var assetMap = [String: PHAsset]()
-                fetchResult.enumerateObjects { asset, _, _ in
-                    assetMap[asset.localIdentifier] = asset
-                }
-                
-                let orderedAsset = assetIdentifiers.compactMap { assetMap[$0] }
+                let assetList = self.toPHAssetList(from: assetIdentifiers)
                 
                 let medias: [Media] = await withTaskGroup(of: Media.self) { group in
-                    for asset in orderedAsset {
+                    for asset in assetList {
                         group.addTask {
-                            let image = await self.requestImage(for: asset)
+                            let image = await self.requestNormalQuailityImage(for: asset)
                             return Media(
                                 id: asset.localIdentifier,
                                 creationDate: asset.creationDate,
@@ -259,6 +249,80 @@ extension PhotoKitService {
             }
             return Disposables.create()
         }
+    }
+    
+    /// 선택한 AssetIdentifiers의 File URL을 반환합니다.
+    func fetchShareItemList(from assetIdentifiers: [String]) -> Observable<[Any]> {
+        Observable.create { [weak self] observer in
+            Task {
+                guard let self else {
+                    observer.onCompleted()
+                    return
+                }
+                
+                let assetList = self.toPHAssetList(from: assetIdentifiers)
+                
+                let urlList: [Any] = await withTaskGroup(of: (Int, Any?).self) { group in
+                    for (index, asset) in assetList.enumerated() {
+                        group.addTask {
+                            let url = await self.toShareItem(from: asset)
+                            return (index, url)
+                        }
+                    }
+                    
+                    var orderedItemList = [(Int, Any?)]()
+                    for await item in group { orderedItemList.append(item) }
+                    return orderedItemList.sorted { $0.0 < $1.0 }.map(\.1).compactMap { $0 }
+                }
+                
+                observer.onNext(urlList)
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
+        }
+    }
+}
+
+// MARK: - Converter
+
+extension PhotoKitService {
+    
+    /// AssetIdentifiers를 PHAsset으로 반환합니다.
+    private func toPHAssetList(from assetIdentifiers: [String]) -> [PHAsset] {
+        let fetchReult = PHAsset.fetchAssets(
+            withLocalIdentifiers: assetIdentifiers,
+            options: nil
+        )
+        
+        var assetMap = [String: PHAsset]()
+        fetchReult.enumerateObjects { asset, _, _ in
+            assetMap[asset.localIdentifier] = asset
+        }
+        
+        return assetIdentifiers.compactMap { assetMap[$0]}
+    }
+    
+    /// PHAsset을 URL? 타입으로 비동기 반환합니다.
+    private func toShareItem(from asset: PHAsset) async -> Any? {
+        
+        // Image의 경우 원본 파일 이미지 반환
+        if asset.mediaType == .image {
+            return await self.requestSharingImageData(for: asset)
+        }
+        
+        // Video의 경우 파일 URL 반환
+        else if asset.mediaType == .video {
+            return await withCheckedContinuation { continuation in
+                asset.requestContentEditingInput(with: nil) { editingInput, info in
+                    if let videoAsset = editingInput?.audiovisualAsset as? AVURLAsset {
+                        continuation.resume(returning: videoAsset.url)
+                    }
+                }
+            }
+        }
+        
+        return nil
     }
 }
 
@@ -397,8 +461,8 @@ extension PhotoKitService {
         return .init(format: result, argumentArray: arguments)
     }
     
-    /// 이미지를 비동기로 요청합니다.
-    private func requestImage(for asset: PHAsset) async -> UIImage? {
+    /// 보통 퀄리티의 이미지를 비동기로 요청합니다.
+    private func requestNormalQuailityImage(for asset: PHAsset) async -> UIImage? {
         await withCheckedContinuation { continuation in
             PHImageManager.default().requestImage(
                 for: asset,
@@ -409,6 +473,21 @@ extension PhotoKitService {
                 continuation.resume(returning: image)
             }
         }
+    }
+    
+    /// 공유용 이미지 데이터를 비동기로 요청합니다.
+    private func requestSharingImageData(for asset: PHAsset) async -> Data? {
+        let image = await withCheckedContinuation { continuation in
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: PHImageManagerMaximumSize,
+                contentMode: .aspectFill,
+                options: self.defaultImageRequestOptions
+            ) { image, _ in
+                continuation.resume(returning: image)
+            }
+        }
+        return image?.jpegData(compressionQuality: 0.8)
     }
     
     /// 앨범에 에셋을 추가합니다.

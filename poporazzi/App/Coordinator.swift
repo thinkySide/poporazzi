@@ -86,6 +86,7 @@ extension Coordinator {
         self.navigationController.pushViewController(albumOptionVC, animated: true)
         
         albumOptionVM.navigation
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .pop:
@@ -106,6 +107,7 @@ extension Coordinator {
         self.navigationController.pushViewController(recordVC, animated: true)
         
         recordVM.navigation
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak recordVM] owner, path in
                 switch path {
                 case .pop:
@@ -119,6 +121,19 @@ extension Coordinator {
                     
                 case let .presentFinishModal(album, sectionMediaList):
                     owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
+                    
+                    activityController.completionWithItemsHandler = { _, isComplete, _, _ in
+                        if isComplete {
+                            recordVM?.delegate.accept(.completeSharing)
+                        }
+                    }
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -143,6 +158,7 @@ extension Coordinator {
         self.navigationController.pushViewController(editVC, animated: true)
         
         editVM.navigation
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak editVC] owner, path in
                 switch path {
                 case let .presentStartDatePicker(startDate, endDate):
@@ -169,11 +185,25 @@ extension Coordinator {
         self.navigationController.pushViewController(excludeRecordVC, animated: true)
         
         excludeRecordVM.navigation
-            .bind(with: self) { owner, path in
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { [weak excludeRecordVM] owner, path in
                 switch path {
                 case let .pop(album):
                     recordVM?.delegate.accept(.updateExcludeRecord(album))
                     owner.navigationController.popViewController(animated: true)
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
+                    
+                    activityController.completionWithItemsHandler = { _, isComplete, _, _ in
+                        if isComplete {
+                            excludeRecordVM?.delegate.accept(.completeSharing)
+                        }
+                    }
                 }
             }
             .disposed(by: excludeRecordVC.disposeBag)
@@ -216,6 +246,7 @@ extension Coordinator {
         editVC?.present(datePickerVC, animated: true)
         
         datePickerVM.navigation
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .pop:
@@ -248,6 +279,7 @@ extension Coordinator {
         self.navigationController.present(finishVC, animated: true)
         
         finishVM.navigation
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .dismiss:

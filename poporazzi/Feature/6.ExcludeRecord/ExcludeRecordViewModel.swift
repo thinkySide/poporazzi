@@ -19,6 +19,7 @@ final class ExcludeRecordViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
     let menuAction = PublishRelay<MenuAction>()
     
@@ -64,6 +65,11 @@ extension ExcludeRecordViewModel {
     
     enum Navigation {
         case pop(Album)
+        case presentMediaShareSheet([Any])
+    }
+    
+    enum Delegate {
+        case completeSharing
     }
     
     enum ActionSheetAction {
@@ -195,10 +201,23 @@ extension ExcludeRecordViewModel {
             .disposed(by: disposeBag)
         
         menuAction
-            .bind(with: self) { owne , action in
+            .bind(with: self) { owner , action in
                 switch action {
                 case .share:
-                    print("공유하기!")
+                    owner.photoKitService.fetchShareItemList(from: owner.selectedAssetIdentifiers())
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner , delegate in
+                switch delegate {
+                case .completeSharing:
+                    owner.cancelSelectMode()
                 }
             }
             .disposed(by: disposeBag)
@@ -217,7 +236,7 @@ extension ExcludeRecordViewModel {
             output.mediaList.value[$0.row]
         }
     }
-
+    
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
         selectedMediaList().map(\.id)
