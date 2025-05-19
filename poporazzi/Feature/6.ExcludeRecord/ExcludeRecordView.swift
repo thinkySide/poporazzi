@@ -130,6 +130,7 @@ extension ExcludeRecordView {
     enum Action {
         case setTotalImageCountLabel(Int)
         case toggleSelectMode(Bool)
+        case toggleFavoriteMode(Bool)
         case updateSelectedCountLabel(Int)
         case toggleLoading(Bool)
     }
@@ -149,6 +150,10 @@ extension ExcludeRecordView {
             UIView.animate(withDuration: 0.2) { [weak self] in
                 self?.recordCollectionView.contentInset.bottom = bool ? 80 : 0
             }
+            
+        case let .toggleFavoriteMode(bool):
+            let symbol = UIImage(symbol: bool ? .favoriteActive : .favoriteRemove, size: 16, weight: .bold)
+            favoriteToolBarButton.button.setImage(symbol, for: .normal)
             
         case let .updateSelectedCountLabel(count):
             if count == 0 {

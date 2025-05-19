@@ -49,8 +49,11 @@ extension ExcludeRecordViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
+        
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
+        let shoudBeFavorite = BehaviorRelay<Bool>(value: true)
+        
         let switchSelectMode = PublishRelay<Bool>()
         let viewDidRefresh = PublishRelay<Void>()
         let alertPresented = PublishRelay<AlertModel>()
@@ -84,7 +87,7 @@ extension ExcludeRecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal())
+        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
@@ -103,15 +106,14 @@ extension ExcludeRecordViewModel {
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.switchSelectMode.accept(true)
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
         
         input.selectCancelButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.selectedRecordCells.accept([])
-                owner.output.switchSelectMode.accept(false)
-                HapticManager.impact(style: .light)
+                owner.cancelSelectMode()
             }
             .disposed(by: disposeBag)
         
@@ -120,6 +122,7 @@ extension ExcludeRecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.append(indexPath)
                 owner.output.selectedRecordCells.accept(currentCells)
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
             }
             .disposed(by: disposeBag)
         
@@ -128,12 +131,17 @@ extension ExcludeRecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
             }
             .disposed(by: disposeBag)
         
         input.favoriteToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                print("좋아요!")
+                owner.photoKitService.toggleFavorite(
+                    from: owner.selectedAssetIdentifiers(),
+                    isFavorite: owner.shouldBeFavorite()
+                )
+                owner.cancelSelectMode()
             }
             .disposed(by: disposeBag)
         
@@ -160,7 +168,7 @@ extension ExcludeRecordViewModel {
                     owner.output.album.accept(album)
                     
                     owner.output.viewDidRefresh.accept(())
-                    owner.output.selectedRecordCells.accept([])
+                    owner.cancelSelectMode()
                     
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                     
@@ -174,9 +182,7 @@ extension ExcludeRecordViewModel {
                                 album.excludeMediaList.subtract(assetIdentifiers)
                                 owner.output.album.accept(album)
                                 
-                                owner.output.viewDidRefresh.accept(())
-                                owner.output.selectedRecordCells.accept([])
-                                
+                                owner.cancelSelectMode()
                                 owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                             } else {
                                 owner.output.alertPresented.accept(owner.removeFailedAlert)
@@ -204,10 +210,36 @@ extension ExcludeRecordViewModel {
 // MARK: - Helper
 
 extension ExcludeRecordViewModel {
+    
+    /// IndexPath에 대응되는 Media를 반환합니다.
+    private func selectedMediaList() -> [Media] {
+        output.selectedRecordCells.value.compactMap {
+            output.mediaList.value[$0.row]
+        }
+    }
 
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
-        output.selectedRecordCells.value.compactMap { output.mediaList.value[$0.row].id }
+        selectedMediaList().map(\.id)
+    }
+    
+    /// 선택한 Media의 다음 즐겨찾기 값을 계산합니다.
+    private func shouldBeFavorite() -> Bool {
+        let selectedMediaList = selectedMediaList()
+        let isFavoriteSet = Set(selectedMediaList.map(\.isFavorite))
+        
+        if isFavoriteSet.count > 1 {
+            return isFavoriteSet.contains(true)
+        } else {
+            return !(isFavoriteSet.first ?? false)
+        }
+    }
+    
+    /// 선택 모드를 취소합니다.
+    private func cancelSelectMode() {
+        output.selectedRecordCells.accept([])
+        output.switchSelectMode.accept(false)
+        HapticManager.impact(style: .light)
     }
 }
 

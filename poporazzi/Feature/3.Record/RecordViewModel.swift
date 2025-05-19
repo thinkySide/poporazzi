@@ -369,9 +369,7 @@ extension RecordViewModel {
     
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
-        output.selectedRecordCells.value.compactMap {
-            output.mediaList.value[index(from: $0)].id
-        }
+        selectedMediaList().map(\.id)
     }
     
     /// 시작날짜를 기준으로 생성일이 몇일차인지 반환합니다.
