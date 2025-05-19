@@ -23,7 +23,8 @@ struct MockPhotoKitService: PhotoKitInterface {
         Array(repeatElement(.init(
             id: UUID().uuidString,
             creationDate: .now,
-            mediaType: .photo(.selfShooting, .heic)
+            mediaType: .photo(.selfShooting, .heic),
+            isFavorite: false
         ), count: 30))
     }
     
@@ -34,10 +35,15 @@ struct MockPhotoKitService: PhotoKitInterface {
                 id: UUID().uuidString,
                 creationDate: .now,
                 mediaType: .photo(.selfShooting, .heic),
-                thumbnail: UIImage()
+                thumbnail: UIImage(),
+                isFavorite: false
             ))
         }
         return .just(array)
+    }
+    
+    func toggleFavorite(from assetIdentifiers: [String], isFavorite: Bool) {
+        print("즐겨찾기 완료")
     }
     
     func saveAlbumAsSingle(title: String, sectionMediaList: SectionMediaList)  -> Observable<Void> {

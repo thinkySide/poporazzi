@@ -83,7 +83,8 @@ extension PhotoKitService {
                         id: asset.localIdentifier,
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
-                        thumbnail: nil
+                        thumbnail: nil,
+                        isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
                 }
@@ -97,7 +98,8 @@ extension PhotoKitService {
                         id: asset.localIdentifier,
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
-                        thumbnail: nil
+                        thumbnail: nil,
+                        isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
                 }
@@ -136,7 +138,8 @@ extension PhotoKitService {
                                 id: asset.localIdentifier,
                                 creationDate: asset.creationDate,
                                 mediaType: self.mediaType(from: asset),
-                                thumbnail: image
+                                thumbnail: image,
+                                isFavorite: asset.isFavorite
                             )
                         }
                     }
@@ -150,6 +153,17 @@ extension PhotoKitService {
             }
             
             return Disposables.create()
+        }
+    }
+    
+    /// 즐겨찾기 상태를 전환합니다.
+    func toggleFavorite(from assetIdentifiers: [String], isFavorite: Bool) {
+        let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+        PHPhotoLibrary.shared().performChanges {
+            assets.enumerateObjects { asset, _, _ in
+                let request = PHAssetChangeRequest(for: asset)
+                request.isFavorite = isFavorite
+            }
         }
     }
     
@@ -433,11 +447,13 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
             return
         }
         
-        /// 변화가 일어났는지 확인
+        // 변화가 일어났는지 확인
         if changeDetails.hasIncrementalChanges {
             
-            // 추가 또는 삭제된 에셋이 있다면
-            if !changeDetails.insertedObjects.isEmpty || !changeDetails.removedObjects.isEmpty {
+            // 변경 추가 또는 삭제된 에셋이 있다면
+            if !changeDetails.changedObjects.isEmpty
+                || !changeDetails.insertedObjects.isEmpty
+                || !changeDetails.removedObjects.isEmpty {
                 photoLibraryChangeRelay.accept(())
             }
         }

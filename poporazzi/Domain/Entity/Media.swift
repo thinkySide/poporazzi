@@ -24,6 +24,9 @@ struct Media: Hashable, Equatable {
     /// 썸네일
     var thumbnail: UIImage?
     
+    /// 즐겨찾기 여부
+    var isFavorite: Bool
+    
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
@@ -32,6 +35,7 @@ struct Media: Hashable, Equatable {
         lhs.id == rhs.id
         && lhs.mediaType == rhs.mediaType
         && lhs.thumbnail != rhs.thumbnail
+        && lhs.isFavorite == rhs.isFavorite
     }
     
     /// 미디어 타입

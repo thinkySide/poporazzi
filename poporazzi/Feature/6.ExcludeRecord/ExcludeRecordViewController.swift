@@ -56,7 +56,7 @@ extension ExcludeRecordViewController {
             ) as? RecordCell else { return nil }
             
             cell.action(.setImage(media.thumbnail))
-            cell.action(.setMediaType(media.mediaType))
+            cell.action(.setMediaInfo(media))
             
             return cell
         }
@@ -101,6 +101,13 @@ extension ExcludeRecordViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, selectedMedias in
                 owner.scene.action(.updateSelectedCountLabel(selectedMedias.count))
+            }
+            .disposed(by: disposeBag)
+        
+        output.shoudBeFavorite
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, bool in
+                owner.scene.action(.toggleFavoriteMode(bool))
             }
             .disposed(by: disposeBag)
         
