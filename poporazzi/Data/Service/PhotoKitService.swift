@@ -83,7 +83,8 @@ extension PhotoKitService {
                         id: asset.localIdentifier,
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
-                        thumbnail: nil
+                        thumbnail: nil,
+                        isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
                 }
@@ -97,7 +98,8 @@ extension PhotoKitService {
                         id: asset.localIdentifier,
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
-                        thumbnail: nil
+                        thumbnail: nil,
+                        isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
                 }
@@ -136,7 +138,8 @@ extension PhotoKitService {
                                 id: asset.localIdentifier,
                                 creationDate: asset.creationDate,
                                 mediaType: self.mediaType(from: asset),
-                                thumbnail: image
+                                thumbnail: image,
+                                isFavorite: asset.isFavorite
                             )
                         }
                     }

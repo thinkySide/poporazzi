@@ -24,6 +24,9 @@ struct Media: Hashable, Equatable {
     /// 썸네일
     var thumbnail: UIImage?
     
+    /// 즐겨찾기 여부
+    var isFavorite: Bool
+    
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }

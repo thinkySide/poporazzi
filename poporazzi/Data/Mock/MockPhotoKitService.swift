@@ -23,7 +23,8 @@ struct MockPhotoKitService: PhotoKitInterface {
         Array(repeatElement(.init(
             id: UUID().uuidString,
             creationDate: .now,
-            mediaType: .photo(.selfShooting, .heic)
+            mediaType: .photo(.selfShooting, .heic),
+            isFavorite: false
         ), count: 30))
     }
     
@@ -34,7 +35,8 @@ struct MockPhotoKitService: PhotoKitInterface {
                 id: UUID().uuidString,
                 creationDate: .now,
                 mediaType: .photo(.selfShooting, .heic),
-                thumbnail: UIImage()
+                thumbnail: UIImage(),
+                isFavorite: false
             ))
         }
         return .just(array)
