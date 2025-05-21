@@ -15,7 +15,7 @@ final class AuthRequestModalView: CodeBaseUI {
     
     private let mainLabel: UILabel = {
         let label = UILabel(
-            "포포라치가 기록을\n정리할 수 있게 도와주세요",
+            "포포라치가 기록을\n정리할 수 있게 도와주세요!",
             size: 18,
             color: .mainLabel
         )
@@ -25,7 +25,7 @@ final class AuthRequestModalView: CodeBaseUI {
     }()
     
     private let subLabel = UILabel(
-        "사진 보관함 접근 권한이 필요해요",
+        "사진은 외부로 공유되지 않으며 안전하게 보호돼요",
         size: 14,
         color: .subLabel
     )
