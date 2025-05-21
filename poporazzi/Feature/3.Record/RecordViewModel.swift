@@ -42,14 +42,21 @@ extension RecordViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
+        
         let recentIndexPath: BehaviorRelay<IndexPath>
+        
         let recordCellSelected: Signal<IndexPath>
         let recordCellDeselected: Signal<IndexPath>
+        
+        let contextMenuPresented: Signal<IndexPath>
+        
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
         let removeToolbarButtonTapped: Signal<Void>
+        
         let finishButtonTapped: Signal<Void>
     }
     
@@ -64,8 +71,11 @@ extension RecordViewModel {
         let shoudBeFavorite = BehaviorRelay<Bool>(value: true)
         
         let viewDidRefresh = PublishRelay<Void>()
+        
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let setupSeeMoreToolbarMenu = BehaviorRelay<[MenuModel]>(value: [])
+        let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
+        
         let switchSelectMode = PublishRelay<Bool>()
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
@@ -236,6 +246,12 @@ extension RecordViewModel {
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
                 owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
+            }
+            .disposed(by: disposeBag)
+        
+        input.contextMenuPresented
+            .emit(with: self) { owner, indexPath in
+                owner.output.selectedContextMenu.accept([])
             }
             .disposed(by: disposeBag)
         

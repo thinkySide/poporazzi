@@ -21,6 +21,9 @@ final class RecordViewController: ViewController {
     private var totalCount = 0
     private var imageCache = [String: UIImage?]()
     
+    private let contextMenuPresented = PublishRelay<IndexPath>()
+    private let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: RecordViewModel) {
@@ -35,7 +38,6 @@ final class RecordViewController: ViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDataSource()
-        setupLongPressGesture()
         bind()
     }
     
@@ -73,6 +75,8 @@ extension RecordViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
+        scene.recordCollectionView.delegate = self
+        
         dataSource = UICollectionViewDiffableDataSource<RecordSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
@@ -160,28 +164,24 @@ extension RecordViewController {
     }
 }
 
-// MARK: - Long Press Gesture
+// MARK: - UICollectionViewDelegate
 
-extension RecordViewController {
+extension RecordViewController: UICollectionViewDelegate {
     
-    /// Long Press Gesture를 세팅합니다.
-    private func setupLongPressGesture() {
-        let longPressGesture = UILongPressGestureRecognizer(
-            target: self,
-            action: #selector(handleLongPressGesture)
+    /// 선택된 IndexPath의 Context Menu를 설정합니다.
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        contextMenuPresented.accept(indexPath)
+        return UIContextMenuConfiguration(
+            identifier: nil,
+            previewProvider: nil,
+            actionProvider: { [weak self] _ in
+                self?.selectedContextMenu.value.toUIMenu
+            }
         )
-        scene.recordCollectionView.addGestureRecognizer(longPressGesture)
-    }
-    
-    /// Long Press Gesture를 조작합니다.
-    @objc private func handleLongPressGesture(_ gesture: UILongPressGestureRecognizer) {
-        guard gesture.state == .began else { return }
-        
-        let point = gesture.location(in: scene.recordCollectionView)
-        guard let indexPath = scene.recordCollectionView.indexPathForItem(at: point) else {
-            return
-        }
-        print(indexPath)
     }
 }
 
@@ -197,6 +197,7 @@ extension RecordViewController {
             recentIndexPath: recentIndexPath,
             recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
+            contextMenuPresented: contextMenuPresented.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
             removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal(),
@@ -261,6 +262,12 @@ extension RecordViewController {
             .bind(with: self) { owner, menus in
                 owner.scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
                 owner.scene.seemoreToolBarButton.button.menu = menus.toUIMenu
+            }
+            .disposed(by: disposeBag)
+        
+        output.selectedContextMenu
+            .bind(with: self) { owner, menus in
+                owner.selectedContextMenu.accept(menus)
             }
             .disposed(by: disposeBag)
         
