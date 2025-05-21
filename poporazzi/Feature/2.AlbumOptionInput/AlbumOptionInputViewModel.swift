@@ -12,6 +12,7 @@ import RxCocoa
 final class AlbumOptionInputViewModel: ViewModel {
     
     @Dependency(\.persistenceService) var persistenceService
+    @Dependency(\.photoKitService) var photoKitService
     @Dependency(\.liveActivityService) var liveActivityService
     
     private let disposeBag = DisposeBag()
@@ -56,6 +57,7 @@ extension AlbumOptionInputViewModel {
     enum Navigation {
         case pop
         case pushRecord(Album)
+        case presentAuthRequestModal
     }
 }
 
@@ -125,22 +127,45 @@ extension AlbumOptionInputViewModel {
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
-                let album = Album(
-                    title: owner.output.titleText.value,
-                    mediaFetchOption: owner.output.mediaFetchOption.value,
-                    mediaFilterOption: owner.output.mediaFilterOption.value
-                )
-                
-                owner.navigation.accept(.pushRecord(album))
-                owner.liveActivityService.start(to: album)
-                HapticManager.notification(type: .success)
-                
-                try? owner.persistenceService.createAlbum(from: album)
-                UserDefaultsService.trackingAlbumId = album.id
+                switch owner.photoKitService.checkAuth() {
+                case .notDetermined:
+                    owner.navigation.accept(.presentAuthRequestModal)
+                    
+                case .denied, .restricted, .limited:
+                    // TODO: 설정 화면 들어가서 권한 허용 필요 Sheet 출력
+                    break
+                    
+                case .authorized:
+                    owner.startRecord()
+                    
+                @unknown default:
+                    break
+                }
             }
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Helper
+
+extension AlbumOptionInputViewModel {
+    
+    /// 기록을 시작합니다.
+    private func startRecord() {
+        let album = Album(
+            title: output.titleText.value,
+            mediaFetchOption: output.mediaFetchOption.value,
+            mediaFilterOption: output.mediaFilterOption.value
+        )
+        
+        navigation.accept(.pushRecord(album))
+        liveActivityService.start(to: album)
+        HapticManager.notification(type: .success)
+        
+        try? persistenceService.createAlbum(from: album)
+        UserDefaultsService.trackingAlbumId = album.id
     }
 }
 

@@ -38,11 +38,6 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     
     /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
     private let photoLibraryChangeRelay = BehaviorRelay(value: ())
-    
-    override init() {
-        super.init()
-        PHPhotoLibrary.shared().register(self)
-    }
 }
 
 // MARK: - UseCase
@@ -55,10 +50,8 @@ extension PhotoKitService {
     }
     
     /// PhotoLibrary 권한을 요청합니다.
-    func requestAuth() {
-        PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-            print(status)
-        }
+    func checkAuth() -> PHAuthorizationStatus {
+        PHPhotoLibrary.authorizationStatus(for: .readWrite)
     }
     
     /// 썸네일 없이 기록을 반환합니다.

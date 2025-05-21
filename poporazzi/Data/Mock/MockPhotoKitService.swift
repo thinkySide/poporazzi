@@ -8,6 +8,7 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import Photos
 
 struct MockPhotoKitService: PhotoKitInterface {
     
@@ -15,8 +16,8 @@ struct MockPhotoKitService: PhotoKitInterface {
         PublishRelay<Void>().asSignal()
     }
     
-    func requestAuth() {
-        print("[권한 허용 완료]")
+    func checkAuth() -> PHAuthorizationStatus {
+        .authorized
     }
     
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {

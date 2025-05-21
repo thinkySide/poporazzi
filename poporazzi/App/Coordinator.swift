@@ -95,6 +95,9 @@ extension Coordinator {
                 case let .pushRecord(album):
                     owner.pushRecord(album)
                     titleInputVM?.delegate.accept(.reset)
+                    
+                case .presentAuthRequestModal:
+                    owner.presentAuthRequestModal()
                 }
             }
             .disposed(by: albumOptionVC.disposeBag)
@@ -213,6 +216,16 @@ extension Coordinator {
 // MARK: - Sheet
 
 extension Coordinator {
+    
+    /// 사진 보관함 권한 요청 모달을 Present합니다.
+    private func presentAuthRequestModal() {
+        let authRequestVM = AuthRequestModalViewModel(output: .init())
+        let authRequestVC = AuthRequestModalViewController(viewModel: authRequestVM)
+        authRequestVC.isModalInPresentation = true
+        authRequestVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
+        authRequestVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 360 })]
+        self.navigationController.present(authRequestVC, animated: true)
+    }
     
     /// 날짜 선택 모달을 Present 합니다.
     private func presentDatePickerModal(

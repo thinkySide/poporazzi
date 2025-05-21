@@ -57,10 +57,8 @@ extension LiveActivityService {
     
     /// Live Activity를 종료합니다.
     func stop() {
-        guard let activity = activity else { return }
-        
         Task {
-            await activity.end(nil, dismissalPolicy: .immediate)
+            await activity?.end(nil, dismissalPolicy: .immediate)
             self.activity = nil
         }
     }
