@@ -51,14 +51,15 @@ extension PhotoKitService {
     
     /// PhotoLibrary 권한을 요청합니다.
     func checkAuth() -> PHAuthorizationStatus {
-        PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        if status == .authorized { PHPhotoLibrary.shared().register(self) }
+        return status
     }
     
     /// PhotoLibrary 사용 권한을 요청합니다.
     func requestAuth() -> RxSwift.Observable<PHAuthorizationStatus> {
         Observable.create { observer in
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-                if status == .authorized { PHPhotoLibrary.shared().register(self) }
                 observer.onNext(status)
                 observer.onCompleted()
             }
