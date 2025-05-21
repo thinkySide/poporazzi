@@ -16,7 +16,10 @@ enum SFSymbol: String {
     case down = "chevron.down"
     case left = "chevron.left"
     case right = "chevron.right"
+    
     case exclude = "nosign"
+    case recover = "arrow.up.bin"
+    
     case info = "info.circle.fill"
     case check = "checkmark"
     case checkBox = "checkmark.square.fill"
