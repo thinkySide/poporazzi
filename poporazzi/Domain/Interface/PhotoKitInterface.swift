@@ -8,14 +8,18 @@
 import Foundation
 import RxSwift
 import RxCocoa
+import Photos
 
 protocol PhotoKitInterface {
     
     /// PhotoLibrary에 변화가 감지될 때 전송되는 이벤트
     var photoLibraryChange: Signal<Void> { get }
     
+    /// PhotoLibrary 사용 권한을 확인합니다.
+    func checkAuth() -> PHAuthorizationStatus
+    
     /// PhotoLibrary 사용 권한을 요청합니다.
-    func requestAuth()
+    func requestAuth() -> Observable<PHAuthorizationStatus>
     
     /// Thumbnail 없이 Media 배열을 반환합니다.
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media]

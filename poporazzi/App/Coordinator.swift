@@ -87,7 +87,7 @@ extension Coordinator {
         
         albumOptionVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak albumOptionVM] owner, path in
                 switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
@@ -95,6 +95,9 @@ extension Coordinator {
                 case let .pushRecord(album):
                     owner.pushRecord(album)
                     titleInputVM?.delegate.accept(.reset)
+                    
+                case .presentAuthRequestModal:
+                    owner.presentAuthRequestModal(albumOptionVM)
                 }
             }
             .disposed(by: albumOptionVC.disposeBag)
@@ -213,6 +216,27 @@ extension Coordinator {
 // MARK: - Sheet
 
 extension Coordinator {
+    
+    /// 사진 보관함 권한 요청 모달을 Present합니다.
+    private func presentAuthRequestModal(_ albumOptionVM: AlbumOptionInputViewModel?) {
+        let authRequestVM = AuthRequestModalViewModel(output: .init())
+        let authRequestVC = AuthRequestModalViewController(viewModel: authRequestVM)
+        authRequestVC.isModalInPresentation = true
+        authRequestVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
+        authRequestVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 360 })]
+        self.navigationController.present(authRequestVC, animated: true)
+        
+        authRequestVM.navigation
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, path in
+                switch path {
+                case .dismiss:
+                    owner.navigationController.dismiss(animated: true)
+                    albumOptionVM?.delegate.accept(.startRecord)
+                }
+            }
+            .disposed(by: authRequestVC.disposeBag)
+    }
     
     /// 날짜 선택 모달을 Present 합니다.
     private func presentDatePickerModal(

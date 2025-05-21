@@ -38,11 +38,6 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     
     /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
     private let photoLibraryChangeRelay = BehaviorRelay(value: ())
-    
-    override init() {
-        super.init()
-        PHPhotoLibrary.shared().register(self)
-    }
 }
 
 // MARK: - UseCase
@@ -55,9 +50,19 @@ extension PhotoKitService {
     }
     
     /// PhotoLibrary 권한을 요청합니다.
-    func requestAuth() {
-        PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-            print(status)
+    func checkAuth() -> PHAuthorizationStatus {
+        PHPhotoLibrary.authorizationStatus(for: .readWrite)
+    }
+    
+    /// PhotoLibrary 사용 권한을 요청합니다.
+    func requestAuth() -> RxSwift.Observable<PHAuthorizationStatus> {
+        Observable.create { observer in
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
+                if status == .authorized { PHPhotoLibrary.shared().register(self) }
+                observer.onNext(status)
+                observer.onCompleted()
+            }
+            return Disposables.create()
         }
     }
     

@@ -12,12 +12,15 @@ import RxCocoa
 final class AlbumOptionInputViewModel: ViewModel {
     
     @Dependency(\.persistenceService) var persistenceService
+    @Dependency(\.photoKitService) var photoKitService
     @Dependency(\.liveActivityService) var liveActivityService
     
     private let disposeBag = DisposeBag()
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
+    let alertAction = PublishRelay<AlertAction>()
     
     init(output: Output) {
         self.output = output
@@ -51,11 +54,21 @@ extension AlbumOptionInputViewModel {
         let mediaFetchOption = BehaviorRelay<MediaFetchOption>(value: .all)
         let mediaFilterOption = BehaviorRelay<MediaFilterOption>(value: .init())
         let isStartButtonEnabled = BehaviorRelay<Bool>(value: true)
+        let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
         case pop
         case pushRecord(Album)
+        case presentAuthRequestModal
+    }
+    
+    enum Delegate {
+        case startRecord
+    }
+    
+    enum AlertAction {
+        case navigateToSettings
     }
 }
 
@@ -125,22 +138,65 @@ extension AlbumOptionInputViewModel {
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
-                let album = Album(
-                    title: owner.output.titleText.value,
-                    mediaFetchOption: owner.output.mediaFetchOption.value,
-                    mediaFilterOption: owner.output.mediaFilterOption.value
-                )
-                
-                owner.navigation.accept(.pushRecord(album))
-                owner.liveActivityService.start(to: album)
-                HapticManager.notification(type: .success)
-                
-                try? owner.persistenceService.createAlbum(from: album)
-                UserDefaultsService.trackingAlbumId = album.id
+                switch owner.photoKitService.checkAuth() {
+                case .notDetermined:
+                    HapticManager.notification(type: .warning)
+                    owner.navigation.accept(.presentAuthRequestModal)
+                    
+                case .denied, .restricted, .limited:
+                    HapticManager.notification(type: .error)
+                    owner.output.alertPresented.accept(owner.navigateToSettingsAlert)
+                    break
+                    
+                case .authorized:
+                    owner.startRecord()
+                    
+                @unknown default:
+                    break
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .startRecord:
+                    owner.startRecord()
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        alertAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case .navigateToSettings:
+                    DeepLinkManager.openSettings()
+                }
             }
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Helper
+
+extension AlbumOptionInputViewModel {
+    
+    /// 기록을 시작합니다.
+    private func startRecord() {
+        let album = Album(
+            title: output.titleText.value,
+            mediaFetchOption: output.mediaFetchOption.value,
+            mediaFilterOption: output.mediaFilterOption.value
+        )
+        
+        navigation.accept(.pushRecord(album))
+        liveActivityService.start(to: album)
+        HapticManager.notification(type: .success)
+        
+        try? persistenceService.createAlbum(from: album)
+        UserDefaultsService.trackingAlbumId = album.id
     }
 }
 
@@ -161,5 +217,22 @@ extension AlbumOptionInputViewModel {
             return filter.isContainSelfShooting
             || filter.isContainDownload
         }
+    }
+}
+
+// MARK: - Alert
+
+extension AlbumOptionInputViewModel {
+    
+    /// 설정 화면 이동 Alert
+    private var navigateToSettingsAlert: AlertModel {
+        AlertModel(
+            title: "포포라치 이용을 위해선 사진 보관함 전체 접근 권한이 필요해요 🥲",
+            message: "설정 화면으로 이동 후 권한을 재설정 할 수 있어요",
+            eventButton: .init(title: "설정화면 이동") { [weak self] in
+                self?.alertAction.accept(.navigateToSettings)
+            },
+            cancelButton: .init(title: "취소")
+        )
     }
 }
