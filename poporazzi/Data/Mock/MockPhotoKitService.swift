@@ -20,6 +20,10 @@ struct MockPhotoKitService: PhotoKitInterface {
         .authorized
     }
     
+    func requestAuth() -> Observable<PHAuthorizationStatus> {
+        .just(.authorized)
+    }
+    
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
         Array(repeatElement(.init(
             id: UUID().uuidString,

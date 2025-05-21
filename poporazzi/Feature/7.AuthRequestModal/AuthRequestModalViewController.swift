@@ -41,10 +41,15 @@ extension AuthRequestModalViewController {
     
     func bind() {
         let input = AuthRequestModalViewModel.Input(
-            
+            requestAuthButtonTapped: scene.requestAuthButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
+        output.alertPresented
+            .bind(with: self) { owner, alert in
+                owner.showAlert(alert)
+            }
+            .disposed(by: disposeBag)
     }
 }
 

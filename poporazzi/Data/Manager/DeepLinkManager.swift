@@ -16,4 +16,11 @@ enum DeepLinkManager {
             UIApplication.shared.open(url)
         }
     }
+    
+    /// 설정 앱으로 딥링크합니다.
+    static func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
 }

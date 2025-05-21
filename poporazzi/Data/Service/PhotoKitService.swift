@@ -54,6 +54,18 @@ extension PhotoKitService {
         PHPhotoLibrary.authorizationStatus(for: .readWrite)
     }
     
+    /// PhotoLibrary 사용 권한을 요청합니다.
+    func requestAuth() -> RxSwift.Observable<PHAuthorizationStatus> {
+        Observable.create { observer in
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
+                if status == .authorized { PHPhotoLibrary.shared().register(self) }
+                observer.onNext(status)
+                observer.onCompleted()
+            }
+            return Disposables.create()
+        }
+    }
+    
     /// 썸네일 없이 기록을 반환합니다.
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
         let fetchResult = fetchAssetResult(from: album)

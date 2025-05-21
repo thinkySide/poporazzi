@@ -19,6 +19,8 @@ final class AlbumOptionInputViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
+    let alertAction = PublishRelay<AlertAction>()
     
     init(output: Output) {
         self.output = output
@@ -52,12 +54,21 @@ extension AlbumOptionInputViewModel {
         let mediaFetchOption = BehaviorRelay<MediaFetchOption>(value: .all)
         let mediaFilterOption = BehaviorRelay<MediaFilterOption>(value: .init())
         let isStartButtonEnabled = BehaviorRelay<Bool>(value: true)
+        let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
         case pop
         case pushRecord(Album)
         case presentAuthRequestModal
+    }
+    
+    enum Delegate {
+        case startRecord
+    }
+    
+    enum AlertAction {
+        case navigateToSettings
     }
 }
 
@@ -129,10 +140,12 @@ extension AlbumOptionInputViewModel {
             .emit(with: self) { owner, _ in
                 switch owner.photoKitService.checkAuth() {
                 case .notDetermined:
+                    HapticManager.notification(type: .warning)
                     owner.navigation.accept(.presentAuthRequestModal)
                     
                 case .denied, .restricted, .limited:
-                    // TODO: 설정 화면 들어가서 권한 허용 필요 Sheet 출력
+                    HapticManager.notification(type: .error)
+                    owner.output.alertPresented.accept(owner.navigateToSettingsAlert)
                     break
                     
                 case .authorized:
@@ -140,6 +153,24 @@ extension AlbumOptionInputViewModel {
                     
                 @unknown default:
                     break
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .startRecord:
+                    owner.startRecord()
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        alertAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case .navigateToSettings:
+                    DeepLinkManager.openSettings()
                 }
             }
             .disposed(by: disposeBag)
@@ -186,5 +217,22 @@ extension AlbumOptionInputViewModel {
             return filter.isContainSelfShooting
             || filter.isContainDownload
         }
+    }
+}
+
+// MARK: - Alert
+
+extension AlbumOptionInputViewModel {
+    
+    /// 설정 화면 이동 Alert
+    private var navigateToSettingsAlert: AlertModel {
+        AlertModel(
+            title: "포포라치 이용을 위해선 사진 보관함 전체 접근 권한이 필요해요 🥲",
+            message: "설정 화면으로 이동 후 권한을 재설정 할 수 있어요",
+            eventButton: .init(title: "설정화면 이동") { [weak self] in
+                self?.alertAction.accept(.navigateToSettings)
+            },
+            cancelButton: .init(title: "취소")
+        )
     }
 }
