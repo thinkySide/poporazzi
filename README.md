@@ -3,7 +3,7 @@
 
 |상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.4.4)|
 |:--|:--|
-|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Realm, Xcode Cloud|
+|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Realm, XCTest, Xcode Cloud|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11), [Instagram](https://www.instagram.com/poporazzzzzi?igsh=MWV1cDl4ZWU2b2p0bQ%3D%3D&utm_source=qr), [Thread](https://www.threads.com/@thinkydev?igshid=NTc4MTIwNjQ2YQ==)|
 |이메일 문의|eunlyuing@gmail.com|
 
@@ -102,3 +102,5 @@
 |[#107 선택모드 UI 업데이트](https://github.com/thinkySide/poporazzi/pull/107)|선택모드 ToolBar UI 업데이트, AttributedString 적용|
 |[#109 미디어 즐겨찾기 기능 구현](https://github.com/thinkySide/poporazzi/pull/109)|에셋 즐겨찾기 토글 기능 구현|
 |[#111 미디어 공유하기 기능 구현](https://github.com/thinkySide/poporazzi/pull/111)|UIActivityViewController를 이용한 에셋 공유 기능 구현|
+|[#113 사진 라이브러리 권한 동의 UX 개선](https://github.com/thinkySide/poporazzi/pull/113)|사진 라이브러리 권한 Alert 출력 전 Sheet를 통한 UX 개선, 권한 거부 시 플로우 추가|
+|[#115 CollectionView Context Menu 기능 구현](https://github.com/thinkySide/poporazzi/pull/115)|CollectionView Context Menu를 이용한 기능 추가|
