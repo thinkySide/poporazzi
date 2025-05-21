@@ -390,7 +390,7 @@ extension ExcludeRecordViewModel {
         let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
             self?.contextMenuAction.accept(.share(media))
         }
-        let recover = MenuModel(symbol: .exclude, title: "앨범으로 복구하기") { [weak self] in
+        let recover = MenuModel(symbol: .recover, title: "앨범으로 복구하기") { [weak self] in
             self?.contextMenuAction.accept(.recover(media))
         }
         let remove = MenuModel(symbol: .removeLine, title: "삭제하기", attributes: .destructive) { [weak self] in
