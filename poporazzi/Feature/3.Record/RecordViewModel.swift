@@ -26,6 +26,7 @@ final class RecordViewModel: ViewModel {
     let alertAction = PublishRelay<AlertAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
     let menuAction = PublishRelay<MenuAction>()
+    let contextMenuAction = PublishRelay<ContextMenuAction>()
     
     init(output: Output) {
         self.output = output
@@ -110,6 +111,13 @@ extension RecordViewModel {
         case excludeRecord
         case noSave
         case share
+    }
+    
+    enum ContextMenuAction {
+        case toggleFavorite(Media)
+        case share(Media)
+        case exclude(Media)
+        case remove(Media)
     }
 }
 
@@ -220,7 +228,7 @@ extension RecordViewModel {
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.switchSelectMode.accept(true)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
@@ -236,7 +244,7 @@ extension RecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.append(indexPath)
                 owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
             }
             .disposed(by: disposeBag)
         
@@ -245,13 +253,15 @@ extension RecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
             }
             .disposed(by: disposeBag)
         
         input.contextMenuPresented
             .emit(with: self) { owner, indexPath in
-                owner.output.selectedContextMenu.accept([])
+                let selectedMedia = owner.output.mediaList.value[owner.index(from: indexPath)]
+                let contextMenu = owner.contextMenu(from: selectedMedia)
+                owner.output.selectedContextMenu.accept(contextMenu)
             }
             .disposed(by: disposeBag)
         
@@ -259,7 +269,7 @@ extension RecordViewModel {
             .emit(with: self) { owner, _ in
                 owner.photoKitService.toggleFavorite(
                     from: owner.selectedAssetIdentifiers(),
-                    isFavorite: owner.shouldBeFavorite()
+                    isFavorite: owner.shouldBeFavorite(from: owner.selectedMediaList())
                 )
                 owner.cancelSelectMode()
             }
@@ -360,6 +370,27 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
+        contextMenuAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case let .toggleFavorite(media):
+                    owner.photoKitService.toggleFavorite(
+                        from: [media.id],
+                        isFavorite: owner.shouldBeFavorite(from: [media])
+                    )
+                    
+                case let .share(media):
+                    break
+                    
+                case let .exclude(media):
+                    break
+                    
+                case let .remove(media):
+                    break
+                }
+            }
+            .disposed(by: disposeBag)
+        
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
@@ -450,9 +481,8 @@ extension RecordViewModel {
     }
     
     /// 선택한 Media의 다음 즐겨찾기 값을 계산합니다.
-    private func shouldBeFavorite() -> Bool {
-        let selectedMediaList = selectedMediaList()
-        let isFavoriteSet = Set(selectedMediaList.map(\.isFavorite))
+    private func shouldBeFavorite(from mediaList: [Media]) -> Bool {
+        let isFavoriteSet = Set(mediaList.map(\.isFavorite))
         
         if isFavoriteSet.count > 1 {
             return isFavoriteSet.contains(true)
@@ -585,5 +615,25 @@ extension RecordViewModel {
             self?.menuAction.accept(.share)
         }
         return [share]
+    }
+    
+    /// Context Menu
+    private func contextMenu(from media: Media) -> [MenuModel] {
+        let favorite = MenuModel(
+            symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
+            title: media.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"
+        ) { [weak self] in
+            self?.contextMenuAction.accept(.toggleFavorite(media))
+        }
+        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+            self?.contextMenuAction.accept(.share(media))
+        }
+        let exclude = MenuModel(symbol: .exclude, title: "앨범에서 제외하기") { [weak self] in
+            self?.contextMenuAction.accept(.exclude(media))
+        }
+        let remove = MenuModel(symbol: .removeLine, title: "삭제하기", attributes: .destructive) { [weak self] in
+            self?.contextMenuAction.accept(.remove(media))
+        }
+        return [favorite, share, exclude, remove]
     }
 }

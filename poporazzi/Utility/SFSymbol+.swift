@@ -21,9 +21,15 @@ enum SFSymbol: String {
     case check = "checkmark"
     case checkBox = "checkmark.square.fill"
     case noSave = "xmark.bin"
-    case favoriteRemove = "heart.slash.fill"
+    
     case favoriteActive = "heart.fill"
+    case favoriteRemove = "heart.slash.fill"
+    case favoriteActiveLine = "heart"
+    case favoriteRemoveLine = "heart.slash"
+    
     case remove = "trash.fill"
+    case removeLine = "trash"
+    
     case share = "square.and.arrow.up"
 }
 
