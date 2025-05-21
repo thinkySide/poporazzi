@@ -101,16 +101,16 @@ extension RecordViewModel {
         case finishWithoutRecord
     }
     
-    enum ActionSheetAction {
-        case exclude([Media])
-        case remove([Media])
-    }
-    
     enum MenuAction {
         case editAlbum
         case excludeRecord
         case noSave
         case share
+    }
+    
+    enum ActionSheetAction {
+        case exclude([Media])
+        case remove([Media])
     }
     
     enum ContextMenuAction {
@@ -334,6 +334,7 @@ extension RecordViewModel {
                 case let .remove(mediaList):
                     owner.output.toggleLoading.accept(true)
                     owner.photoKitService.deletePhotos(from: mediaList.map(\.id))
+                        .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in
                             if isSuccess {
                                 owner.cancelSelectMode()
