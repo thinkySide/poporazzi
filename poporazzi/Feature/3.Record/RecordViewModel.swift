@@ -380,7 +380,11 @@ extension RecordViewModel {
                     )
                     
                 case let .share(media):
-                    break
+                    owner.photoKitService.fetchShareItemList(from: [media.id])
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
                     
                 case let .exclude(media):
                     break
