@@ -35,6 +35,7 @@ final class RecordViewController: ViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDataSource()
+        setupLongPressGesture()
         bind()
     }
     
@@ -156,6 +157,31 @@ extension RecordViewController {
         var snapshot = dataSource.snapshot()
         snapshot.reloadItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
+    }
+}
+
+// MARK: - Long Press Gesture
+
+extension RecordViewController {
+    
+    /// Long Press Gesture를 세팅합니다.
+    private func setupLongPressGesture() {
+        let longPressGesture = UILongPressGestureRecognizer(
+            target: self,
+            action: #selector(handleLongPressGesture)
+        )
+        scene.recordCollectionView.addGestureRecognizer(longPressGesture)
+    }
+    
+    /// Long Press Gesture를 조작합니다.
+    @objc private func handleLongPressGesture(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        
+        let point = gesture.location(in: scene.recordCollectionView)
+        guard let indexPath = scene.recordCollectionView.indexPathForItem(at: point) else {
+            return
+        }
+        print(indexPath)
     }
 }
 
