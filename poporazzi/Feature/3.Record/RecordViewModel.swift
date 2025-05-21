@@ -102,7 +102,7 @@ extension RecordViewModel {
     }
     
     enum ActionSheetAction {
-        case exclude
+        case exclude([Media])
         case remove
     }
     
@@ -277,7 +277,11 @@ extension RecordViewModel {
         
         input.excludeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.actionSheetPresented.accept(owner.excludeActionSheet)
+                owner.output.actionSheetPresented.accept(
+                    owner.excludeActionSheet(
+                        from: owner.selectedMediaList()
+                    )
+                )
                 HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
@@ -317,11 +321,9 @@ extension RecordViewModel {
         actionSheetAction
             .bind(with: self) { owner, action in
                 switch action {
-                case .exclude:
-                    let assetIdentifiers = owner.selectedAssetIdentifiers()
-                    
+                case let .exclude(mediaList):
                     var album = owner.output.album.value
-                    album.excludeMediaList.formUnion(assetIdentifiers)
+                    album.excludeMediaList.formUnion(mediaList.map(\.id))
                     owner.output.album.accept(album)
                     
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
@@ -387,7 +389,8 @@ extension RecordViewModel {
                         .disposed(by: owner.disposeBag)
                     
                 case let .exclude(media):
-                    break
+                    owner.output.actionSheetPresented.accept(owner.excludeActionSheet(from: [media]))
+                    HapticManager.notification(type: .warning)
                     
                 case let .remove(media):
                     break
@@ -566,14 +569,13 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     /// 앨범 제외 Action Sheet
-    private var excludeActionSheet: ActionSheetModel {
+    private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
         let title = output.album.value.title
-        let selectedCount = output.selectedRecordCells.value.count
         return ActionSheetModel(
             message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
             buttons: [
-                .init(title: "\(selectedCount)장의 기록 앨범에서 제외", style: .default) { [weak self] in
-                    self?.actionSheetAction.accept(.exclude)
+                .init(title: "\(mediaList.count)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                    self?.actionSheetAction.accept(.exclude(mediaList))
                 },
                 .init(title: "취소", style: .cancel)
             ]
