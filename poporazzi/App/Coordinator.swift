@@ -191,9 +191,11 @@ extension Coordinator {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak excludeRecordVM] owner, path in
                 switch path {
-                case let .pop(album):
-                    recordVM?.delegate.accept(.updateExcludeRecord(album))
+                case .pop:
                     owner.navigationController.popViewController(animated: true)
+                    
+                case let .updateRecord(album):
+                    recordVM?.delegate.accept(.updateExcludeRecord(album))
                     
                 case let .presentMediaShareSheet(shareItemList):
                     let activityController = UIActivityViewController(

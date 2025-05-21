@@ -20,6 +20,9 @@ final class ExcludeRecordViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
     
+    private let contextMenuPresented = PublishRelay<IndexPath>()
+    private let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: ExcludeRecordViewModel) {
@@ -48,6 +51,8 @@ extension ExcludeRecordViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
+        scene.recordCollectionView.delegate = self
+        
         dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.recordCollectionView) {
             (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let cell = collectionView.dequeueReusableCell(
@@ -71,6 +76,27 @@ extension ExcludeRecordViewController {
     }
 }
 
+// MARK: - UICollectionViewDelegate
+
+extension ExcludeRecordViewController: UICollectionViewDelegate {
+    
+    /// 선택된 IndexPath의 Context Menu를 설정합니다.
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        contextMenuPresented.accept(indexPath)
+        return UIContextMenuConfiguration(
+            identifier: nil,
+            previewProvider: nil,
+            actionProvider: { [weak self] _ in
+                self?.selectedContextMenu.value.toUIMenu
+            }
+        )
+    }
+}
+
 // MARK: - Binding
 
 extension ExcludeRecordViewController {
@@ -83,6 +109,7 @@ extension ExcludeRecordViewController {
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
             recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
+            contextMenuPresented: contextMenuPresented.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             recoverButtonTapped: scene.recoverToolBarButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
@@ -135,6 +162,12 @@ extension ExcludeRecordViewController {
             .bind(with: self) { owner, menu in
                 owner.scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
                 owner.scene.seemoreToolBarButton.button.menu = menu.toUIMenu
+            }
+            .disposed(by: disposeBag)
+        
+        output.selectedContextMenu
+            .bind(with: self) { owner, menus in
+                owner.selectedContextMenu.accept(menus)
             }
             .disposed(by: disposeBag)
         

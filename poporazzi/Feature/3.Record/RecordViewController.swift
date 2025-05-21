@@ -21,6 +21,9 @@ final class RecordViewController: ViewController {
     private var totalCount = 0
     private var imageCache = [String: UIImage?]()
     
+    private let contextMenuPresented = PublishRelay<IndexPath>()
+    private let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: RecordViewModel) {
@@ -72,6 +75,8 @@ extension RecordViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
+        scene.recordCollectionView.delegate = self
+        
         dataSource = UICollectionViewDiffableDataSource<RecordSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
@@ -159,6 +164,27 @@ extension RecordViewController {
     }
 }
 
+// MARK: - UICollectionViewDelegate
+
+extension RecordViewController: UICollectionViewDelegate {
+    
+    /// 선택된 IndexPath의 Context Menu를 설정합니다.
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        contextMenuPresented.accept(indexPath)
+        return UIContextMenuConfiguration(
+            identifier: nil,
+            previewProvider: nil,
+            actionProvider: { [weak self] _ in
+                self?.selectedContextMenu.value.toUIMenu
+            }
+        )
+    }
+}
+
 // MARK: - Binding
 
 extension RecordViewController {
@@ -171,6 +197,7 @@ extension RecordViewController {
             recentIndexPath: recentIndexPath,
             recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
+            contextMenuPresented: contextMenuPresented.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
             removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal(),
@@ -235,6 +262,12 @@ extension RecordViewController {
             .bind(with: self) { owner, menus in
                 owner.scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
                 owner.scene.seemoreToolBarButton.button.menu = menus.toUIMenu
+            }
+            .disposed(by: disposeBag)
+        
+        output.selectedContextMenu
+            .bind(with: self) { owner, menus in
+                owner.selectedContextMenu.accept(menus)
             }
             .disposed(by: disposeBag)
         

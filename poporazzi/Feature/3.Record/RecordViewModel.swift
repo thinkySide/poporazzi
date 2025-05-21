@@ -26,6 +26,7 @@ final class RecordViewModel: ViewModel {
     let alertAction = PublishRelay<AlertAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
     let menuAction = PublishRelay<MenuAction>()
+    let contextMenuAction = PublishRelay<ContextMenuAction>()
     
     init(output: Output) {
         self.output = output
@@ -42,14 +43,21 @@ extension RecordViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
+        
         let recentIndexPath: BehaviorRelay<IndexPath>
+        
         let recordCellSelected: Signal<IndexPath>
         let recordCellDeselected: Signal<IndexPath>
+        
+        let contextMenuPresented: Signal<IndexPath>
+        
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
         let removeToolbarButtonTapped: Signal<Void>
+        
         let finishButtonTapped: Signal<Void>
     }
     
@@ -64,8 +72,11 @@ extension RecordViewModel {
         let shoudBeFavorite = BehaviorRelay<Bool>(value: true)
         
         let viewDidRefresh = PublishRelay<Void>()
+        
         let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let setupSeeMoreToolbarMenu = BehaviorRelay<[MenuModel]>(value: [])
+        let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
+        
         let switchSelectMode = PublishRelay<Bool>()
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
@@ -90,16 +101,23 @@ extension RecordViewModel {
         case finishWithoutRecord
     }
     
-    enum ActionSheetAction {
-        case exclude
-        case remove
-    }
-    
     enum MenuAction {
         case editAlbum
         case excludeRecord
         case noSave
         case share
+    }
+    
+    enum ActionSheetAction {
+        case exclude([Media])
+        case remove([Media])
+    }
+    
+    enum ContextMenuAction {
+        case toggleFavorite(Media)
+        case share(Media)
+        case exclude(Media)
+        case remove(Media)
     }
 }
 
@@ -210,7 +228,7 @@ extension RecordViewModel {
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.switchSelectMode.accept(true)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
@@ -226,7 +244,7 @@ extension RecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.append(indexPath)
                 owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
             }
             .disposed(by: disposeBag)
         
@@ -235,7 +253,15 @@ extension RecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite())
+                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+            }
+            .disposed(by: disposeBag)
+        
+        input.contextMenuPresented
+            .emit(with: self) { owner, indexPath in
+                let selectedMedia = owner.output.mediaList.value[owner.index(from: indexPath)]
+                let contextMenu = owner.contextMenu(from: selectedMedia)
+                owner.output.selectedContextMenu.accept(contextMenu)
             }
             .disposed(by: disposeBag)
         
@@ -243,7 +269,7 @@ extension RecordViewModel {
             .emit(with: self) { owner, _ in
                 owner.photoKitService.toggleFavorite(
                     from: owner.selectedAssetIdentifiers(),
-                    isFavorite: owner.shouldBeFavorite()
+                    isFavorite: owner.shouldBeFavorite(from: owner.selectedMediaList())
                 )
                 owner.cancelSelectMode()
             }
@@ -251,14 +277,18 @@ extension RecordViewModel {
         
         input.excludeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.actionSheetPresented.accept(owner.excludeActionSheet)
+                owner.output.actionSheetPresented.accept(
+                    owner.excludeActionSheet(
+                        from: owner.selectedMediaList()
+                    )
+                )
                 HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
         
         input.removeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.actionSheetPresented.accept(owner.removeActionSheet)
+                owner.output.actionSheetPresented.accept(owner.removeActionSheet(from: owner.selectedMediaList()))
                 HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
@@ -291,11 +321,9 @@ extension RecordViewModel {
         actionSheetAction
             .bind(with: self) { owner, action in
                 switch action {
-                case .exclude:
-                    let assetIdentifiers = owner.selectedAssetIdentifiers()
-                    
+                case let .exclude(mediaList):
                     var album = owner.output.album.value
-                    album.excludeMediaList.formUnion(assetIdentifiers)
+                    album.excludeMediaList.formUnion(mediaList.map(\.id))
                     owner.output.album.accept(album)
                     
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
@@ -303,10 +331,10 @@ extension RecordViewModel {
                     owner.output.viewDidRefresh.accept(())
                     owner.cancelSelectMode()
                     
-                case .remove:
+                case let .remove(mediaList):
                     owner.output.toggleLoading.accept(true)
-                    let assetIdentifiers = owner.selectedAssetIdentifiers()
-                    owner.photoKitService.deletePhotos(from: assetIdentifiers)
+                    owner.photoKitService.deletePhotos(from: mediaList.map(\.id))
+                        .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in
                             if isSuccess {
                                 owner.cancelSelectMode()
@@ -340,6 +368,33 @@ extension RecordViewModel {
                             owner.navigation.accept(.presentMediaShareSheet(shareItemList))
                         }
                         .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        contextMenuAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case let .toggleFavorite(media):
+                    owner.photoKitService.toggleFavorite(
+                        from: [media.id],
+                        isFavorite: owner.shouldBeFavorite(from: [media])
+                    )
+                    
+                case let .share(media):
+                    owner.photoKitService.fetchShareItemList(from: [media.id])
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
+                    
+                case let .exclude(media):
+                    owner.output.actionSheetPresented.accept(owner.excludeActionSheet(from: [media]))
+                    HapticManager.notification(type: .warning)
+                    
+                case let .remove(media):
+                    owner.output.actionSheetPresented.accept(owner.removeActionSheet(from: [media]))
+                    HapticManager.notification(type: .warning)
                 }
             }
             .disposed(by: disposeBag)
@@ -434,9 +489,8 @@ extension RecordViewModel {
     }
     
     /// 선택한 Media의 다음 즐겨찾기 값을 계산합니다.
-    private func shouldBeFavorite() -> Bool {
-        let selectedMediaList = selectedMediaList()
-        let isFavoriteSet = Set(selectedMediaList.map(\.isFavorite))
+    private func shouldBeFavorite(from mediaList: [Media]) -> Bool {
+        let isFavoriteSet = Set(mediaList.map(\.isFavorite))
         
         if isFavoriteSet.count > 1 {
             return isFavoriteSet.contains(true)
@@ -516,14 +570,13 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     /// 앨범 제외 Action Sheet
-    private var excludeActionSheet: ActionSheetModel {
+    private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
         let title = output.album.value.title
-        let selectedCount = output.selectedRecordCells.value.count
         return ActionSheetModel(
             message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
             buttons: [
-                .init(title: "\(selectedCount)장의 기록 앨범에서 제외", style: .default) { [weak self] in
-                    self?.actionSheetAction.accept(.exclude)
+                .init(title: "\(mediaList.count)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                    self?.actionSheetAction.accept(.exclude(mediaList))
                 },
                 .init(title: "취소", style: .cancel)
             ]
@@ -531,13 +584,12 @@ extension RecordViewModel {
     }
     
     /// 기록 삭제 Action Sheet
-    private var removeActionSheet: ActionSheetModel {
-        let selectedCount = output.selectedRecordCells.value.count
-        return ActionSheetModel(
+    private func removeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
+        ActionSheetModel(
             message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
             buttons: [
-                .init(title: "\(selectedCount)장의 기록 삭제", style: .destructive) { [weak self] in
-                    self?.actionSheetAction.accept(.remove)
+                .init(title: "\(mediaList.count)장의 기록 삭제", style: .destructive) { [weak self] in
+                    self?.actionSheetAction.accept(.remove(mediaList))
                 },
                 .init(title: "취소", style: .cancel)
             ]
@@ -569,5 +621,25 @@ extension RecordViewModel {
             self?.menuAction.accept(.share)
         }
         return [share]
+    }
+    
+    /// Context Menu
+    private func contextMenu(from media: Media) -> [MenuModel] {
+        let favorite = MenuModel(
+            symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
+            title: media.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"
+        ) { [weak self] in
+            self?.contextMenuAction.accept(.toggleFavorite(media))
+        }
+        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+            self?.contextMenuAction.accept(.share(media))
+        }
+        let exclude = MenuModel(symbol: .exclude, title: "앨범에서 제외하기") { [weak self] in
+            self?.contextMenuAction.accept(.exclude(media))
+        }
+        let remove = MenuModel(symbol: .removeLine, title: "삭제하기", attributes: .destructive) { [weak self] in
+            self?.contextMenuAction.accept(.remove(media))
+        }
+        return [favorite, share, exclude, remove]
     }
 }
