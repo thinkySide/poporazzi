@@ -64,7 +64,8 @@ extension ExcludeRecordViewModel {
     }
     
     enum Navigation {
-        case pop(Album)
+        case pop
+        case updateRecord(Album)
         case presentMediaShareSheet([Any])
     }
     
@@ -105,7 +106,7 @@ extension ExcludeRecordViewModel {
         
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.pop(owner.output.album.value))
+                owner.navigation.accept(.pop)
             }
             .disposed(by: disposeBag)
         
@@ -176,6 +177,7 @@ extension ExcludeRecordViewModel {
                     owner.output.viewDidRefresh.accept(())
                     owner.cancelSelectMode()
                     
+                    owner.navigation.accept(.updateRecord(owner.output.album.value))
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                     
                 case .remove:
