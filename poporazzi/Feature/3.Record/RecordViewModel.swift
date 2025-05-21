@@ -103,7 +103,7 @@ extension RecordViewModel {
     
     enum ActionSheetAction {
         case exclude([Media])
-        case remove
+        case remove([Media])
     }
     
     enum MenuAction {
@@ -288,7 +288,7 @@ extension RecordViewModel {
         
         input.removeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.actionSheetPresented.accept(owner.removeActionSheet)
+                owner.output.actionSheetPresented.accept(owner.removeActionSheet(from: owner.selectedMediaList()))
                 HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
@@ -331,10 +331,9 @@ extension RecordViewModel {
                     owner.output.viewDidRefresh.accept(())
                     owner.cancelSelectMode()
                     
-                case .remove:
+                case let .remove(mediaList):
                     owner.output.toggleLoading.accept(true)
-                    let assetIdentifiers = owner.selectedAssetIdentifiers()
-                    owner.photoKitService.deletePhotos(from: assetIdentifiers)
+                    owner.photoKitService.deletePhotos(from: mediaList.map(\.id))
                         .bind { isSuccess in
                             if isSuccess {
                                 owner.cancelSelectMode()
@@ -393,7 +392,8 @@ extension RecordViewModel {
                     HapticManager.notification(type: .warning)
                     
                 case let .remove(media):
-                    break
+                    owner.output.actionSheetPresented.accept(owner.removeActionSheet(from: [media]))
+                    HapticManager.notification(type: .warning)
                 }
             }
             .disposed(by: disposeBag)
@@ -583,13 +583,12 @@ extension RecordViewModel {
     }
     
     /// 기록 삭제 Action Sheet
-    private var removeActionSheet: ActionSheetModel {
-        let selectedCount = output.selectedRecordCells.value.count
-        return ActionSheetModel(
+    private func removeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
+        ActionSheetModel(
             message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
             buttons: [
-                .init(title: "\(selectedCount)장의 기록 삭제", style: .destructive) { [weak self] in
-                    self?.actionSheetAction.accept(.remove)
+                .init(title: "\(mediaList.count)장의 기록 삭제", style: .destructive) { [weak self] in
+                    self?.actionSheetAction.accept(.remove(mediaList))
                 },
                 .init(title: "취소", style: .cancel)
             ]
