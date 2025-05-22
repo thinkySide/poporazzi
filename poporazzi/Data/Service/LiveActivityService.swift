@@ -11,6 +11,10 @@ import ActivityKit
 final class LiveActivityService: LiveActivityInterface {
     
     private var activity: Activity<PoporazziWidgetAttributes>?
+    
+    init() {
+        self.activity = Activity<PoporazziWidgetAttributes>.activities.first
+    }
 }
 
 // MARK: - Use Case
