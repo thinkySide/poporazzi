@@ -21,6 +21,8 @@ protocol PhotoKitInterface {
     /// PhotoLibrary 사용 권한을 요청합니다.
     func requestAuth() -> Observable<PHAuthorizationStatus>
     
+    func fetchAlbumList() -> [Album]
+    
     /// Thumbnail 없이 Media 배열을 반환합니다.
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media]
     

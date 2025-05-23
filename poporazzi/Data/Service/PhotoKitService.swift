@@ -34,7 +34,8 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     }()
     
     /// 감지를 위한 fetchResult
-    private var fetchResultForObserve: PHFetchResult<PHAsset>?
+    private var assetFetchResult: PHFetchResult<PHAsset>?
+    private var collectionFetchResult: PHFetchResult<PHCollection>?
     
     /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
     private let photoLibraryChangeRelay = BehaviorRelay(value: ())
@@ -73,10 +74,61 @@ extension PhotoKitService {
         }
     }
     
+    func fetchAlbumList() -> [Album] {
+        let collectionFetchResult = PHAssetCollection.fetchTopLevelUserCollections(with: nil)
+        self.collectionFetchResult = collectionFetchResult
+        
+        var albumList = [Album]()
+        collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
+            guard let self else { return }
+            
+            // 앨범의 경우
+            if let album = collection as? PHAssetCollection {
+                let album = Album(
+                    id: album.localIdentifier,
+                    title: album.localizedTitle ?? "",
+                    startDate: .now,
+                    endDate: nil,
+                    estimateCount: album.estimatedAssetCount,
+                    excludeMediaList: [],
+                    mediaFetchOption: .all,
+                    mediaFilterOption: .init()
+                )
+                albumList.append(album)
+            }
+            
+            // 폴더의 경우
+            else {
+                let album = Album(
+                    id: collection.localIdentifier,
+                    title: collection.localizedTitle ?? "",
+                    startDate: .now,
+                    endDate: nil,
+                    estimateCount: estimateAlbumCount(in: collection),
+                    excludeMediaList: [],
+                    mediaFetchOption: .all,
+                    mediaFilterOption: .init()
+                )
+                albumList.append(album)
+            }
+        }
+        return albumList
+    }
+    
+    private func estimateAlbumCount(in collection: PHCollection) -> Int {
+        guard let collectionList = collection as? PHCollectionList else { return 0 }
+        let collections = PHCollection.fetchCollections(in: collectionList, options: nil)
+        var count = 0
+        collections.enumerateObjects { _, _, _ in
+            count += 1
+        }
+        return count
+    }
+    
     /// 썸네일 없이 기록을 반환합니다.
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
         let fetchResult = fetchAssetResult(from: album)
-        self.fetchResultForObserve = fetchResult
+        self.assetFetchResult = fetchResult
         
         var mediaList = [Media]()
         fetchResult.enumerateObjects { [weak self] asset, _, _ in
@@ -533,8 +585,8 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
     
     /// PhotoLibrary의 변화 감지 시 호출됩니다.
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        guard let fetchResultForObserve,
-              let changeDetails = changeInstance.changeDetails(for: fetchResultForObserve) else {
+        guard let assetFetchResult,
+              let changeDetails = changeInstance.changeDetails(for: assetFetchResult) else {
             return
         }
         

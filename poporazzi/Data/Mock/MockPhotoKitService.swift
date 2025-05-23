@@ -24,6 +24,10 @@ struct MockPhotoKitService: PhotoKitInterface {
         .just(.authorized)
     }
     
+    func fetchAlbumList() -> [Album] {
+        []
+    }
+    
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
         Array(repeatElement(.init(
             id: UUID().uuidString,

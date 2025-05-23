@@ -55,13 +55,13 @@ extension AlbumListViewController {
     /// DataSource를 설정합니다.
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<AlbumSection, Album>(collectionView: scene.albumCollectionView) {
-            [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
+            [weak self] (collectionView, indexPath, album) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: AlbumCell.identifier,
                 for: indexPath
             ) as? AlbumCell else { return nil }
             
-            cell.action(.setAlbumInfo(.init(title: "콜트플레이 내한 콘서트 🪐 ", mediaFetchOption: .all, mediaFilterOption: .init())))
+            cell.action(.setAlbumInfo(album))
             cell.action(.setThumbnail(nil))
             
             return cell
@@ -82,12 +82,16 @@ extension AlbumListViewController {
 extension AlbumListViewController {
     
     func bind() {
-        updateInitialDataSource(to: [.initialValue, .initialValue, .initialValue, .initialValue, .initialValue])
-        
         let input = AlbumListViewModel.Input(
-            
+            viewDidLoad: .just(())
         )
         let output = viewModel.transform(input)
         
+        output.albumList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, albumList in
+                owner.updateInitialDataSource(to: albumList)
+            }
+            .disposed(by: disposeBag)
     }
 }

@@ -15,6 +15,8 @@ final class AlbumCell: UICollectionViewCell {
     
     var containerView = UIView()
     
+    private let thumbnailContainer = UIView()
+    
     /// 미디어 썸네일
     private let thumbnail: UIImageView = {
         let imageView = UIImageView()
@@ -28,6 +30,15 @@ final class AlbumCell: UICollectionViewCell {
     
     /// 시작 날짜 라벨
     private let startDateLabel = UILabel(size: 13, color: .subLabel)
+    
+    /// 개수 라벨
+    private let countLabel: UILabel = {
+        let label = UILabel(size: 13, color: .white)
+        label.backgroundColor = .black.withAlphaComponent(0.3)
+        label.textAlignment = .center
+        label.clipsToBounds = true
+        return label
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -82,6 +93,7 @@ extension AlbumCell {
         case let .setAlbumInfo(album):
             titleLabel.text = album.title
             startDateLabel.text = album.startDate.startDateFormat
+            countLabel.text = "\(album.estimateCount)"
         }
     }
 }
@@ -92,9 +104,16 @@ extension AlbumCell {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(thumbnail).cornerRadius(16).width(.infinity).aspectRatio(1)
+            flex.addItem(thumbnailContainer).width(.infinity).aspectRatio(1)
             flex.addItem(titleLabel).marginTop(8).horizontally(2)
             flex.addItem(startDateLabel).marginTop(4).horizontally(2)
+        }
+        
+        thumbnailContainer.flex.define { flex in
+            flex.addItem(thumbnail).cornerRadius(16).grow(1)
+            flex.addItem(countLabel).paddingHorizontal(8).height(24).minWidth(28)
+                .position(.absolute).right(10).bottom(10)
+                .cornerRadius(12)
         }
     }
 }

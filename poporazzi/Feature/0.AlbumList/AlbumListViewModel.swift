@@ -11,6 +11,8 @@ import RxCocoa
 
 final class AlbumListViewModel: ViewModel {
     
+    @Dependency(\.photoKitService) var photoKitService
+    
     private let disposeBag = DisposeBag()
     private let output: Output
     
@@ -30,11 +32,11 @@ final class AlbumListViewModel: ViewModel {
 extension AlbumListViewModel {
     
     struct Input {
-        
+        let viewDidLoad: Signal<Void>
     }
     
     struct Output {
-        
+        let albumList = BehaviorRelay<[Album]>(value: [])
     }
     
     enum Navigation {
@@ -47,6 +49,12 @@ extension AlbumListViewModel {
 extension AlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
+        
+        input.viewDidLoad
+            .emit(with: self) { owner, _ in
+                owner.output.albumList.accept(owner.photoKitService.fetchAlbumList())
+            }
+            .disposed(by: disposeBag)
 
         return output
     }
