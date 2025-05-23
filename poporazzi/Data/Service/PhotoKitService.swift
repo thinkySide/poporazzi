@@ -88,7 +88,7 @@ extension PhotoKitService {
                 let album = Album(
                     id: album.localIdentifier,
                     title: album.localizedTitle ?? "",
-                    startDate: .now,
+                    startDate: album.startDate ?? .now,
                     endDate: nil,
                     thumbnail: nil,
                     albumType: .album,
