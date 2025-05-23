@@ -22,6 +22,13 @@ final class Coordinator: NSObject {
     
     /// 진입 화면을 설정합니다.
     func start() {
+        let albumListVM = AlbumListViewModel(output: .init())
+        let albumListVC = AlbumListViewController(viewModel: albumListVM)
+        navigationController = UINavigationController(rootViewController: albumListVC)
+        navigationController.setNavigationBarHidden(true, animated: false)
+        navigationController.delegate = self
+        navigationController.interactivePopGestureRecognizer?.delegate = self
+        
         let titleInputVM = TitleInputViewModel(output: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
         navigationController = UINavigationController(rootViewController: titleInputVC)
@@ -29,25 +36,34 @@ final class Coordinator: NSObject {
         navigationController.delegate = self
         navigationController.interactivePopGestureRecognizer?.delegate = self
         
-        titleInputVM.navigation
-            .bind(with: self) { [weak titleInputVM] owner, path in
-                switch path {
-                case let .pushAlbumOptionInput(title):
-                    owner.pushAlbumOptionInput(titleInputVM, title)
-                    
-                case let .pushRecord(album):
-                    owner.pushRecord(album)
-                }
-            }
-            .disposed(by: titleInputVC.disposeBag)
+        let settingsVM = SettingsViewModel(output: .init())
+        let settingsVC = SettingsViewController(viewModel: settingsVM)
+        navigationController = UINavigationController(rootViewController: settingsVC)
+        navigationController.setNavigationBarHidden(true, animated: false)
+        navigationController.delegate = self
+        navigationController.interactivePopGestureRecognizer?.delegate = self
         
-        let albumId = UserDefaultsService.trackingAlbumId
-        if !albumId.isEmpty {
-            let album = persistenceService.readAlbum(fromId: albumId)
-            titleInputVM.navigation.accept(.pushRecord(album))
-        }
+        let tabViewController = TabViewController(viewControllers: [albumListVC, titleInputVC, settingsVC])
         
-        window?.rootViewController = navigationController
+//        titleInputVM.navigation
+//            .bind(with: self) { [weak titleInputVM] owner, path in
+//                switch path {
+//                case let .pushAlbumOptionInput(title):
+//                    owner.pushAlbumOptionInput(titleInputVM, title)
+//                    
+//                case let .pushRecord(album):
+//                    owner.pushRecord(album)
+//                }
+//            }
+//            .disposed(by: titleInputVC.disposeBag)
+//        
+//        let albumId = UserDefaultsService.trackingAlbumId
+//        if !albumId.isEmpty {
+//            let album = persistenceService.readAlbum(fromId: albumId)
+//            titleInputVM.navigation.accept(.pushRecord(album))
+//        }
+        
+        window?.rootViewController = tabViewController
         window?.makeKeyAndVisible()
     }
 }

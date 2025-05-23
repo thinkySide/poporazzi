@@ -70,7 +70,7 @@ final class ExcludeRecordView: CodeBaseUI {
     let recordCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: CollectionViewLayout.threeColumns
+            collectionViewLayout: CollectionViewLayout.recordThreeColumns
         )
         collectionView.backgroundColor = .white
         collectionView.allowsSelection = false

@@ -8,6 +8,10 @@
 import UIKit
 
 enum SFSymbol: String {
+    case albumList = "person.2.crop.square.stack.fill"
+    case record = "record.circle.fill"
+    case setting = "gearshape.fill"
+    
     case ellipsis
     case camera = "camera.fill"
     case edit = "square.and.pencil"
