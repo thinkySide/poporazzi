@@ -73,7 +73,7 @@ extension AlbumListView {
             }
             
             flex.addItem().grow(1).marginTop(12).define { flex in
-                flex.addItem(albumCollectionView).position(.absolute).all(0)
+                flex.addItem(albumCollectionView).position(.absolute).top(0).horizontally(0).bottom(48)
             }
         }
     }
