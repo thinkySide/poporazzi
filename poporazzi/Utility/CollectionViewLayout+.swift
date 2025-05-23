@@ -104,7 +104,7 @@ extension CollectionViewLayout {
         
         // 1. 기본값 변수 저장
         let numberOfColumns: CGFloat = 2
-        let hightRatio: CGFloat = 1.2
+        let hightRatio: CGFloat = 1.3
         
         // 2. 아이템(Cell) 설정
         let itemSize = NSCollectionLayoutSize(

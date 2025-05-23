@@ -61,6 +61,9 @@ extension AlbumListViewController {
                 for: indexPath
             ) as? AlbumCell else { return nil }
             
+            cell.action(.setAlbumInfo(.init(title: "콜트플레이 내한 콘서트 🪐 ", mediaFetchOption: .all, mediaFilterOption: .init())))
+            cell.action(.setThumbnail(nil))
+            
             return cell
         }
     }
