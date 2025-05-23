@@ -9,12 +9,29 @@ import UIKit
 import RxSwift
 import RxCocoa
 
+enum Tab {
+    case albumList
+    case record(isTracking: Bool)
+    case settings
+    
+    var index: Int {
+        switch self {
+        case .albumList: 0
+        case .record: 1
+        case .settings: 2
+        }
+    }
+}
+
 final class Coordinator: NSObject {
     
     @Dependency(\.persistenceService) var persistenceService
     
     private var window: UIWindow?
-    private var navigationController = UINavigationController()
+    
+    private var albumListNavigation = UINavigationController()
+    private var recordNavigation = UINavigationController()
+    private var settingsNavigation = UINavigationController()
     
     init(window: UIWindow?) {
         self.window = window
@@ -24,26 +41,30 @@ final class Coordinator: NSObject {
     func start() {
         let albumListVM = AlbumListViewModel(output: .init())
         let albumListVC = AlbumListViewController(viewModel: albumListVM)
-        navigationController = UINavigationController(rootViewController: albumListVC)
-        navigationController.setNavigationBarHidden(true, animated: false)
-        navigationController.delegate = self
-        navigationController.interactivePopGestureRecognizer?.delegate = self
+        albumListNavigation = UINavigationController(rootViewController: albumListVC)
+        albumListNavigation.setNavigationBarHidden(true, animated: false)
+        albumListNavigation.delegate = self
+        albumListNavigation.interactivePopGestureRecognizer?.delegate = self
         
         let titleInputVM = TitleInputViewModel(output: .init())
         let titleInputVC = TitleInputViewController(viewModel: titleInputVM)
-        navigationController = UINavigationController(rootViewController: titleInputVC)
-        navigationController.setNavigationBarHidden(true, animated: false)
-        navigationController.delegate = self
-        navigationController.interactivePopGestureRecognizer?.delegate = self
+        recordNavigation = UINavigationController(rootViewController: titleInputVC)
+        recordNavigation.setNavigationBarHidden(true, animated: false)
+        recordNavigation.delegate = self
+        recordNavigation.interactivePopGestureRecognizer?.delegate = self
         
         let settingsVM = SettingsViewModel(output: .init())
         let settingsVC = SettingsViewController(viewModel: settingsVM)
-        navigationController = UINavigationController(rootViewController: settingsVC)
-        navigationController.setNavigationBarHidden(true, animated: false)
-        navigationController.delegate = self
-        navigationController.interactivePopGestureRecognizer?.delegate = self
+        settingsNavigation = UINavigationController(rootViewController: settingsVC)
+        settingsNavigation.setNavigationBarHidden(true, animated: false)
+        settingsNavigation.delegate = self
+        settingsNavigation.interactivePopGestureRecognizer?.delegate = self
         
-        let tabViewController = TabViewController(viewControllers: [albumListVC, titleInputVC, settingsVC])
+        let tabViewController = TabViewController(
+            viewControllers: [albumListVC, titleInputVC, settingsVC],
+            currentTab: .albumList,
+            isTracking: false
+        )
         
 //        titleInputVM.navigation
 //            .bind(with: self) { [weak titleInputVM] owner, path in
@@ -99,14 +120,14 @@ extension Coordinator {
     private func pushAlbumOptionInput(_ titleInputVM: TitleInputViewModel?, _ title: String) {
         let albumOptionVM = AlbumOptionInputViewModel(output: .init(titleText: .init(value: title)))
         let albumOptionVC = AlbumOptionInputViewController(viewModel: albumOptionVM)
-        self.navigationController.pushViewController(albumOptionVC, animated: true)
+        self.recordNavigation.pushViewController(albumOptionVC, animated: true)
         
         albumOptionVM.navigation
             .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak albumOptionVM] owner, path in
                 switch path {
                 case .pop:
-                    owner.navigationController.popViewController(animated: true)
+                    owner.recordNavigation.popViewController(animated: true)
                     
                 case let .pushRecord(album):
                     owner.pushRecord(album)
@@ -123,14 +144,14 @@ extension Coordinator {
     private func pushRecord(_ album: Album) {
         let recordVM = RecordViewModel(output: .init(album: .init(value: album)))
         let recordVC = RecordViewController(viewModel: recordVM)
-        self.navigationController.pushViewController(recordVC, animated: true)
+        self.recordNavigation.pushViewController(recordVC, animated: true)
         
         recordVM.navigation
             .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak recordVM] owner, path in
                 switch path {
                 case .pop:
-                    owner.navigationController.popToRootViewController(animated: true)
+                    owner.recordNavigation.popToRootViewController(animated: true)
                     
                 case let .pushAlbumEdit(album):
                     owner.pushAlbumEdit(recordVM, album)
@@ -146,7 +167,7 @@ extension Coordinator {
                         activityItems: shareItemList,
                         applicationActivities: nil
                     )
-                    owner.navigationController.present(activityController, animated: true)
+                    owner.recordNavigation.present(activityController, animated: true)
                     
                     activityController.completionWithItemsHandler = { _, isComplete, _, _ in
                         if isComplete {
@@ -174,7 +195,7 @@ extension Coordinator {
             )
         )
         let editVC = AlbumEditViewController(viewModel: editVM)
-        self.navigationController.pushViewController(editVC, animated: true)
+        self.recordNavigation.pushViewController(editVC, animated: true)
         
         editVM.navigation
             .observe(on: MainScheduler.instance)
@@ -187,11 +208,11 @@ extension Coordinator {
                     owner.presentDatePickerModal(editVC, editVM, .endDate, startDate, endDate)
                     
                 case .pop:
-                    owner.navigationController.popViewController(animated: true)
+                    owner.recordNavigation.popViewController(animated: true)
                     
                 case let .dismissWithUpdate(album):
                     recordVM?.delegate.accept(.albumDidEdited(album))
-                    owner.navigationController.popViewController(animated: true)
+                    owner.recordNavigation.popViewController(animated: true)
                 }
             }
             .disposed(by: editVC.disposeBag)
@@ -201,14 +222,14 @@ extension Coordinator {
     private func pushExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
         let excludeRecordVM = ExcludeRecordViewModel(output: .init(album: .init(value: album)))
         let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
-        self.navigationController.pushViewController(excludeRecordVC, animated: true)
+        self.recordNavigation.pushViewController(excludeRecordVC, animated: true)
         
         excludeRecordVM.navigation
             .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak excludeRecordVM] owner, path in
                 switch path {
                 case .pop:
-                    owner.navigationController.popViewController(animated: true)
+                    owner.recordNavigation.popViewController(animated: true)
                     
                 case let .updateRecord(album):
                     recordVM?.delegate.accept(.updateExcludeRecord(album))
@@ -218,7 +239,7 @@ extension Coordinator {
                         activityItems: shareItemList,
                         applicationActivities: nil
                     )
-                    owner.navigationController.present(activityController, animated: true)
+                    owner.recordNavigation.present(activityController, animated: true)
                     
                     activityController.completionWithItemsHandler = { _, isComplete, _, _ in
                         if isComplete {
@@ -242,14 +263,14 @@ extension Coordinator {
         authRequestVC.isModalInPresentation = true
         authRequestVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
         authRequestVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 360 })]
-        self.navigationController.present(authRequestVC, animated: true)
+        self.recordNavigation.present(authRequestVC, animated: true)
         
         authRequestVM.navigation
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .dismiss:
-                    owner.navigationController.dismiss(animated: true)
+                    owner.recordNavigation.dismiss(animated: true)
                     albumOptionVM?.delegate.accept(.startRecord)
                 }
             }
@@ -318,18 +339,18 @@ extension Coordinator {
         finishVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
         finishVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 340 })]
         finishVC.sheetPresentationController?.prefersGrabberVisible = true
-        self.navigationController.present(finishVC, animated: true)
+        self.recordNavigation.present(finishVC, animated: true)
         
         finishVM.navigation
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .dismiss:
-                    owner.navigationController.dismiss(animated: true)
+                    owner.recordNavigation.dismiss(animated: true)
                     
                 case .popToRoot:
-                    owner.navigationController.dismiss(animated: true)
-                    owner.navigationController.popToRootViewController(animated: true)
+                    owner.recordNavigation.dismiss(animated: true)
+                    owner.recordNavigation.popToRootViewController(animated: true)
                 }
             }
             .disposed(by: finishVC.disposeBag)

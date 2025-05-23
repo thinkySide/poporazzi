@@ -16,11 +16,17 @@ final class TabViewController: UITabBarController {
     private let containerView = UIView()
     private let customTabBar = TabBar()
     
+    let currentTab: BehaviorRelay<Tab>
+    let isTracking: BehaviorRelay<Bool>
+    
     let disposeBag = DisposeBag()
     
-    init(viewControllers: [UIViewController]) {
+    init(viewControllers: [UIViewController], currentTab: Tab, isTracking: Bool) {
+        self.currentTab = .init(value: currentTab)
+        self.isTracking = .init(value: isTracking)
         super.init(nibName: nil, bundle: nil)
         setViewControllers(viewControllers, animated: false)
+        self.selectedIndex = currentTab.index
     }
     
     required init?(coder: NSCoder) {
@@ -51,27 +57,41 @@ extension TabViewController {
         
         containerView.flex.direction(.column).define { flex in
             flex.addItem().grow(1)
-            flex.addItem(customTabBar).paddingBottom(24)
+            flex.addItem(customTabBar).paddingBottom(28)
         }
     }
     
     /// 이벤트를 설정합니다.
     private func setupEvent() {
+        currentTab
+            .bind(with: self) { owner, tab in
+                owner.selectedIndex = tab.index
+                let isTracking = owner.isTracking.value
+                owner.customTabBar.action(.updateTab(tab, isTracking: isTracking))
+            }
+            .disposed(by: disposeBag)
+        
+        isTracking
+            .bind(with: self) { owner, isTracking in
+                owner.customTabBar.action(.updateRecordButton(isTracking: isTracking))
+            }
+            .disposed(by: disposeBag)
+        
         customTabBar.albumListButton.rx.tap
             .bind(with: self) { owner, _ in
-                owner.selectedIndex = 0
+                owner.currentTab.accept(.albumList)
             }
             .disposed(by: disposeBag)
         
         customTabBar.recordButton.rx.tap
             .bind(with: self) { owner, _ in
-                owner.selectedIndex = 1
+                owner.currentTab.accept(.record(isTracking: false))
             }
             .disposed(by: disposeBag)
         
         customTabBar.settingsButton.rx.tap
             .bind(with: self) { owner, _ in
-                owner.selectedIndex = 2
+                owner.currentTab.accept(.settings)
             }
             .disposed(by: disposeBag)
     }

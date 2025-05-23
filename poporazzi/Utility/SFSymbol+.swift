@@ -13,6 +13,7 @@ enum SFSymbol: String {
     case setting = "gearshape.fill"
     
     case ellipsis
+    case plus = "plus"
     case camera = "camera.fill"
     case edit = "square.and.pencil"
     case dismiss = "xmark"
