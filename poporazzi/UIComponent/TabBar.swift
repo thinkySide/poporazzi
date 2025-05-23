@@ -38,7 +38,7 @@ final class TabBar: CodeBaseUI {
     
     init() {
         super.init(frame: .zero)
-        setup(color: .clear)
+        setup(color: .white)
     }
     
     required init?(coder: NSCoder) {

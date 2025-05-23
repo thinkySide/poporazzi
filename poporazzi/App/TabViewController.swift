@@ -8,12 +8,9 @@
 import UIKit
 import RxSwift
 import RxCocoa
-import PinLayout
-import FlexLayout
 
 final class TabViewController: UITabBarController {
     
-    private let containerView = UIView()
     private let customTabBar = TabBar()
     
     let currentTab: BehaviorRelay<Tab>
@@ -38,12 +35,6 @@ final class TabViewController: UITabBarController {
         setupTabBar()
         setupEvent()
     }
-    
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        containerView.pin.all()
-        containerView.flex.layout()
-    }
 }
 
 // MARK: - Setup
@@ -53,12 +44,15 @@ extension TabViewController {
     /// TabBar를 세팅합니다.
     private func setupTabBar() {
         tabBar.isHidden = true
-        view.addSubview(containerView)
+        view.addSubview(customTabBar)
+        customTabBar.translatesAutoresizingMaskIntoConstraints = false
         
-        containerView.flex.direction(.column).define { flex in
-            flex.addItem().grow(1)
-            flex.addItem(customTabBar).paddingBottom(28)
-        }
+        NSLayoutConstraint.activate([
+            customTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            customTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            customTabBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 4),
+            customTabBar.heightAnchor.constraint(equalToConstant: 48)
+        ])
     }
     
     /// 이벤트를 설정합니다.
@@ -68,6 +62,7 @@ extension TabViewController {
                 owner.selectedIndex = tab.index
                 let isTracking = owner.isTracking.value
                 owner.customTabBar.action(.updateTab(tab, isTracking: isTracking))
+                HapticManager.impact(style: .soft)
             }
             .disposed(by: disposeBag)
         

@@ -108,10 +108,11 @@ extension CollectionViewLayout {
         // 2. 아이템(Cell) 설정
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalHeight(1),
-            heightDimension: .fractionalHeight(1.2)
+            heightDimension: .fractionalHeight(1)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: itemInset)
+        
         let lastItem = NSCollectionLayoutItem(layoutSize: itemSize)
         lastItem.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: 0)
         
@@ -122,7 +123,7 @@ extension CollectionViewLayout {
         )
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize,
-            subitems: [item, item, lastItem]
+            subitems: [item, lastItem]
         )
         
         // 4. 섹션 설정

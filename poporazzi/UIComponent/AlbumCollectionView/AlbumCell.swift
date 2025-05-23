@@ -161,7 +161,7 @@ extension AlbumCell {
     
     func configLayout() {
         let cornerRadius: CGFloat = 8
-        containerView.flex.define { flex in
+        containerView.flex.backgroundColor(.accent).define { flex in
             flex.addItem(thumbnail).cornerRadius(cornerRadius).grow(1)
             flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }

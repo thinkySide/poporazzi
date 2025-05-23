@@ -8,7 +8,7 @@
 import Foundation
 
 /// 앨범
-struct Album {
+struct Album: Hashable, Equatable {
     
     /// 고유 아이디
     let id: String
@@ -57,6 +57,14 @@ struct Album {
             mediaFetchOption: .all,
             mediaFilterOption: .init()
         )
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: Album, rhs: Album) -> Bool {
+        lhs.id == rhs.id
     }
 }
 

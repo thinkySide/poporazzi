@@ -25,7 +25,7 @@ final class AlbumListView: CodeBaseUI {
         )
         collectionView.backgroundColor = .white
         collectionView.register(
-            RecordCell.self,
+            AlbumCell.self,
             forCellWithReuseIdentifier: AlbumCell.identifier
         )
         return collectionView
@@ -70,6 +70,10 @@ extension AlbumListView {
             
             flex.addItem().paddingHorizontal(20).define { flex in
                 flex.addItem(titleLabel)
+            }
+            
+            flex.addItem().grow(1).marginTop(12).define { flex in
+                flex.addItem(albumCollectionView).position(.absolute).all(0)
             }
         }
     }

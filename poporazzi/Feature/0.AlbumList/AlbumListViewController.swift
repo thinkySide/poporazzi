@@ -14,6 +14,8 @@ final class AlbumListViewController: ViewController {
     private let scene = AlbumListView()
     private let viewModel: AlbumListViewModel
     
+    private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: AlbumListViewModel) {
@@ -31,6 +33,7 @@ final class AlbumListViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDataSource()
         bind()
     }
     
@@ -39,11 +42,45 @@ final class AlbumListViewController: ViewController {
     }
 }
 
+// MARK: - AlbumSection
+
+enum AlbumSection: Hashable, Comparable {
+    case main
+}
+
+// MARK: - UICollectionViewDiffableDataSource
+
+extension AlbumListViewController {
+    
+    /// DataSource를 설정합니다.
+    private func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<AlbumSection, Album>(collectionView: scene.albumCollectionView) {
+            [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
+            guard let self, let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: AlbumCell.identifier,
+                for: indexPath
+            ) as? AlbumCell else { return nil }
+            
+            return cell
+        }
+    }
+    
+    /// 기본 DataSource를 업데이트합니다.
+    private func updateInitialDataSource(to albumList: [Album]) {
+        var snapshot = NSDiffableDataSourceSnapshot<AlbumSection, Album>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(albumList, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+}
+
 // MARK: - Binding
 
 extension AlbumListViewController {
     
     func bind() {
+        updateInitialDataSource(to: [.initialValue, .initialValue, .initialValue, .initialValue, .initialValue])
+        
         let input = AlbumListViewModel.Input(
             
         )
