@@ -37,6 +37,7 @@ extension AlbumListViewModel {
     
     struct Output {
         let albumList = BehaviorRelay<[Album]>(value: [])
+        let updateThumbnail = BehaviorRelay<[Album]>(value: [])
     }
     
     enum Navigation {
@@ -52,10 +53,18 @@ extension AlbumListViewModel {
         
         input.viewDidLoad
             .emit(with: self) { owner, _ in
-                owner.output.albumList.accept(owner.photoKitService.fetchAlbumList())
+                let albumList = owner.photoKitService.fetchAlbumListWithNoThumbnail()
+                owner.output.albumList.accept(albumList)
+                
+                owner.photoKitService.fetchAlbumList(from: albumList)
+                    .observe(on: MainScheduler.asyncInstance)
+                    .bind { albumList in
+                        owner.output.updateThumbnail.accept(albumList)
+                    }
+                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
-
+        
         return output
     }
 }

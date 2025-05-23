@@ -16,6 +16,8 @@ final class AlbumListViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
     
+    private var imageCache = [String: UIImage?]()
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: AlbumListViewModel) {
@@ -61,8 +63,11 @@ extension AlbumListViewController {
                 for: indexPath
             ) as? AlbumCell else { return nil }
             
+            if let cacheThumbnail = self.imageCache[album.id] {
+                cell.action(.setThumbnail(cacheThumbnail))
+            }
+            
             cell.action(.setAlbumInfo(album))
-            cell.action(.setThumbnail(nil))
             
             return cell
         }
@@ -73,6 +78,18 @@ extension AlbumListViewController {
         var snapshot = NSDiffableDataSourceSnapshot<AlbumSection, Album>()
         snapshot.appendSections([.main])
         snapshot.appendItems(albumList, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    private func updatePaginationDataSource(to albumList: [Album]) {
+        guard !albumList.isEmpty else { return }
+        
+        for album in albumList {
+            imageCache.updateValue(album.thumbnail, forKey: album.id)
+        }
+        
+        var snapshot = dataSource.snapshot()
+        snapshot.reloadItems(albumList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
@@ -91,6 +108,13 @@ extension AlbumListViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, albumList in
                 owner.updateInitialDataSource(to: albumList)
+            }
+            .disposed(by: disposeBag)
+        
+        output.updateThumbnail
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, albumList in
+                owner.updatePaginationDataSource(to: albumList)
             }
             .disposed(by: disposeBag)
     }

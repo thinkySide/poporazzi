@@ -12,6 +12,8 @@ import Photos
 
 struct MockPhotoKitService: PhotoKitInterface {
     
+    
+    
     var photoLibraryChange: Signal<Void> {
         PublishRelay<Void>().asSignal()
     }
@@ -24,8 +26,12 @@ struct MockPhotoKitService: PhotoKitInterface {
         .just(.authorized)
     }
     
-    func fetchAlbumList() -> [Album] {
+    func fetchAlbumListWithNoThumbnail() -> [Album] {
         []
+    }
+    
+    func fetchAlbumList(from albumList: [Album]) -> Observable<[Album]> {
+        .just([])
     }
     
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {

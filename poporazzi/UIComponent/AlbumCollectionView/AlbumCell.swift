@@ -87,7 +87,7 @@ extension AlbumCell {
             if let image {
                 self.thumbnail.image = image
             } else {
-                self.thumbnail.backgroundColor = .red
+                self.thumbnail.backgroundColor = .brandTertiary
             }
             
         case let .setAlbumInfo(album):

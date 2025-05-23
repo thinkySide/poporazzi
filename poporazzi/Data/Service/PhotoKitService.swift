@@ -74,7 +74,8 @@ extension PhotoKitService {
         }
     }
     
-    func fetchAlbumList() -> [Album] {
+    /// 썸네일 없이 앨범 리스트를 반환합니다.
+    func fetchAlbumListWithNoThumbnail() -> [Album] {
         let collectionFetchResult = PHAssetCollection.fetchTopLevelUserCollections(with: nil)
         self.collectionFetchResult = collectionFetchResult
         
@@ -89,6 +90,8 @@ extension PhotoKitService {
                     title: album.localizedTitle ?? "",
                     startDate: .now,
                     endDate: nil,
+                    thumbnail: nil,
+                    albumType: .album,
                     estimateCount: album.estimatedAssetCount,
                     excludeMediaList: [],
                     mediaFetchOption: .all,
@@ -104,6 +107,7 @@ extension PhotoKitService {
                     title: collection.localizedTitle ?? "",
                     startDate: .now,
                     endDate: nil,
+                    albumType: .folder,
                     estimateCount: estimateAlbumCount(in: collection),
                     excludeMediaList: [],
                     mediaFetchOption: .all,
@@ -115,14 +119,47 @@ extension PhotoKitService {
         return albumList
     }
     
-    private func estimateAlbumCount(in collection: PHCollection) -> Int {
-        guard let collectionList = collection as? PHCollectionList else { return 0 }
-        let collections = PHCollection.fetchCollections(in: collectionList, options: nil)
-        var count = 0
-        collections.enumerateObjects { _, _, _ in
-            count += 1
+    /// 썸네일과 함께 앨범 리스트를 반환합니다.
+    func fetchAlbumList(from albumList: [Album]) -> Observable<[Album]> {
+        Observable.create { [weak self] observer in
+            Task {
+                guard let self else {
+                    observer.onCompleted()
+                    return
+                }
+                
+                var albumList = albumList
+                for (index, album) in albumList.enumerated() {
+                    
+                    // 앨범의 경우
+                    if album.albumType == .album {
+                        guard let assetCollection = self.fetchAlbum(from: album.id) else { return }
+                        let assetResult = self.assetResult(from: assetCollection)
+                        let thumbnail = await self.thumbnail(from: assetResult)
+                        albumList[index].thumbnail = thumbnail
+                    }
+                    
+                    // 폴더의 경우
+                    else if album.albumType == .folder {
+                        
+                    }
+                }
+                
+                observer.onNext(albumList)
+                observer.onCompleted()
+            }
+
+            return Disposables.create()
         }
-        return count
+    }
+    
+    private func assetResult(from assetCollection: PHAssetCollection) -> PHFetchResult<PHAsset> {
+        PHAsset.fetchAssets(in: assetCollection, options: nil)
+    }
+    
+    private func thumbnail(from assetResult: PHFetchResult<PHAsset>) async -> UIImage? {
+        guard let asset = assetResult.firstObject else { return nil }
+        return await self.requestNormalQuailityImage(for: asset)
     }
     
     /// 썸네일 없이 기록을 반환합니다.
@@ -444,6 +481,17 @@ extension PhotoKitService {
             withLocalIdentifiers: [locaIdentifier], options: nil
         )
         .firstObject
+    }
+    
+    /// 폴더 내 예상되는 앨범의 개수를 반환합니다.
+    private func estimateAlbumCount(in collection: PHCollection) -> Int {
+        guard let collectionList = collection as? PHCollectionList else { return 0 }
+        let collections = PHCollection.fetchCollections(in: collectionList, options: nil)
+        var count = 0
+        collections.enumerateObjects { _, _, _ in
+            count += 1
+        }
+        return count
     }
 }
 

@@ -21,12 +21,16 @@ protocol PhotoKitInterface {
     /// PhotoLibrary 사용 권한을 요청합니다.
     func requestAuth() -> Observable<PHAuthorizationStatus>
     
-    func fetchAlbumList() -> [Album]
+    /// 앨범 리스트를 반환합니다.
+    func fetchAlbumListWithNoThumbnail() -> [Album]
     
-    /// Thumbnail 없이 Media 배열을 반환합니다.
+    /// 앨범 리스트를 반환합니다.
+    func fetchAlbumList(from albumList: [Album]) -> Observable<[Album]>
+    
+    /// 썸네일 없이 미디어 리스트를 반환합니다.
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media]
     
-    /// Media 배열 이벤트를 반환합니다.
+    /// 미디어 리스트 스트림을 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>
     
     /// 즐겨찾기 상태를 전환합니다.
