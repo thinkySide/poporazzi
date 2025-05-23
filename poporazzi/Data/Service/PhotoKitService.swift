@@ -141,7 +141,11 @@ extension PhotoKitService {
                     
                     // 폴더의 경우
                     else if album.albumType == .folder {
-                        
+                        guard let collection = self.fetchFolder(from: album.id),
+                              let assetCollection = self.fetchAlbum(from: collection) else { return }
+                        let assetResult = self.assetResult(from: assetCollection)
+                        let thumbnail = await self.thumbnail(from: assetResult)
+                        albumList[index].thumbnail = thumbnail
                     }
                 }
                 
@@ -453,6 +457,11 @@ extension PhotoKitService {
             options: nil
         )
         .firstObject
+    }
+    
+    /// 앨범을 반환합니다.
+    private func fetchAlbum(from collection: PHCollectionList) -> PHAssetCollection? {
+        PHCollection.fetchCollections(in: collection, options: nil).firstObject as? PHAssetCollection
     }
 }
 
