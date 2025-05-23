@@ -17,13 +17,3 @@ protocol ViewControllerProtocol: UIViewController {
     /// Input과 Ounput을 Binding합니다.
     func bind()
 }
-
-// MARK: - UIViewController 기본 구현
-
-extension UIViewController {
-    
-    /// 생성자 직접 구현 시 필수 구현 생성자
-    convenience init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}

@@ -128,7 +128,7 @@ final class RecordView: CodeBaseUI {
     let recordCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: CollectionViewLayout.headerSection
+            collectionViewLayout: CollectionViewLayout.recordHeaderSection
         )
         collectionView.backgroundColor = .white
         collectionView.allowsSelection = false

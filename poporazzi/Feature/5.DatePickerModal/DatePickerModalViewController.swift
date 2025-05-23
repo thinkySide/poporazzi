@@ -24,6 +24,10 @@ final class DatePickerModalViewController: ViewController {
         self.sheetPresentationController?.detents = [.custom(resolver: { _ in variation.sheetHeight })]
     }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func loadView() {
         view = scene
     }
