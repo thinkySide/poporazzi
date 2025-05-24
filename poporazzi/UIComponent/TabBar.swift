@@ -57,19 +57,18 @@ final class TabBar: CodeBaseUI {
 extension TabBar {
     
     enum Action {
-        case updateTab(Tab, isTracking: Bool)
+        case updateTab(Tab)
         case updateRecordButton(isTracking: Bool)
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .updateTab(tab, isTracking):
+        case let .updateTab(tab):
             UIView.animate(withDuration: 0.2) { [weak self] in
                 guard let self else { return }
                 switch tab {
                 case .albumList:
                     albumListButton.alpha = 1
-                    recordButton.alpha = isTracking ? 0.3 : 1
                     settingsButton.alpha = 0.3
                     
                 case .record:
@@ -79,7 +78,6 @@ extension TabBar {
                     
                 case .settings:
                     albumListButton.alpha = 0.3
-                    recordButton.alpha = isTracking ? 0.3 : 1
                     settingsButton.alpha = 1
                 }
             }
@@ -88,10 +86,12 @@ extension TabBar {
             if isTracking {
                 let symbol = UIImage(symbol: .record, size: 22, weight: .black)
                 recordButton.setImage(symbol, for: .normal)
+                recordButton.alpha = 0.3
                 
             } else {
                 let symbol = UIImage(resource: .recordStart)
                 recordButton.setImage(symbol, for: .normal)
+                recordButton.alpha = 1
             }
         }
     }

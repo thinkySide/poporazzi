@@ -60,10 +60,15 @@ final class Coordinator: NSObject {
         settingsNavigation.delegate = self
         settingsNavigation.interactivePopGestureRecognizer?.delegate = self
         
-        let tabViewController = TabViewController(
+        let mainVM = MainViewModel(
+            output: .init(
+                selectedTab: .init(value: .albumList),
+                isTracking: .init(value: false)
+            )
+        )
+        let mainVC = MainViewController(
             viewControllers: [albumListVC, titleInputVC, settingsVC],
-            currentTab: .albumList,
-            isTracking: false
+            viewModel: mainVM
         )
         
 //        titleInputVM.navigation
@@ -84,7 +89,7 @@ final class Coordinator: NSObject {
 //            titleInputVM.navigation.accept(.pushRecord(album))
 //        }
         
-        window?.rootViewController = tabViewController
+        window?.rootViewController = mainVC
         window?.makeKeyAndVisible()
     }
 }

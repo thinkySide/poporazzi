@@ -157,15 +157,6 @@ extension PhotoKitService {
         }
     }
     
-    private func assetResult(from assetCollection: PHAssetCollection) -> PHFetchResult<PHAsset> {
-        PHAsset.fetchAssets(in: assetCollection, options: nil)
-    }
-    
-    private func thumbnail(from assetResult: PHFetchResult<PHAsset>) async -> UIImage? {
-        guard let asset = assetResult.firstObject else { return nil }
-        return await self.requestNormalQuailityImage(for: asset)
-    }
-    
     /// 썸네일 없이 기록을 반환합니다.
     func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
         let fetchResult = fetchAssetResult(from: album)
@@ -428,6 +419,17 @@ extension PhotoKitService {
         }
         
         return nil
+    }
+    
+    /// FetchResult 타입으로 변환합니다.
+    private func assetResult(from assetCollection: PHAssetCollection) -> PHFetchResult<PHAsset> {
+        PHAsset.fetchAssets(in: assetCollection, options: nil)
+    }
+    
+    /// 앨범의 썸네일을 반환합니다.
+    private func thumbnail(from assetResult: PHFetchResult<PHAsset>) async -> UIImage? {
+        guard let asset = assetResult.firstObject else { return nil }
+        return await self.requestNormalQuailityImage(for: asset)
     }
 }
 
