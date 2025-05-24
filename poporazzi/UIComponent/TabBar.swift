@@ -13,6 +13,8 @@ final class TabBar: CodeBaseUI {
     
     var containerView = UIView()
     
+    var selectedTab = Tab.albumList
+    
     let albumListButton: UIButton = {
         let button = UIButton()
         let symbol = UIImage(symbol: .albumList, size: 22, weight: .black)
@@ -66,9 +68,11 @@ extension TabBar {
         case let .updateTab(tab):
             UIView.animate(withDuration: 0.2) { [weak self] in
                 guard let self else { return }
+                selectedTab = tab
                 switch tab {
                 case .albumList:
                     albumListButton.alpha = 1
+                    recordButton.alpha = 0.3
                     settingsButton.alpha = 0.3
                     
                 case .record:
@@ -78,6 +82,7 @@ extension TabBar {
                     
                 case .settings:
                     albumListButton.alpha = 0.3
+                    recordButton.alpha = 0.3
                     settingsButton.alpha = 1
                 }
             }
@@ -86,12 +91,19 @@ extension TabBar {
             if isTracking {
                 let symbol = UIImage(symbol: .record, size: 22, weight: .black)
                 recordButton.setImage(symbol, for: .normal)
-                recordButton.alpha = 0.3
+                switch selectedTab {
+                case .albumList, .settings: recordButton.alpha = 0.3
+                case .record: recordButton.alpha = 1
+                }
+                recordButton.flex.markDirty()
+                containerView.flex.layout()
                 
             } else {
                 let symbol = UIImage(resource: .recordStart)
                 recordButton.setImage(symbol, for: .normal)
                 recordButton.alpha = 1
+                recordButton.flex.markDirty()
+                containerView.flex.layout()
             }
         }
     }

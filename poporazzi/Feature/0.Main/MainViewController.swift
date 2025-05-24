@@ -16,11 +16,11 @@ final class MainViewController: UITabBarController {
     
     let disposeBag = DisposeBag()
     
-    init(viewControllers: [UIViewController], viewModel: MainViewModel) {
+    init(viewControllers: [UIViewController], selectedTab: Tab, viewModel: MainViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
         setViewControllers(viewControllers, animated: false)
-        // self.selectedIndex = currentTab.index
+        self.selectedIndex = selectedTab.index
     }
     
     required init?(coder: NSCoder) {

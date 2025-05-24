@@ -51,7 +51,7 @@ extension FinishConfirmModalViewModel {
     
     enum Navigation {
         case dismiss
-        case popToRoot
+        case finishRecord
     }
     
     enum AlertAction {
@@ -101,7 +101,7 @@ extension FinishConfirmModalViewModel {
                         .disposed(by: owner.disposeBag)
                     
                 default:
-                    owner.navigation.accept(.popToRoot)
+                    owner.navigation.accept(.finishRecord)
                     owner.finishRecord()
                 }
             }
@@ -118,11 +118,11 @@ extension FinishConfirmModalViewModel {
                 switch action {
                 case .linkToPhotoAlbum:
                     DeepLinkManager.openPhotoAlbum()
-                    owner.navigation.accept(.popToRoot)
+                    owner.navigation.accept(.finishRecord)
                     owner.storeKitService.requestReview()
                     
                 case .popToHome:
-                    owner.navigation.accept(.popToRoot)
+                    owner.navigation.accept(.finishRecord)
                     owner.storeKitService.requestReview()
                 }
             }

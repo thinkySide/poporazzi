@@ -138,7 +138,7 @@ extension AlbumOptionInputView {
         containerView.flex
             .direction(.column)
             .define { flex in
-                flex.addItem(navigationBar)
+                flex.addItem(navigationBar).marginTop(16)
                 
                 flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
                     flex.addItem(mainLabel).marginTop(16)

@@ -84,7 +84,7 @@ extension RecordViewModel {
     }
     
     enum Navigation {
-        case pop
+        case finishRecord
         case pushAlbumEdit(Album)
         case presentExcludeRecord(Album)
         case presentFinishModal(Album, SectionMediaList)
@@ -92,6 +92,7 @@ extension RecordViewModel {
     }
     
     enum Delegate {
+        case startRecord(Album)
         case albumDidEdited(Album)
         case updateExcludeRecord(Album)
         case completeSharing
@@ -311,7 +312,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .finishWithoutRecord:
-                    owner.navigation.accept(.pop)
+                    owner.navigation.accept(.finishRecord)
                     owner.liveActivityService.stop()
                     UserDefaultsService.trackingAlbumId = ""
                 }
@@ -402,6 +403,10 @@ extension RecordViewModel {
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
+                case let .startRecord(album):
+                    owner.output.album.accept(album)
+                    owner.output.viewDidRefresh.accept(())
+                    
                 case let .albumDidEdited(album):
                     owner.output.album.accept(album)
                     owner.output.viewDidRefresh.accept(())

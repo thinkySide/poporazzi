@@ -59,8 +59,8 @@ extension AlbumOptionInputViewModel {
     
     enum Navigation {
         case pop
-        case pushRecord(Album)
-        case presentAuthRequestModal
+        case startRecord(Album)
+        // case presentAuthRequestModal
     }
     
     enum Delegate {
@@ -141,7 +141,7 @@ extension AlbumOptionInputViewModel {
                 switch owner.photoKitService.checkAuth() {
                 case .notDetermined:
                     HapticManager.notification(type: .warning)
-                    owner.navigation.accept(.presentAuthRequestModal)
+                    // owner.navigation.accept(.presentAuthRequestModal)
                     
                 case .denied, .restricted, .limited:
                     HapticManager.notification(type: .error)
@@ -192,7 +192,7 @@ extension AlbumOptionInputViewModel {
             mediaFilterOption: output.mediaFilterOption.value
         )
         
-        navigation.accept(.pushRecord(album))
+        navigation.accept(.startRecord(album))
         liveActivityService.start(to: album)
         HapticManager.notification(type: .success)
         

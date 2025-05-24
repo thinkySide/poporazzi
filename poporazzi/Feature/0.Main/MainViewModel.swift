@@ -15,6 +15,7 @@ final class MainViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     
     init(output: Output) {
         self.output = output
@@ -42,7 +43,12 @@ extension MainViewModel {
     }
     
     enum Navigation {
-        
+        case presentTitleInput
+    }
+    
+    enum Delegate {
+        case startRecord
+        case finishRecord
     }
 }
 
@@ -64,8 +70,13 @@ extension MainViewModel {
         input.recordTabTaaped
             .emit(with: self) { owner, tab in
                 let isTracking = owner.output.isTracking.value
-                let tab = Tab.record(isTracking: isTracking)
-                owner.output.selectedTab.accept(tab)
+                if isTracking {
+                    let tab = Tab.record(isTracking: isTracking)
+                    owner.output.selectedTab.accept(tab)
+                } else {
+                    owner.navigation.accept(.presentTitleInput)
+                }
+                
                 owner.output.isTracking.accept(isTracking)
                 HapticManager.impact(style: .soft)
             }
@@ -77,6 +88,20 @@ extension MainViewModel {
                 owner.output.selectedTab.accept(tab)
                 owner.output.isTracking.accept(owner.output.isTracking.value)
                 HapticManager.impact(style: .soft)
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .startRecord:
+                    owner.output.selectedTab.accept(.record(isTracking: true))
+                    owner.output.isTracking.accept(true)
+                    
+                case .finishRecord:
+                    owner.output.selectedTab.accept(.albumList)
+                    owner.output.isTracking.accept(false)
+                }
             }
             .disposed(by: disposeBag)
         

@@ -290,7 +290,7 @@ extension RecordView {
                 .paddingHorizontal(20)
             
             flex.addItem().grow(1).marginTop(12).define { flex in
-                flex.addItem(recordCollectionView).position(.absolute).all(0)
+                flex.addItem(recordCollectionView).position(.absolute).top(0).horizontally(0).bottom(48)
             }
             
             flex.addItem(emptyView)

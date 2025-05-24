@@ -17,7 +17,6 @@ final class TitleInputViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
-    let delegate = PublishRelay<Delegate>()
     let alert = PublishRelay<Alert>()
     
     init(output: Output) {
@@ -46,11 +45,6 @@ extension TitleInputViewModel {
     
     enum Navigation {
         case pushAlbumOptionInput(title: String)
-        case pushRecord(Album)
-    }
-    
-    enum Delegate {
-        case reset
     }
     
     enum Alert {
@@ -77,16 +71,6 @@ extension TitleInputViewModel {
                 let title = owner.output.titleText.value
                 owner.navigation.accept(.pushAlbumOptionInput(title: title))
                 HapticManager.impact(style: .soft)
-            }
-            .disposed(by: disposeBag)
-        
-        delegate
-            .bind(with: self) { owner, delegate in
-                switch delegate {
-                case .reset:
-                    owner.output.isNextButtonEnabled.accept(false)
-                    owner.output.titleText.accept("")
-                }
             }
             .disposed(by: disposeBag)
         
