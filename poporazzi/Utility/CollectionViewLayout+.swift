@@ -89,7 +89,7 @@ extension CollectionViewLayout {
         )
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize,
-            subitems: [item, lastItem]
+            subitems: [item, item, lastItem]
         )
         
         // 4. 섹션 설정

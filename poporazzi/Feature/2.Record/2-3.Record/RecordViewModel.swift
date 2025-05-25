@@ -89,6 +89,7 @@ extension RecordViewModel {
         case presentExcludeRecord(Album)
         case presentFinishModal(Album, SectionMediaList)
         case presentMediaShareSheet([Any])
+        case toggleTabBar(Bool)
     }
     
     enum Delegate {
@@ -230,6 +231,7 @@ extension RecordViewModel {
             .emit(with: self) { owner, _ in
                 owner.output.switchSelectMode.accept(true)
                 owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                owner.navigation.accept(.toggleTabBar(false))
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
@@ -237,6 +239,7 @@ extension RecordViewModel {
         input.selectCancelButtonTapped
             .emit(with: self) { owner, _ in
                 owner.cancelSelectMode()
+                owner.navigation.accept(.toggleTabBar(true))
             }
             .disposed(by: disposeBag)
         

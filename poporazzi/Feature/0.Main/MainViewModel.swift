@@ -40,6 +40,7 @@ extension MainViewModel {
     struct Output {
         let selectedTab: BehaviorRelay<Tab>
         let isTracking: BehaviorRelay<Bool>
+        let toggleTabBar = PublishRelay<Bool>()
     }
     
     enum Navigation {
@@ -49,6 +50,7 @@ extension MainViewModel {
     enum Delegate {
         case startRecord
         case finishRecord
+        case toggleTabBar(Bool)
     }
 }
 
@@ -101,6 +103,9 @@ extension MainViewModel {
                 case .finishRecord:
                     owner.output.selectedTab.accept(.albumList)
                     owner.output.isTracking.accept(false)
+                    
+                case let .toggleTabBar(bool):
+                    owner.output.toggleTabBar.accept(bool)
                 }
             }
             .disposed(by: disposeBag)

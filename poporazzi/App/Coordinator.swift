@@ -98,6 +98,9 @@ final class Coordinator: NSObject {
                             recordVM?.delegate.accept(.completeSharing)
                         }
                     }
+                    
+                case let .toggleTabBar(bool):
+                    mainViewModel?.delegate.accept(.toggleTabBar(bool))
                 }
             }
             .disposed(by: recordVC.disposeBag)

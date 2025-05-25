@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Tab {
+enum Tab: Equatable {
     case albumList
     case record(isTracking: Bool)
     case settings

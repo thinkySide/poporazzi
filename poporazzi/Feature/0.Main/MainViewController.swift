@@ -14,6 +14,8 @@ final class MainViewController: UITabBarController {
     private let customTabBar = TabBar()
     private let viewModel: MainViewModel
     
+    private var tabBarBottomConstraint: NSLayoutConstraint!
+    
     let disposeBag = DisposeBag()
     
     init(viewControllers: [UIViewController], selectedTab: Tab, viewModel: MainViewModel) {
@@ -43,12 +45,13 @@ extension MainViewController {
         tabBar.isHidden = true
         view.addSubview(customTabBar)
         customTabBar.translatesAutoresizingMaskIntoConstraints = false
+        tabBarBottomConstraint = customTabBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 4)
         
         NSLayoutConstraint.activate([
             customTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            customTabBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 4),
-            customTabBar.heightAnchor.constraint(equalToConstant: 48)
+            customTabBar.heightAnchor.constraint(equalToConstant: 48),
+            tabBarBottomConstraint
         ])
     }
     
@@ -71,6 +74,15 @@ extension MainViewController {
         output.isTracking
             .bind(with: self) { owner, isTracking in
                 owner.customTabBar.action(.updateRecordButton(isTracking: isTracking))
+            }
+            .disposed(by: disposeBag)
+        
+        output.toggleTabBar
+            .bind(with: self) { owner, bool in
+                owner.tabBarBottomConstraint.constant = bool ? 4 : 100
+                UIView.animate(withDuration: 0.2) {
+                    owner.view.layoutIfNeeded()
+                }
             }
             .disposed(by: disposeBag)
     }
