@@ -12,8 +12,12 @@ import Photos
 
 struct MockPhotoKitService: PhotoKitInterface {
     
-    var photoLibraryChange: Signal<Void> {
-        PublishRelay<Void>().asSignal()
+    var photoLibraryAssetChange: Signal<Void> {
+        .empty()
+    }
+    
+    var photoLibraryCollectionChange: Signal<Void> {
+        .empty()
     }
     
     func checkPermission() -> PHAuthorizationStatus {

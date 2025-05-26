@@ -38,7 +38,8 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     private var collectionFetchResult: PHFetchResult<PHCollection>?
     
     /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
-    private let photoLibraryChangeRelay = BehaviorRelay(value: ())
+    private let photoLibraryAssetChangeRelay = BehaviorRelay(value: ())
+    private let photoLibraryCollectionChangeRelay = BehaviorRelay(value: ())
     
     override init() {
         super.init()
@@ -52,8 +53,13 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
 extension PhotoKitService {
     
     /// PhotoLibrayChangeRelay를 Signal로 반환
-    var photoLibraryChange: Signal<Void> {
-        photoLibraryChangeRelay.asSignal(onErrorJustReturn: ())
+    var photoLibraryAssetChange: Signal<Void> {
+        photoLibraryAssetChangeRelay.asSignal(onErrorJustReturn: ())
+    }
+    
+    /// PhotoLibrayChangeRelay를 Signal로 반환
+    var photoLibraryCollectionChange: Signal<Void> {
+        photoLibraryCollectionChangeRelay.asSignal(onErrorJustReturn: ())
     }
     
     /// PhotoLibrary 권한을 요청합니다.
@@ -154,7 +160,7 @@ extension PhotoKitService {
                 observer.onNext(albumList)
                 observer.onCompleted()
             }
-
+            
             return Disposables.create()
         }
     }
@@ -648,19 +654,28 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
     
     /// PhotoLibrary의 변화 감지 시 호출됩니다.
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        guard let assetFetchResult,
-              let changeDetails = changeInstance.changeDetails(for: assetFetchResult) else {
-            return
+        
+        // 1. 에셋 확인
+        if let assetFetchResult,
+           let assetChangeDetails = changeInstance.changeDetails(for: assetFetchResult) {
+            if assetChangeDetails.hasIncrementalChanges {
+                if !assetChangeDetails.changedObjects.isEmpty
+                    || !assetChangeDetails.insertedObjects.isEmpty
+                    || !assetChangeDetails.removedObjects.isEmpty {
+                    photoLibraryAssetChangeRelay.accept(())
+                }
+            }
         }
         
-        // 변화가 일어났는지 확인
-        if changeDetails.hasIncrementalChanges {
-            
-            // 변경 추가 또는 삭제된 에셋이 있다면
-            if !changeDetails.changedObjects.isEmpty
-                || !changeDetails.insertedObjects.isEmpty
-                || !changeDetails.removedObjects.isEmpty {
-                photoLibraryChangeRelay.accept(())
+        // 2. 컬렉션 확인
+        if let collectionFetchResult,
+           let collectionChangeDetails = changeInstance.changeDetails(for: collectionFetchResult) {
+            if collectionChangeDetails.hasIncrementalChanges {
+                if !collectionChangeDetails.changedObjects.isEmpty
+                    || !collectionChangeDetails.insertedObjects.isEmpty
+                    || !collectionChangeDetails.removedObjects.isEmpty {
+                    photoLibraryCollectionChangeRelay.accept(())
+                }
             }
         }
     }

@@ -206,7 +206,7 @@ extension RecordViewModel {
             .disposed(by: disposeBag)
         
         // 3. 리프레쉬 및 라이브러리 변경 감지
-        Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
+        Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryAssetChange)
             .asObservable()
             .bind(with: self) { owner, _ in
                 do {

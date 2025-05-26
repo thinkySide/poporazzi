@@ -56,7 +56,7 @@ extension AlbumListViewModel {
 extension AlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
-        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal())
+        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal(), photoKitService.photoLibraryCollectionChange)
             .emit(with: self) { owner, _ in
                 do {
                     let albumList = try owner.photoKitService.fetchAlbumListWithNoThumbnail()
