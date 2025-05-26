@@ -77,7 +77,7 @@ extension RecordViewModel {
         let setupSeeMoreToolbarMenu = BehaviorRelay<[MenuModel]>(value: [])
         let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
         
-        let switchSelectMode = PublishRelay<Bool>()
+        let switchSelectMode = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
         let toggleLoading = PublishRelay<Bool>()
@@ -91,6 +91,7 @@ extension RecordViewModel {
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
+        case pushDetail(Album, SectionMediaList)
     }
     
     enum Delegate {
@@ -241,6 +242,7 @@ extension RecordViewModel {
                 owner.output.switchSelectMode.accept(true)
                 owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
                 owner.navigation.accept(.toggleTabBar(false))
+                NameSpace.isSelectionMode = true
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
@@ -249,15 +251,22 @@ extension RecordViewModel {
             .emit(with: self) { owner, _ in
                 owner.cancelSelectMode()
                 owner.navigation.accept(.toggleTabBar(true))
+                NameSpace.isSelectionMode = false
             }
             .disposed(by: disposeBag)
         
         input.recordCellSelected
             .emit(with: self) { owner, indexPath in
-                var currentCells = owner.output.selectedRecordCells.value
-                currentCells.append(indexPath)
-                owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                switch owner.output.switchSelectMode.value {
+                case true:
+                    var currentCells = owner.output.selectedRecordCells.value
+                    currentCells.append(indexPath)
+                    owner.output.selectedRecordCells.accept(currentCells)
+                    owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                    
+                case false:
+                    owner.navigation.accept(.pushDetail(owner.output.album.value, owner.output.sectionMediaList.value))
+                }
             }
             .disposed(by: disposeBag)
         

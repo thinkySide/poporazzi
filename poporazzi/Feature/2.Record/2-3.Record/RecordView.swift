@@ -132,7 +132,6 @@ final class RecordView: CodeBaseUI {
         )
         collectionView.backgroundColor = .white
         collectionView.contentInset.bottom = 24
-        collectionView.allowsSelection = false
         collectionView.register(
             RecordCell.self,
             forCellWithReuseIdentifier: RecordCell.identifier
@@ -242,7 +241,8 @@ extension RecordView {
             }
             
         case let .toggleSelectMode(bool):
-            recordCollectionView.allowsSelection = bool
+            recordCollectionView.allowsSelection = false
+            recordCollectionView.allowsSelection = true // 셀 선택 상태 초기화용
             recordCollectionView.allowsMultipleSelection = bool
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton].forEach { $0.isHidden = !bool }

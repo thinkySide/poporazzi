@@ -117,6 +117,9 @@ final class Coordinator: NSObject {
                     
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
+                    
+                case let .pushDetail(album, sectionMediaList):
+                    owner.pushtDetail()
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -307,6 +310,13 @@ extension Coordinator {
                 }
             }
             .disposed(by: finishVC.disposeBag)
+    }
+    
+    /// 상세보기 화면으로 Push 합니다.
+    private func pushtDetail() {
+        let detailVM = DetailViewModel(output: .init())
+        let detailVC = DetailViewController(viewModel: detailVM)
+        self.navigationController.pushViewController(detailVC, animated: true)
     }
 }
 

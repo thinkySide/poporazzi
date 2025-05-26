@@ -33,9 +33,9 @@ struct Media: Hashable, Equatable {
     
     static func == (lhs: Media, rhs: Media) -> Bool {
         lhs.id == rhs.id
-        && lhs.mediaType == rhs.mediaType
-        && lhs.thumbnail != rhs.thumbnail
-        && lhs.isFavorite == rhs.isFavorite
+//        && lhs.mediaType == rhs.mediaType
+//        && lhs.thumbnail != rhs.thumbnail
+//        && lhs.isFavorite == rhs.isFavorite
     }
     
     /// 미디어 타입

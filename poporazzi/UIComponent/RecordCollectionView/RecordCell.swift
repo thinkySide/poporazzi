@@ -104,6 +104,8 @@ final class RecordCell: UICollectionViewCell {
     
     override var isSelected: Bool {
         didSet {
+            guard NameSpace.isSelectionMode else { return }
+            
             if isSelected {
                 selectOverlay.isHidden = false
                 checkIcon.isHidden = false
