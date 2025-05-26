@@ -11,4 +11,7 @@ enum NameSpace {
     
     /// Sheet 기본 Corner Radius
     static let sheetRadius: CGFloat = 40
+    
+    /// TabBar 사이즈
+    static let tabBarSize: CGFloat = 72
 }

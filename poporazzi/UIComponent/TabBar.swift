@@ -114,16 +114,14 @@ extension TabBar {
 extension TabBar {
     
     func configLayout() {
-        let height: CGFloat = 48
-        containerView.flex.height(height)
+        let buttonHeight: CGFloat = 48
+        containerView.flex.height(NameSpace.tabBarSize)
             .direction(.row)
-            .justifyContent(.center)
-            .alignItems(.center)
             .paddingHorizontal(20)
             .define { flex in
-                flex.addItem(albumListButton).grow(1)
-                flex.addItem(recordButton).grow(1)
-                flex.addItem(settingsButton).grow(1)
+                flex.addItem(albumListButton).grow(1).height(buttonHeight)
+                flex.addItem(recordButton).grow(1).height(buttonHeight)
+                flex.addItem(settingsButton).grow(1).height(buttonHeight)
             }
     }
 }

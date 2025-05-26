@@ -45,12 +45,12 @@ extension MainViewController {
         tabBar.isHidden = true
         view.addSubview(customTabBar)
         customTabBar.translatesAutoresizingMaskIntoConstraints = false
-        tabBarBottomConstraint = customTabBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 4)
+        tabBarBottomConstraint = customTabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         
         NSLayoutConstraint.activate([
             customTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            customTabBar.heightAnchor.constraint(equalToConstant: 48),
+            customTabBar.heightAnchor.constraint(equalToConstant: NameSpace.tabBarSize),
             tabBarBottomConstraint
         ])
     }

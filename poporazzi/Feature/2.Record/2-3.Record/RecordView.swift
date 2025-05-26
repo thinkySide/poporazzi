@@ -54,7 +54,7 @@ final class RecordView: CodeBaseUI {
             centers: [excludeToolBarButton, seemoreToolBarButton],
             trailing: removeToolBarButton
         )
-        toolBar.isHidden = true
+        toolBar.alpha = 0
         return toolBar
     }()
     
@@ -131,6 +131,7 @@ final class RecordView: CodeBaseUI {
             collectionViewLayout: CollectionViewLayout.recordHeaderSection
         )
         collectionView.backgroundColor = .white
+        collectionView.contentInset.bottom = 24
         collectionView.allowsSelection = false
         collectionView.register(
             RecordCell.self,
@@ -244,9 +245,10 @@ extension RecordView {
             recordCollectionView.allowsSelection = bool
             recordCollectionView.allowsMultipleSelection = bool
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
-            [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
+            [selectCancelButton].forEach { $0.isHidden = !bool }
             UIView.animate(withDuration: 0.2) { [weak self] in
-                self?.recordCollectionView.contentInset.bottom = bool ? 80 : 0
+                self?.recordCollectionView.contentInset.bottom = bool ? 80 : 24
+                self?.toolBar.alpha = bool ? 1 : 0
             }
             
         case let .toggleFavoriteMode(bool):
@@ -290,7 +292,7 @@ extension RecordView {
                 .paddingHorizontal(20)
             
             flex.addItem().grow(1).marginTop(12).define { flex in
-                flex.addItem(recordCollectionView).position(.absolute).top(0).horizontally(0).bottom(48)
+                flex.addItem(recordCollectionView).position(.absolute).all(0)
             }
             
             flex.addItem(emptyView)
