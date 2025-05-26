@@ -69,7 +69,7 @@ extension FormCheckBox {
     func action(_ action: Action) {
         switch action {
         case let .updateVariation(variation):
-            UIView.animate(withDuration: 0.2) { [weak self] in
+            UIView.animate(withDuration: 0.2, delay: 0, options: .allowUserInteraction) { [weak self] in
                 self?.checkBoxIcon.tintColor = variation.backgroundColor
             }
         }
