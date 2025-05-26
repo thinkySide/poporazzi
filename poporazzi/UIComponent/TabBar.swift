@@ -19,13 +19,13 @@ final class TabBar: CodeBaseUI {
         let button = UIButton()
         let symbol = UIImage(symbol: .albumList, size: 22, weight: .black)
         button.setImage(symbol, for: .normal)
-        button.tintColor = .subLabel
+        button.tintColor = .subIcon
         return button
     }()
     
     let recordButton: UIButton = {
         let button = UIButton()
-        button.tintColor = .subLabel
+        button.tintColor = .subIcon
         button.clipsToBounds = true
         return button
     }()
@@ -34,7 +34,7 @@ final class TabBar: CodeBaseUI {
         let button = UIButton()
         let symbol = UIImage(symbol: .setting, size: 22, weight: .black)
         button.setImage(symbol, for: .normal)
-        button.tintColor = .subLabel
+        button.tintColor = .subIcon
         return button
     }()
     

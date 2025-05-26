@@ -14,7 +14,7 @@ final class SettingsView: CodeBaseUI {
     var containerView = UIView()
     
     /// NavigationBar
-    private lazy var navigationBar = NavigationBar()
+    private lazy var navigationBar = NavigationBar(leading: titleLabel)
     
     private let titleLabel = UILabel("설정", size: 20, color: .mainLabel)
     
@@ -56,10 +56,6 @@ extension SettingsView {
     func configLayout() {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
-            
-            flex.addItem().paddingHorizontal(20).define { flex in
-                flex.addItem(titleLabel)
-            }
         }
     }
 }

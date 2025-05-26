@@ -77,7 +77,10 @@ extension RecordDateHeader {
 extension RecordDateHeader {
     
     func configLayout() {
-        containerView.flex.direction(.row).backgroundColor(.white).paddingLeft(4).define { flex in
+        containerView.flex.direction(.row).backgroundColor(.white)
+            .paddingHorizontal(4)
+            .paddingTop(8)
+            .define { flex in
             flex.addItem(dayCountLabel)
             flex.addItem(dateLabel).marginLeft(8)
         }

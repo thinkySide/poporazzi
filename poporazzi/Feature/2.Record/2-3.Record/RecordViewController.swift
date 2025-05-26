@@ -109,7 +109,6 @@ extension RecordViewController {
                 ) as? RecordTitleHeader
                 
                 header?.action(.updateAlbumTitleLabel(albumCache.title))
-                header?.action(.updateStartDateLabel(albumCache.startDate.startDateFormat))
                 header?.action(.updateTotalImageCountLabel(totalCount))
                 
                 return header
@@ -220,7 +219,6 @@ extension RecordViewController {
             .bind(with: self) { owner, album in
                 owner.albumCache = album
                 owner.scene.action(.updateTitleLabel(album.title))
-                owner.scene.action(.updateStartDateLabel(album.startDate.startDateFormat))
                 owner.scene.action(.updateInfoLabel(album))
             }
             .disposed(by: disposeBag)
