@@ -66,9 +66,9 @@ extension TabBar {
     func action(_ action: Action) {
         switch action {
         case let .updateTab(tab):
-            UIView.animate(withDuration: 0.2) { [weak self] in
+            selectedTab = tab
+            UIView.animate(withDuration: 0.2, delay: 0, options: .allowUserInteraction) { [weak self] in
                 guard let self else { return }
-                selectedTab = tab
                 switch tab {
                 case .albumList:
                     albumListButton.alpha = 1
