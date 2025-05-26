@@ -12,21 +12,19 @@ import Photos
 
 struct MockPhotoKitService: PhotoKitInterface {
     
-    
-    
     var photoLibraryChange: Signal<Void> {
         PublishRelay<Void>().asSignal()
     }
     
-    func checkAuth() -> PHAuthorizationStatus {
+    func checkPermission() -> PHAuthorizationStatus {
         .authorized
     }
     
-    func requestAuth() -> Observable<PHAuthorizationStatus> {
+    func requestPermission() -> Observable<PHAuthorizationStatus> {
         .just(.authorized)
     }
     
-    func fetchAlbumListWithNoThumbnail() -> [Album] {
+    func fetchAlbumListWithNoThumbnail() throws -> [Album] {
         []
     }
     
@@ -34,7 +32,7 @@ struct MockPhotoKitService: PhotoKitInterface {
         .just([])
     }
     
-    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
+    func fetchMediaListWithNoThumbnail(from album: Album) throws -> [Media] {
         Array(repeatElement(.init(
             id: UUID().uuidString,
             creationDate: .now,

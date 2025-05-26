@@ -20,7 +20,6 @@ final class AlbumOptionInputViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
-    let alertAction = PublishRelay<AlertAction>()
     
     init(output: Output) {
         self.output = output
@@ -54,21 +53,15 @@ extension AlbumOptionInputViewModel {
         let mediaFetchOption = BehaviorRelay<MediaFetchOption>(value: .all)
         let mediaFilterOption = BehaviorRelay<MediaFilterOption>(value: .init())
         let isStartButtonEnabled = BehaviorRelay<Bool>(value: true)
-        let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
         case pop
         case startRecord(Album)
-        // case presentAuthRequestModal
     }
     
     enum Delegate {
         case startRecord
-    }
-    
-    enum AlertAction {
-        case navigateToSettings
     }
 }
 
@@ -138,22 +131,7 @@ extension AlbumOptionInputViewModel {
         
         input.startButtonTapped
             .emit(with: self) { owner, _ in
-                switch owner.photoKitService.checkAuth() {
-                case .notDetermined:
-                    HapticManager.notification(type: .warning)
-                    // owner.navigation.accept(.presentAuthRequestModal)
-                    
-                case .denied, .restricted, .limited:
-                    HapticManager.notification(type: .error)
-                    owner.output.alertPresented.accept(owner.navigateToSettingsAlert)
-                    break
-                    
-                case .authorized:
-                    owner.startRecord()
-                    
-                @unknown default:
-                    break
-                }
+                owner.startRecord()
             }
             .disposed(by: disposeBag)
         
@@ -162,15 +140,6 @@ extension AlbumOptionInputViewModel {
                 switch delegate {
                 case .startRecord:
                     owner.startRecord()
-                }
-            }
-            .disposed(by: disposeBag)
-        
-        alertAction
-            .bind(with: self) { owner, action in
-                switch action {
-                case .navigateToSettings:
-                    DeepLinkManager.openSettings()
                 }
             }
             .disposed(by: disposeBag)
@@ -218,22 +187,5 @@ extension AlbumOptionInputViewModel {
             return filter.isContainSelfShooting
             || filter.isContainDownload
         }
-    }
-}
-
-// MARK: - Alert
-
-extension AlbumOptionInputViewModel {
-    
-    /// 설정 화면 이동 Alert
-    private var navigateToSettingsAlert: AlertModel {
-        AlertModel(
-            title: "포포라치 이용을 위해선 사진 보관함 전체 접근 권한이 필요해요 🥲",
-            message: "설정 화면으로 이동 후 권한을 재설정 할 수 있어요",
-            eventButton: .init(title: "설정화면 이동") { [weak self] in
-                self?.alertAction.accept(.navigateToSettings)
-            },
-            cancelButton: .init(title: "취소")
-        )
     }
 }

@@ -57,14 +57,14 @@ extension PhotoKitService {
     }
     
     /// PhotoLibrary 권한을 요청합니다.
-    func checkAuth() -> PHAuthorizationStatus {
+    func checkPermission() -> PHAuthorizationStatus {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
         if status == .authorized { PHPhotoLibrary.shared().register(self) }
         return status
     }
     
     /// PhotoLibrary 사용 권한을 요청합니다.
-    func requestAuth() -> RxSwift.Observable<PHAuthorizationStatus> {
+    func requestPermission() -> RxSwift.Observable<PHAuthorizationStatus> {
         Observable.create { observer in
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 observer.onNext(status)
@@ -75,7 +75,9 @@ extension PhotoKitService {
     }
     
     /// 썸네일 없이 앨범 리스트를 반환합니다.
-    func fetchAlbumListWithNoThumbnail() -> [Album] {
+    func fetchAlbumListWithNoThumbnail() throws -> [Album] {
+        if checkPermission() != .authorized { throw PhotoKitError.noPermission }
+        
         let collectionFetchResult = PHAssetCollection.fetchTopLevelUserCollections(with: nil)
         self.collectionFetchResult = collectionFetchResult
         
@@ -158,7 +160,9 @@ extension PhotoKitService {
     }
     
     /// 썸네일 없이 기록을 반환합니다.
-    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
+    func fetchMediaListWithNoThumbnail(from album: Album) throws -> [Media] {
+        if checkPermission() != .authorized { throw PhotoKitError.noPermission }
+        
         let fetchResult = fetchAssetResult(from: album)
         self.assetFetchResult = fetchResult
         

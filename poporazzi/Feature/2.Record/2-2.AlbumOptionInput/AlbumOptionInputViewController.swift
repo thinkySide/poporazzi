@@ -73,11 +73,5 @@ extension AlbumOptionInputViewController {
                 owner.scene.action(.toggleStartButton(isValid))
             }
             .disposed(by: disposeBag)
-        
-        output.alertPresented
-            .bind(with: self) { owner, alert in
-                owner.showAlert(alert)
-            }
-            .disposed(by: disposeBag)
     }
 }

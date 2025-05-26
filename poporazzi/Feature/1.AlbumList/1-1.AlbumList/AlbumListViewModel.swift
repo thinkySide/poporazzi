@@ -17,6 +17,7 @@ final class AlbumListViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     
     init(output: Output) {
         self.output = output
@@ -38,10 +39,15 @@ extension AlbumListViewModel {
     struct Output {
         let albumList = BehaviorRelay<[Album]>(value: [])
         let updateThumbnail = BehaviorRelay<[Album]>(value: [])
+        let viewDidRefresh = PublishRelay<Void>()
     }
     
     enum Navigation {
-        
+        case presentPermissionRequestModal
+    }
+    
+    enum Delegate {
+        case permissionAuthorized
     }
 }
 
@@ -50,18 +56,30 @@ extension AlbumListViewModel {
 extension AlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
-        
-        input.viewDidLoad
+        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal())
             .emit(with: self) { owner, _ in
-                let albumList = owner.photoKitService.fetchAlbumListWithNoThumbnail()
-                owner.output.albumList.accept(albumList)
-                
-                owner.photoKitService.fetchAlbumList(from: albumList)
-                    .observe(on: MainScheduler.asyncInstance)
-                    .bind { albumList in
-                        owner.output.updateThumbnail.accept(albumList)
-                    }
-                    .disposed(by: owner.disposeBag)
+                do {
+                    let albumList = try owner.photoKitService.fetchAlbumListWithNoThumbnail()
+                    owner.output.albumList.accept(albumList)
+                    
+                    owner.photoKitService.fetchAlbumList(from: albumList)
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { albumList in
+                            owner.output.updateThumbnail.accept(albumList)
+                        }
+                        .disposed(by: owner.disposeBag)
+                } catch {
+                    owner.navigation.accept(.presentPermissionRequestModal)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .permissionAuthorized:
+                    owner.output.viewDidRefresh.accept(())
+                }
             }
             .disposed(by: disposeBag)
         

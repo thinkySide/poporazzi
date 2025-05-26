@@ -14,6 +14,7 @@ final class MainViewController: UITabBarController {
     private let customTabBar = TabBar()
     private let viewModel: MainViewModel
     
+    private let viewWillAppear = PublishRelay<Void>()
     private var tabBarBottomConstraint: NSLayoutConstraint!
     
     let disposeBag = DisposeBag()
@@ -33,6 +34,11 @@ final class MainViewController: UITabBarController {
         super.viewDidLoad()
         setupTabBar()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewWillAppear.accept(())
     }
 }
 
@@ -57,7 +63,7 @@ extension MainViewController {
     
     private func bind() {
         let input = MainViewModel.Input(
-            viewDidLoad: .just(()),
+            viewWillAppear: viewWillAppear.asSignal(),
             albumListTabTapped: customTabBar.albumListButton.rx.tap.asSignal(),
             recordTabTaaped: customTabBar.recordButton.rx.tap.asSignal(),
             settingsTabTapped: customTabBar.settingsButton.rx.tap.asSignal()
@@ -83,6 +89,12 @@ extension MainViewController {
                 UIView.animate(withDuration: 0.2) {
                     owner.view.layoutIfNeeded()
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        output.alertPresented
+            .bind(with: self) { owner, alert in
+                owner.showAlert(alert)
             }
             .disposed(by: disposeBag)
     }

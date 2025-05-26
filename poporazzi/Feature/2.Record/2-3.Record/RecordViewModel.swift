@@ -90,6 +90,7 @@ extension RecordViewModel {
         case presentFinishModal(Album, SectionMediaList)
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
+        case presentPermissionRequestModal
     }
     
     enum Delegate {
@@ -164,15 +165,19 @@ extension RecordViewModel {
             .asObservable()
             .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, _ in
-                owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
-                
-                let assetIdentifiers = owner.chunkAssetIdentifiers
-                owner.fetchAllMediaList(from: assetIdentifiers)
-                    .observe(on: MainScheduler.asyncInstance)
-                    .bind { mediaList in
-                        owner.output.updateRecordCells.accept(mediaList)
-                    }
-                    .disposed(by: owner.disposeBag)
+                do {
+                    owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
+                    
+                    let assetIdentifiers = owner.chunkAssetIdentifiers
+                    owner.fetchAllMediaList(from: assetIdentifiers)
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { mediaList in
+                            owner.output.updateRecordCells.accept(mediaList)
+                        }
+                        .disposed(by: owner.disposeBag)
+                } catch {
+                    owner.navigation.accept(.presentPermissionRequestModal)
+                }
             }
             .disposed(by: disposeBag)
         
@@ -204,16 +209,20 @@ extension RecordViewModel {
         Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
             .asObservable()
             .bind(with: self) { owner, _ in
-                owner.output.mediaList.accept(owner.fetchAllMediaListWithNoThumbnail())
-                owner.resetChunk()
-                
-                let assetIdentifiers = owner.chunkAssetIdentifiers
-                owner.fetchAllMediaList(from: assetIdentifiers)
-                    .observe(on: MainScheduler.asyncInstance)
-                    .bind { mediaList in
-                        owner.output.updateRecordCells.accept(mediaList)
-                    }
-                    .disposed(by: owner.disposeBag)
+                do {
+                    owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
+                    owner.resetChunk()
+                    
+                    let assetIdentifiers = owner.chunkAssetIdentifiers
+                    owner.fetchAllMediaList(from: assetIdentifiers)
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { mediaList in
+                            owner.output.updateRecordCells.accept(mediaList)
+                        }
+                        .disposed(by: owner.disposeBag)
+                } catch {
+                    owner.navigation.accept(.presentPermissionRequestModal)
+                }
             }
             .disposed(by: disposeBag)
         
@@ -523,9 +532,9 @@ extension RecordViewModel {
     ///
     /// - 제외된 사진을 필터링합니다.
     /// - 스크린샷이 제외되었을 때 필터링합니다.
-    private func fetchAllMediaListWithNoThumbnail() -> [Media] {
+    private func fetchAllMediaListWithNoThumbnail() throws -> [Media] {
         let album = output.album.value
-        return photoKitService.fetchMediaListWithNoThumbnail(from: album)
+        return try photoKitService.fetchMediaListWithNoThumbnail(from: album)
             .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
     }
     

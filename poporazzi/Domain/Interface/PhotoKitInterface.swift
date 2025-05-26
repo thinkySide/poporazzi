@@ -16,19 +16,19 @@ protocol PhotoKitInterface {
     var photoLibraryChange: Signal<Void> { get }
     
     /// PhotoLibrary 사용 권한을 확인합니다.
-    func checkAuth() -> PHAuthorizationStatus
+    func checkPermission() -> PHAuthorizationStatus
     
     /// PhotoLibrary 사용 권한을 요청합니다.
-    func requestAuth() -> Observable<PHAuthorizationStatus>
+    func requestPermission() -> Observable<PHAuthorizationStatus>
     
-    /// 앨범 리스트를 반환합니다.
-    func fetchAlbumListWithNoThumbnail() -> [Album]
+    /// 썸네일 없이 앨범 리스트를 반환합니다.
+    func fetchAlbumListWithNoThumbnail() throws -> [Album]
     
     /// 앨범 리스트를 반환합니다.
     func fetchAlbumList(from albumList: [Album]) -> Observable<[Album]>
     
     /// 썸네일 없이 미디어 리스트를 반환합니다.
-    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media]
+    func fetchMediaListWithNoThumbnail(from album: Album) throws -> [Media]
     
     /// 미디어 리스트 스트림을 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>

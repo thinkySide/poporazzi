@@ -62,10 +62,23 @@ final class Coordinator: NSObject {
         navigationController.interactivePopGestureRecognizer?.delegate = self
         
         mainViewModel.navigation
-            .bind(with: self) { [weak recordVM] owner, path in
+            .bind(with: self) { [weak albumListVM, weak recordVM] owner, path in
                 switch path {
                 case .presentTitleInput:
                     owner.presentTitleInput(recordVM)
+                    
+                case .presentAuthRequestModal:
+                    owner.presentPermissionRequestModal(albumListVM)
+                }
+            }
+            .disposed(by: mainVC.disposeBag)
+        
+        albumListVM.navigation
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { [weak albumListVM] owner, path in
+                switch path {
+                case .presentPermissionRequestModal:
+                    owner.presentPermissionRequestModal(albumListVM)
                 }
             }
             .disposed(by: mainVC.disposeBag)
@@ -101,6 +114,9 @@ final class Coordinator: NSObject {
                     
                 case let .toggleTabBar(bool):
                     mainViewModel?.delegate.accept(.toggleTabBar(bool))
+                    
+                case .presentPermissionRequestModal:
+                    mainViewModel?.delegate.accept(.presentAuthRequestModal)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -299,24 +315,24 @@ extension Coordinator {
 extension Coordinator {
     
     /// 사진 보관함 권한 요청 모달을 Present합니다.
-    private func presentAuthRequestModal(_ albumOptionVM: AlbumOptionInputViewModel?) {
-        let authRequestVM = AuthRequestModalViewModel(output: .init())
-        let authRequestVC = AuthRequestModalViewController(viewModel: authRequestVM)
-        authRequestVC.isModalInPresentation = true
-        authRequestVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
-        authRequestVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 360 })]
-        self.navigationController.present(authRequestVC, animated: true)
+    private func presentPermissionRequestModal(_ albumListVM: AlbumListViewModel?) {
+        let permissionRequestVM = PermissionRequestModalViewModel(output: .init())
+        let permissionRequestVC = PermissionRequestModalViewController(viewModel: permissionRequestVM)
+        permissionRequestVC.isModalInPresentation = true
+        permissionRequestVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
+        permissionRequestVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 360 })]
+        self.navigationController.present(permissionRequestVC, animated: true)
         
-        authRequestVM.navigation
+        permissionRequestVM.navigation
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .dismiss:
                     owner.navigationController.dismiss(animated: true)
-                    albumOptionVM?.delegate.accept(.startRecord)
+                    albumListVM?.delegate.accept(.permissionAuthorized)
                 }
             }
-            .disposed(by: authRequestVC.disposeBag)
+            .disposed(by: permissionRequestVC.disposeBag)
     }
     
     /// 날짜 선택 모달을 Present 합니다.

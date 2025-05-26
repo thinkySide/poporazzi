@@ -1,5 +1,5 @@
 //
-//  AuthRequestModalViewModel.swift
+//  PermissionRequestModalViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/21/25.
@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-final class AuthRequestModalViewModel: ViewModel {
+final class PermissionRequestModalViewModel: ViewModel {
     
     @Dependency(\.photoKitService) private var photoKitService
     
@@ -30,7 +30,7 @@ final class AuthRequestModalViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension AuthRequestModalViewModel {
+extension PermissionRequestModalViewModel {
     
     struct Input {
         let requestAuthButtonTapped: Signal<Void>
@@ -51,16 +51,16 @@ extension AuthRequestModalViewModel {
 
 // MARK: - Transform
 
-extension AuthRequestModalViewModel {
+extension PermissionRequestModalViewModel {
     
     func transform(_ input: Input) -> Output {
         input.requestAuthButtonTapped
             .emit(with: self) { owner, _ in
-                let status = owner.photoKitService.checkAuth()
+                let status = owner.photoKitService.checkPermission()
                 
                 if status == .notDetermined {
                     HapticManager.impact(style: .soft)
-                    owner.photoKitService.requestAuth()
+                    owner.photoKitService.requestPermission()
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { status in
                             switch status {
@@ -104,7 +104,7 @@ extension AuthRequestModalViewModel {
 
 // MARK: - Alert
 
-extension AuthRequestModalViewModel {
+extension PermissionRequestModalViewModel {
     
     /// 설정 화면 이동 Alert
     private var navigateToSettingsAlert: AlertModel {
