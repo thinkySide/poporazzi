@@ -54,16 +54,14 @@ final class NavigationBar: CodeBaseUI {
 extension NavigationBar {
     
     func configLayout() {
-        let height: CGFloat = 48
-        containerView.flex.height(height)
+        containerView.flex.height(48)
             .direction(.row)
-            .justifyContent(.center)
+            .justifyContent(.spaceBetween)
             .alignItems(.center)
             .paddingHorizontal(20)
             .define { flex in
-                flex.addItem(titleLabel).position(.absolute).alignSelf(.center)
                 flex.addItem(leadingView)
-                flex.addItem().grow(1)
+                flex.addItem(titleLabel)
                 flex.addItem(trailingView)
             }
     }
