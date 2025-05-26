@@ -124,7 +124,7 @@ extension PhotoKitService {
                 albumList.append(album)
             }
         }
-        return albumList
+        return albumList.sorted { $0.startDate > $1.startDate }
     }
     
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
