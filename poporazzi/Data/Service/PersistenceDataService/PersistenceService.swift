@@ -114,6 +114,7 @@ extension PersistenceService {
             title: album.title,
             startDate: album.startDate,
             endDate: album.endDate,
+            albumType: .creating,
             excludeMediaList: Set(album.excludeMediaList),
             mediaFetchOption: toEntity(from: album.mediaFetchOption),
             mediaFilterOption: toEntity(from: album.mediaFilterOption)

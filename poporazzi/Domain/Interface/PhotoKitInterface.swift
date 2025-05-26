@@ -13,18 +13,27 @@ import Photos
 protocol PhotoKitInterface {
     
     /// PhotoLibrary에 변화가 감지될 때 전송되는 이벤트
-    var photoLibraryChange: Signal<Void> { get }
+    var photoLibraryAssetChange: Signal<Void> { get }
+    
+    /// PhotoLibrary에 변화가 감지될 때 전송되는 이벤트
+    var photoLibraryCollectionChange: Signal<Void> { get }
     
     /// PhotoLibrary 사용 권한을 확인합니다.
-    func checkAuth() -> PHAuthorizationStatus
+    func checkPermission() -> PHAuthorizationStatus
     
     /// PhotoLibrary 사용 권한을 요청합니다.
-    func requestAuth() -> Observable<PHAuthorizationStatus>
+    func requestPermission() -> Observable<PHAuthorizationStatus>
     
-    /// Thumbnail 없이 Media 배열을 반환합니다.
-    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media]
+    /// 썸네일 없이 앨범 리스트를 반환합니다.
+    func fetchAlbumListWithNoThumbnail() throws -> [Album]
     
-    /// Media 배열 이벤트를 반환합니다.
+    /// 앨범 리스트를 반환합니다.
+    func fetchAlbumList(from albumList: [Album]) -> Observable<[Album]>
+    
+    /// 썸네일 없이 미디어 리스트를 반환합니다.
+    func fetchMediaListWithNoThumbnail(from album: Album) throws -> [Media]
+    
+    /// 미디어 리스트 스트림을 반환합니다.
     func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>
     
     /// 즐겨찾기 상태를 전환합니다.

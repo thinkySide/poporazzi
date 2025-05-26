@@ -5,7 +5,7 @@
 //  Created by 김민준 on 4/9/25.
 //
 
-import Foundation
+import UIKit
 
 /// 앨범
 struct Album: Hashable, Equatable {
@@ -22,6 +22,18 @@ struct Album: Hashable, Equatable {
     /// 종료 날짜
     var endDate: Date?
     
+    /// 썸네일
+    var thumbnail: UIImage?
+    
+    /// 앨범 타입
+    var albumType: AlbumType
+    
+    /// 추정 개수
+    ///
+    /// - 앨범의 경우 전체 에셋 개수
+    /// - 폴더의 경우 전체 앨범 개수
+    var estimateCount: Int
+    
     /// 제외된 미디어 리스트
     var excludeMediaList: Set<String>
     
@@ -36,6 +48,9 @@ struct Album: Hashable, Equatable {
         title: String,
         startDate: Date = .now,
         endDate: Date? = nil,
+        thumbnail: UIImage? = nil,
+        albumType: AlbumType,
+        estimateCount: Int = 0,
         excludeMediaList: Set<String> = [],
         mediaFetchOption: MediaFetchOption,
         mediaFilterOption: MediaFilterOption
@@ -44,6 +59,9 @@ struct Album: Hashable, Equatable {
         self.title = title
         self.startDate = startDate
         self.endDate = endDate
+        self.thumbnail = thumbnail
+        self.albumType = albumType
+        self.estimateCount = estimateCount
         self.excludeMediaList = excludeMediaList
         self.mediaFetchOption = mediaFetchOption
         self.mediaFilterOption = mediaFilterOption
@@ -53,6 +71,7 @@ struct Album: Hashable, Equatable {
         Album(
             title: "",
             startDate: .now,
+            albumType: .album,
             excludeMediaList: [],
             mediaFetchOption: .all,
             mediaFilterOption: .init()
@@ -66,6 +85,19 @@ struct Album: Hashable, Equatable {
     static func == (lhs: Album, rhs: Album) -> Bool {
         lhs.id == rhs.id
     }
+}
+
+/// 앨범 타입
+enum AlbumType {
+    
+    /// 생성중
+    case creating
+    
+    /// 앨범
+    case album
+    
+    /// 폴더
+    case folder
 }
 
 /// 앨범 저장 옵션

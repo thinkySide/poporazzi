@@ -62,15 +62,6 @@ extension TitleInputViewController {
             }
             .disposed(by: disposeBag)
         
-        viewModel.delegate
-            .bind(with: self) { owner, delegate in
-                switch delegate {
-                case .reset:
-                    owner.scene.titleTextField.action(.updateText(""))
-                }
-            }
-            .disposed(by: disposeBag)
-        
         output.alertPresented
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, alert in

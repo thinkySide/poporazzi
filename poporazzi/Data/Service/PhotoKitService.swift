@@ -34,10 +34,12 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     }()
     
     /// 감지를 위한 fetchResult
-    private var fetchResultForObserve: PHFetchResult<PHAsset>?
+    private var assetFetchResult: PHFetchResult<PHAsset>?
+    private var collectionFetchResult: PHFetchResult<PHCollection>?
     
     /// PhotoLibray의 변화가 감지할 때 이벤트를 발송하는 Relay
-    private let photoLibraryChangeRelay = BehaviorRelay(value: ())
+    private let photoLibraryAssetChangeRelay = BehaviorRelay(value: ())
+    private let photoLibraryCollectionChangeRelay = BehaviorRelay(value: ())
     
     override init() {
         super.init()
@@ -51,19 +53,24 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
 extension PhotoKitService {
     
     /// PhotoLibrayChangeRelay를 Signal로 반환
-    var photoLibraryChange: Signal<Void> {
-        photoLibraryChangeRelay.asSignal(onErrorJustReturn: ())
+    var photoLibraryAssetChange: Signal<Void> {
+        photoLibraryAssetChangeRelay.asSignal(onErrorJustReturn: ())
+    }
+    
+    /// PhotoLibrayChangeRelay를 Signal로 반환
+    var photoLibraryCollectionChange: Signal<Void> {
+        photoLibraryCollectionChangeRelay.asSignal(onErrorJustReturn: ())
     }
     
     /// PhotoLibrary 권한을 요청합니다.
-    func checkAuth() -> PHAuthorizationStatus {
+    func checkPermission() -> PHAuthorizationStatus {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
         if status == .authorized { PHPhotoLibrary.shared().register(self) }
         return status
     }
     
     /// PhotoLibrary 사용 권한을 요청합니다.
-    func requestAuth() -> RxSwift.Observable<PHAuthorizationStatus> {
+    func requestPermission() -> RxSwift.Observable<PHAuthorizationStatus> {
         Observable.create { observer in
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 observer.onNext(status)
@@ -73,10 +80,97 @@ extension PhotoKitService {
         }
     }
     
+    /// 썸네일 없이 앨범 리스트를 반환합니다.
+    func fetchAlbumListWithNoThumbnail() throws -> [Album] {
+        if checkPermission() != .authorized { throw PhotoKitError.noPermission }
+        
+        let collectionFetchResult = PHAssetCollection.fetchTopLevelUserCollections(with: nil)
+        self.collectionFetchResult = collectionFetchResult
+        
+        var albumList = [Album]()
+        collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
+            guard let self else { return }
+            
+            // 앨범의 경우
+            if let album = collection as? PHAssetCollection {
+                let album = Album(
+                    id: album.localIdentifier,
+                    title: album.localizedTitle ?? "",
+                    startDate: album.startDate ?? .now,
+                    endDate: nil,
+                    thumbnail: nil,
+                    albumType: .album,
+                    estimateCount: album.estimatedAssetCount,
+                    excludeMediaList: [],
+                    mediaFetchOption: .all,
+                    mediaFilterOption: .init()
+                )
+                albumList.append(album)
+            }
+            
+            // 폴더의 경우
+            else {
+                let album = Album(
+                    id: collection.localIdentifier,
+                    title: collection.localizedTitle ?? "",
+                    startDate: .now,
+                    endDate: nil,
+                    albumType: .folder,
+                    estimateCount: estimateAlbumCount(in: collection),
+                    excludeMediaList: [],
+                    mediaFetchOption: .all,
+                    mediaFilterOption: .init()
+                )
+                albumList.append(album)
+            }
+        }
+        return albumList.sorted { $0.startDate > $1.startDate }
+    }
+    
+    /// 썸네일과 함께 앨범 리스트를 반환합니다.
+    func fetchAlbumList(from albumList: [Album]) -> Observable<[Album]> {
+        Observable.create { [weak self] observer in
+            Task {
+                guard let self else {
+                    observer.onCompleted()
+                    return
+                }
+                
+                var albumList = albumList
+                for (index, album) in albumList.enumerated() {
+                    
+                    // 앨범의 경우
+                    if album.albumType == .album {
+                        guard let assetCollection = self.fetchAlbum(from: album.id) else { return }
+                        let assetResult = self.assetResult(from: assetCollection)
+                        let thumbnail = await self.thumbnail(from: assetResult)
+                        albumList[index].thumbnail = thumbnail
+                    }
+                    
+                    // 폴더의 경우
+                    else if album.albumType == .folder {
+                        guard let collection = self.fetchFolder(from: album.id),
+                              let assetCollection = self.fetchAlbum(from: collection) else { return }
+                        let assetResult = self.assetResult(from: assetCollection)
+                        let thumbnail = await self.thumbnail(from: assetResult)
+                        albumList[index].thumbnail = thumbnail
+                    }
+                }
+                
+                observer.onNext(albumList)
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
+        }
+    }
+    
     /// 썸네일 없이 기록을 반환합니다.
-    func fetchMediaListWithNoThumbnail(from album: Album) -> [Media] {
+    func fetchMediaListWithNoThumbnail(from album: Album) throws -> [Media] {
+        if checkPermission() != .authorized { throw PhotoKitError.noPermission }
+        
         let fetchResult = fetchAssetResult(from: album)
-        self.fetchResultForObserve = fetchResult
+        self.assetFetchResult = fetchResult
         
         var mediaList = [Media]()
         fetchResult.enumerateObjects { [weak self] asset, _, _ in
@@ -336,6 +430,17 @@ extension PhotoKitService {
         
         return nil
     }
+    
+    /// FetchResult 타입으로 변환합니다.
+    private func assetResult(from assetCollection: PHAssetCollection) -> PHFetchResult<PHAsset> {
+        PHAsset.fetchAssets(in: assetCollection, options: nil)
+    }
+    
+    /// 앨범의 썸네일을 반환합니다.
+    private func thumbnail(from assetResult: PHFetchResult<PHAsset>) async -> UIImage? {
+        guard let asset = assetResult.firstObject else { return nil }
+        return await self.requestNormalQuailityImage(for: asset)
+    }
 }
 
 // MARK: - Album
@@ -365,6 +470,11 @@ extension PhotoKitService {
         )
         .firstObject
     }
+    
+    /// 앨범을 반환합니다.
+    private func fetchAlbum(from collection: PHCollectionList) -> PHAssetCollection? {
+        PHCollection.fetchCollections(in: collection, options: nil).firstObject as? PHAssetCollection
+    }
 }
 
 // MARK: - Folder
@@ -392,6 +502,17 @@ extension PhotoKitService {
             withLocalIdentifiers: [locaIdentifier], options: nil
         )
         .firstObject
+    }
+    
+    /// 폴더 내 예상되는 앨범의 개수를 반환합니다.
+    private func estimateAlbumCount(in collection: PHCollection) -> Int {
+        guard let collectionList = collection as? PHCollectionList else { return 0 }
+        let collections = PHCollection.fetchCollections(in: collectionList, options: nil)
+        var count = 0
+        collections.enumerateObjects { _, _, _ in
+            count += 1
+        }
+        return count
     }
 }
 
@@ -533,19 +654,28 @@ extension PhotoKitService: PHPhotoLibraryChangeObserver {
     
     /// PhotoLibrary의 변화 감지 시 호출됩니다.
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        guard let fetchResultForObserve,
-              let changeDetails = changeInstance.changeDetails(for: fetchResultForObserve) else {
-            return
+        
+        // 1. 에셋 확인
+        if let assetFetchResult,
+           let assetChangeDetails = changeInstance.changeDetails(for: assetFetchResult) {
+            if assetChangeDetails.hasIncrementalChanges {
+                if !assetChangeDetails.changedObjects.isEmpty
+                    || !assetChangeDetails.insertedObjects.isEmpty
+                    || !assetChangeDetails.removedObjects.isEmpty {
+                    photoLibraryAssetChangeRelay.accept(())
+                }
+            }
         }
         
-        // 변화가 일어났는지 확인
-        if changeDetails.hasIncrementalChanges {
-            
-            // 변경 추가 또는 삭제된 에셋이 있다면
-            if !changeDetails.changedObjects.isEmpty
-                || !changeDetails.insertedObjects.isEmpty
-                || !changeDetails.removedObjects.isEmpty {
-                photoLibraryChangeRelay.accept(())
+        // 2. 컬렉션 확인
+        if let collectionFetchResult,
+           let collectionChangeDetails = changeInstance.changeDetails(for: collectionFetchResult) {
+            if collectionChangeDetails.hasIncrementalChanges {
+                if !collectionChangeDetails.changedObjects.isEmpty
+                    || !collectionChangeDetails.insertedObjects.isEmpty
+                    || !collectionChangeDetails.removedObjects.isEmpty {
+                    photoLibraryCollectionChangeRelay.accept(())
+                }
             }
         }
     }

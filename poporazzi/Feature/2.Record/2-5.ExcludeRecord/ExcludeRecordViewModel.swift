@@ -110,7 +110,7 @@ extension ExcludeRecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal(), photoKitService.photoLibraryChange)
+        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal(), photoKitService.photoLibraryAssetChange)
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)

@@ -13,6 +13,8 @@ final class TabBar: CodeBaseUI {
     
     var containerView = UIView()
     
+    var selectedTab = Tab.albumList
+    
     let albumListButton: UIButton = {
         let button = UIButton()
         let symbol = UIImage(symbol: .albumList, size: 22, weight: .black)
@@ -57,19 +59,20 @@ final class TabBar: CodeBaseUI {
 extension TabBar {
     
     enum Action {
-        case updateTab(Tab, isTracking: Bool)
+        case updateTab(Tab)
         case updateRecordButton(isTracking: Bool)
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .updateTab(tab, isTracking):
+        case let .updateTab(tab):
             UIView.animate(withDuration: 0.2) { [weak self] in
                 guard let self else { return }
+                selectedTab = tab
                 switch tab {
                 case .albumList:
                     albumListButton.alpha = 1
-                    recordButton.alpha = isTracking ? 0.3 : 1
+                    recordButton.alpha = 0.3
                     settingsButton.alpha = 0.3
                     
                 case .record:
@@ -79,7 +82,7 @@ extension TabBar {
                     
                 case .settings:
                     albumListButton.alpha = 0.3
-                    recordButton.alpha = isTracking ? 0.3 : 1
+                    recordButton.alpha = 0.3
                     settingsButton.alpha = 1
                 }
             }
@@ -88,10 +91,19 @@ extension TabBar {
             if isTracking {
                 let symbol = UIImage(symbol: .record, size: 22, weight: .black)
                 recordButton.setImage(symbol, for: .normal)
+                switch selectedTab {
+                case .albumList, .settings: recordButton.alpha = 0.3
+                case .record: recordButton.alpha = 1
+                }
+                recordButton.flex.markDirty()
+                containerView.flex.layout()
                 
             } else {
                 let symbol = UIImage(resource: .recordStart)
                 recordButton.setImage(symbol, for: .normal)
+                recordButton.alpha = 1
+                recordButton.flex.markDirty()
+                containerView.flex.layout()
             }
         }
     }
@@ -102,16 +114,14 @@ extension TabBar {
 extension TabBar {
     
     func configLayout() {
-        let height: CGFloat = 48
-        containerView.flex.height(height)
+        let buttonHeight: CGFloat = 48
+        containerView.flex.height(NameSpace.tabBarSize)
             .direction(.row)
-            .justifyContent(.center)
-            .alignItems(.center)
             .paddingHorizontal(20)
             .define { flex in
-                flex.addItem(albumListButton).grow(1)
-                flex.addItem(recordButton).grow(1)
-                flex.addItem(settingsButton).grow(1)
+                flex.addItem(albumListButton).grow(1).height(buttonHeight)
+                flex.addItem(recordButton).grow(1).height(buttonHeight)
+                flex.addItem(settingsButton).grow(1).height(buttonHeight)
             }
     }
 }

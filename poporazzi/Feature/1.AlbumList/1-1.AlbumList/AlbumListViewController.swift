@@ -16,6 +16,8 @@ final class AlbumListViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
     
+    private var imageCache = [String: UIImage?]()
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: AlbumListViewModel) {
@@ -55,14 +57,17 @@ extension AlbumListViewController {
     /// DataSource를 설정합니다.
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<AlbumSection, Album>(collectionView: scene.albumCollectionView) {
-            [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
+            [weak self] (collectionView, indexPath, album) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: AlbumCell.identifier,
                 for: indexPath
             ) as? AlbumCell else { return nil }
             
-            cell.action(.setAlbumInfo(.init(title: "콜트플레이 내한 콘서트 🪐 ", mediaFetchOption: .all, mediaFilterOption: .init())))
-            cell.action(.setThumbnail(nil))
+            if let cacheThumbnail = self.imageCache[album.id] {
+                cell.action(.setThumbnail(cacheThumbnail))
+            }
+            
+            cell.action(.setAlbumInfo(album))
             
             return cell
         }
@@ -75,6 +80,18 @@ extension AlbumListViewController {
         snapshot.appendItems(albumList, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
+    
+    private func updatePaginationDataSource(to albumList: [Album]) {
+        guard !albumList.isEmpty else { return }
+        
+        for album in albumList {
+            imageCache.updateValue(album.thumbnail, forKey: album.id)
+        }
+        
+        var snapshot = dataSource.snapshot()
+        snapshot.reloadItems(albumList)
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
 }
 
 // MARK: - Binding
@@ -82,12 +99,23 @@ extension AlbumListViewController {
 extension AlbumListViewController {
     
     func bind() {
-        updateInitialDataSource(to: [.initialValue, .initialValue, .initialValue, .initialValue, .initialValue])
-        
         let input = AlbumListViewModel.Input(
-            
+            viewDidLoad: .just(())
         )
         let output = viewModel.transform(input)
         
+        output.albumList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, albumList in
+                owner.updateInitialDataSource(to: albumList)
+            }
+            .disposed(by: disposeBag)
+        
+        output.updateThumbnail
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, albumList in
+                owner.updatePaginationDataSource(to: albumList)
+            }
+            .disposed(by: disposeBag)
     }
 }

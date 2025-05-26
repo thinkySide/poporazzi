@@ -1,5 +1,5 @@
 //
-//  AuthRequestModalViewController.swift
+//  PermissionRequestModalViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/21/25.
@@ -9,14 +9,14 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class AuthRequestModalViewController: ViewController {
+final class PermissionRequestModalViewController: ViewController {
     
-    private let scene = AuthRequestModalView()
-    private let viewModel: AuthRequestModalViewModel
+    private let scene = PermissionRequestModalView()
+    private let viewModel: PermissionRequestModalViewModel
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: AuthRequestModalViewModel) {
+    init(viewModel: PermissionRequestModalViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -41,10 +41,10 @@ final class AuthRequestModalViewController: ViewController {
 
 // MARK: - Binding
 
-extension AuthRequestModalViewController {
+extension PermissionRequestModalViewController {
     
     func bind() {
-        let input = AuthRequestModalViewModel.Input(
+        let input = PermissionRequestModalViewModel.Input(
             requestAuthButtonTapped: scene.requestAuthButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)

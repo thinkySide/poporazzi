@@ -1,5 +1,5 @@
 //
-//  AuthRequestModalView.swift
+//  PermissionRequestModalView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/21/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class AuthRequestModalView: CodeBaseUI {
+final class PermissionRequestModalView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -54,24 +54,9 @@ final class AuthRequestModalView: CodeBaseUI {
     }
 }
 
-// MARK: - Action
-
-extension AuthRequestModalView {
-    
-    enum Action {
-        
-    }
-    
-    func action(_ action: Action) {
-        switch action {
-            
-        }
-    }
-}
-
 // MARK: - Layout
 
-extension AuthRequestModalView {
+extension PermissionRequestModalView {
     
     func configLayout() {
         containerView.flex.direction(.column).paddingHorizontal(20).define { flex in
