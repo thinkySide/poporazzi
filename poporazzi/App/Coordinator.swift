@@ -79,6 +79,9 @@ final class Coordinator: NSObject {
                 switch path {
                 case .presentPermissionRequestModal:
                     owner.presentPermissionRequestModal(albumListVM)
+                    
+                case let .pushMyAlbum(album):
+                    owner.pushMyAlbum(album)
                 }
             }
             .disposed(by: mainVC.disposeBag)
@@ -352,6 +355,18 @@ extension Coordinator {
                 }
             }
             .disposed(by: detailVC.disposeBag)
+    }
+}
+
+// MARK: - AlbumList Flow
+
+extension Coordinator {
+    
+    /// MyAlbum 화면으로 Push 합니다.
+    private func pushMyAlbum(_ album: Album) {
+        let myAlbumVM = MyAlbumViewModel(output: .init(album: .init(value: album)))
+        let myAlbumVC = MyAlbumViewController(viewModel: myAlbumVM)
+        navigationController.pushViewController(myAlbumVC, animated: true)
     }
 }
 

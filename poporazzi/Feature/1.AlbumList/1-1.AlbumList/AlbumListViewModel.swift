@@ -34,6 +34,7 @@ extension AlbumListViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        let albumCellSelected: Signal<IndexPath>
     }
     
     struct Output {
@@ -44,6 +45,7 @@ extension AlbumListViewModel {
     
     enum Navigation {
         case presentPermissionRequestModal
+        case pushMyAlbum(Album)
     }
     
     enum Delegate {
@@ -71,6 +73,13 @@ extension AlbumListViewModel {
                 } catch {
                     owner.navigation.accept(.presentPermissionRequestModal)
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        input.albumCellSelected
+            .emit(with: self) { owner, indexPath in
+                let album = owner.output.albumList.value[indexPath.row]
+                owner.navigation.accept(.pushMyAlbum(album))
             }
             .disposed(by: disposeBag)
         

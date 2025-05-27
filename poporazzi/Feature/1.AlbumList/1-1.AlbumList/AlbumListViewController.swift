@@ -100,7 +100,8 @@ extension AlbumListViewController {
     
     func bind() {
         let input = AlbumListViewModel.Input(
-            viewDidLoad: .just(())
+            viewDidLoad: .just(()),
+            albumCellSelected: scene.albumCollectionView.rx.itemSelected.asSignal()
         )
         let output = viewModel.transform(input)
         
