@@ -19,11 +19,18 @@ final class DetailView: CodeBaseUI {
     /// 뒤로가기 버튼
     let backButton = NavigationButton(buttonType: .back)
     
-    let mediaView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.clipsToBounds = true
-        return imageView
+    let mediaCollectionView: UICollectionView = {
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: CollectionViewLayout.detailLayout
+        )
+        collectionView.backgroundColor = .green
+        collectionView.isPagingEnabled = true
+        collectionView.register(
+            DetailCell.self,
+            forCellWithReuseIdentifier: DetailCell.identifier
+        )
+        return collectionView
     }()
     
     let toolBarView = UIView()
@@ -67,9 +74,7 @@ extension DetailView {
     }
     
     func action(_ action: Action) {
-        switch action {
-            
-        }
+        
     }
 }
 
@@ -81,7 +86,7 @@ extension DetailView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem(mediaView)
+            flex.addItem(mediaCollectionView)
                 .grow(1)
             
             flex.addItem(toolBarView)

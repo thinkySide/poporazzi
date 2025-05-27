@@ -190,6 +190,7 @@ extension PhotoKitService {
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
                         thumbnail: nil,
+                        originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                         isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
@@ -205,6 +206,7 @@ extension PhotoKitService {
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
                         thumbnail: nil,
+                        originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                         isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
@@ -216,7 +218,7 @@ extension PhotoKitService {
     }
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
-    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
+    func fetchMedias(from assetIdentifiers: [String], option: MediaQualityOption) -> Observable<[Media]> {
         Observable.create { [weak self] observer in
             Task {
                 guard let self else {
@@ -235,6 +237,7 @@ extension PhotoKitService {
                                 creationDate: asset.creationDate,
                                 mediaType: self.mediaType(from: asset),
                                 thumbnail: image,
+                                originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                                 isFavorite: asset.isFavorite
                             )
                         }

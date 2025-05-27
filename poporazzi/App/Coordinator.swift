@@ -118,8 +118,8 @@ final class Coordinator: NSObject {
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
                     
-                case let .pushDetail(album, sectionMediaList):
-                    owner.pushtDetail()
+                case let .pushDetail(album, sectionMediaList, indexPath):
+                    owner.pushtDetail(album, sectionMediaList, indexPath)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -313,10 +313,25 @@ extension Coordinator {
     }
     
     /// 상세보기 화면으로 Push 합니다.
-    private func pushtDetail() {
-        let detailVM = DetailViewModel(output: .init())
+    private func pushtDetail(_ album: Album, _ sectionMediaList: SectionMediaList, _ indexPath: IndexPath) {
+        let detailVM = DetailViewModel(
+            output: .init(
+                album: .init(value: album),
+                sectionMediaList: .init(value: sectionMediaList),
+                selectedIndexPath: .init(value: indexPath)
+            )
+        )
         let detailVC = DetailViewController(viewModel: detailVM)
         self.navigationController.pushViewController(detailVC, animated: true)
+        
+        detailVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                }
+            }
+            .disposed(by: detailVC.disposeBag)
     }
 }
 

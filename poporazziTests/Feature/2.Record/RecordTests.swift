@@ -76,7 +76,7 @@ extension RecordTests {
         let (_, output) = makeInputOutput()
         let disposeBag = DisposeBag()
         
-        let dummys: [Media] = (0..<300).map { Media(id: String($0), creationDate: .now, mediaType: .photo(.selfShooting, .heic)) }
+        let dummys: [[Media]] = (0..<300).map { [Media](id: String($0), creationDate: .now, mediaType: .photo(.selfShooting, .heic)) }
         output.mediaList.accept(dummys)
         
         output.mediaList
@@ -97,7 +97,7 @@ extension RecordTests {
         let expectation = XCTestExpectation(description: "페이지네이션 횟수 카운트")
         expectation.expectedFulfillmentCount = 2
         
-        let dummys: [Media] = (0..<300).map { Media(id: String($0), creationDate: .now, mediaType: .photo(.selfShooting, .heic)) }
+        let dummys: [[Media]] = (0..<300).map { [Media](id: String($0), creationDate: .now, mediaType: .photo(.selfShooting, .heic)) }
         output.mediaList.accept(dummys)
         
         output.updateRecordCells

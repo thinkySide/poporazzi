@@ -91,7 +91,7 @@ extension RecordViewModel {
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
-        case pushDetail(Album, SectionMediaList)
+        case pushDetail(Album, SectionMediaList, IndexPath)
     }
     
     enum Delegate {
@@ -265,7 +265,13 @@ extension RecordViewModel {
                     owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
                     
                 case false:
-                    owner.navigation.accept(.pushDetail(owner.output.album.value, owner.output.sectionMediaList.value))
+                    owner.navigation.accept(
+                        .pushDetail(
+                            owner.output.album.value,
+                            owner.output.sectionMediaList.value,
+                            indexPath
+                        )
+                    )
                 }
             }
             .disposed(by: disposeBag)
@@ -549,7 +555,10 @@ extension RecordViewModel {
     
     /// 전체 Media 리스트를 반환합니다.
     private func fetchAllMediaList(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        photoKitService.fetchMedias(from: assetIdentifiers)
+        photoKitService.fetchMedias(
+            from: assetIdentifiers,
+            option: .normal
+        )
     }
 }
 
