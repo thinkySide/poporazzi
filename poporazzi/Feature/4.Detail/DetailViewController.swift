@@ -195,5 +195,12 @@ extension DetailViewController {
                 owner.scene.action(.updateMediaInfo(media))
             }
             .disposed(by: disposeBag)
+        
+        output.actionSheetPresented
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, actionSheet in
+                owner.showActionSheet(actionSheet)
+            }
+            .disposed(by: disposeBag)
     }
 }

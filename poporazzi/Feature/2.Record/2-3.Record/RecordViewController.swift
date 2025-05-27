@@ -89,10 +89,10 @@ extension RecordViewController {
             ) as? RecordCell else { return nil }
             
             if let cacheThumbnail = self.imageCache[media.id] {
-                cell.action(.setImage(cacheThumbnail))
+                cell.action(.setMedia(media, cacheThumbnail))
+            } else {
+                cell.action(.setMedia(media, nil))
             }
-            
-            cell.action(.setMediaInfo(media))
             
             return cell
         }

@@ -11,12 +11,14 @@ import RxCocoa
 
 final class DetailViewModel: ViewModel {
     
+    @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.photoKitService) private var photoKitService
     
     private let disposeBag = DisposeBag()
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let actionSheetAction = PublishRelay<ActionSheetAction>()
     
     /// 이미지 업데이트를 받았는지 확인하는 마킹 배열
     private var updateMarkingList = [Bool]()
@@ -55,10 +57,18 @@ extension DetailViewModel {
         let updateMediaInfo = BehaviorRelay<(Media, dayCount: Int, Date)>(value: (.initialValue, 0, .now))
         
         let viewDidRefresh = PublishRelay<Void>()
+        
+        let actionSheetPresented = PublishRelay<ActionSheetModel>()
     }
     
     enum Navigation {
         case pop
+        case updateRecord(Album)
+    }
+    
+    enum ActionSheetAction {
+        case exclude([Media])
+        case remove([Media])
     }
 }
 
@@ -116,7 +126,7 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
-        Signal.merge(photoKitService.photoLibraryAssetChange)
+        photoKitService.photoLibraryAssetChange
             .asObservable()
             .bind(with: self) { owner, _ in
                 owner.output.viewDidRefresh.accept(())
@@ -133,9 +143,36 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.excludeButtonTapped
+            .emit(with: self) { owner, _ in
+                let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                let actionSheet = owner.excludeActionSheet(from: [media])
+                owner.output.actionSheetPresented.accept(actionSheet)
+                HapticManager.notification(type: .warning)
+            }
+            .disposed(by: disposeBag)
+        
         input.backButtonTapped
             .emit(with: self) { owner, _ in
                 owner.navigation.accept(.pop)
+            }
+            .disposed(by: disposeBag)
+        
+        actionSheetAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case let .exclude(mediaList):
+                    var album = owner.output.album.value
+                    album.excludeMediaList.formUnion(mediaList.map(\.id))
+                    owner.output.album.accept(album)
+                    owner.output.viewDidRefresh.accept(())
+                    owner.navigation.accept(.updateRecord(album))
+                    owner.persistenceService.updateAlbumExcludeMediaList(to: album)
+                    
+                case let .remove(mediaList):
+                    owner.output.viewDidRefresh.accept(())
+                }
+                
             }
             .disposed(by: disposeBag)
         
@@ -204,5 +241,37 @@ extension DetailViewModel {
         let album = output.album.value
         return try photoKitService.fetchMediaListWithNoThumbnail(from: album)
             .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
+    }
+}
+
+// MARK: - Action Sheet
+
+extension DetailViewModel {
+    
+    /// 앨범 제외 Action Sheet
+    private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
+        let title = output.album.value.title
+        return ActionSheetModel(
+            message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
+            buttons: [
+                .init(title: "\(mediaList.count)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                    self?.actionSheetAction.accept(.exclude(mediaList))
+                },
+                .init(title: "취소", style: .cancel)
+            ]
+        )
+    }
+    
+    /// 기록 삭제 Action Sheet
+    private func removeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
+        ActionSheetModel(
+            message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
+            buttons: [
+                .init(title: "\(mediaList.count)장의 기록 삭제", style: .destructive) { [weak self] in
+                    self?.actionSheetAction.accept(.remove(mediaList))
+                },
+                .init(title: "취소", style: .cancel)
+            ]
+        )
     }
 }
