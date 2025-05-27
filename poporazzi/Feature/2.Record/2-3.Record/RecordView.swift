@@ -25,7 +25,7 @@ final class RecordView: CodeBaseUI {
         trailing: navigationTrailingButtons
     )
     
-    private let titleLabel = UILabel("기록 중인 앨범", size: 20, color: .mainLabel)
+    private let titleLabel = UILabel("기록 중", size: 20, color: .mainLabel)
     
     /// 오른쪽 버튼들
     private let navigationTrailingButtons: UIView = {
