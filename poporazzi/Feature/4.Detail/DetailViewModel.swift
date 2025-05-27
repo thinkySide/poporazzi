@@ -57,7 +57,9 @@ extension DetailViewModel {
         let updateMediaInfo = BehaviorRelay<(Media, dayCount: Int, Date)>(value: (.initialValue, 0, .now))
         
         let viewDidRefresh = PublishRelay<Void>()
+        let toggleLoading = PublishRelay<Bool>()
         
+        let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
     }
     
@@ -152,6 +154,15 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.removeButtonTapped
+            .emit(with: self) { owner, _ in
+                let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                let actionSheet = owner.removeActionSheet(from: [media])
+                owner.output.actionSheetPresented.accept(actionSheet)
+                HapticManager.notification(type: .warning)
+            }
+            .disposed(by: disposeBag)
+        
         input.backButtonTapped
             .emit(with: self) { owner, _ in
                 owner.navigation.accept(.pop)
@@ -170,7 +181,23 @@ extension DetailViewModel {
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                     
                 case let .remove(mediaList):
-                    owner.output.viewDidRefresh.accept(())
+                    owner.output.toggleLoading.accept(true)
+                    
+                    let identifiers = mediaList.map(\.id)
+                    owner.photoKitService.deletePhotos(from: identifiers)
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { isSuccess in
+                            if isSuccess {
+                                var album = owner.output.album.value
+                                album.excludeMediaList.subtract(identifiers)
+                                owner.output.album.accept(album)
+                                owner.persistenceService.updateAlbumExcludeMediaList(to: album)
+                            } else {
+                                owner.output.alertPresented.accept(owner.removeFailedAlert)
+                            }
+                            owner.output.toggleLoading.accept(false)
+                        }
+                        .disposed(by: owner.disposeBag)
                 }
                 
             }
@@ -241,6 +268,20 @@ extension DetailViewModel {
         let album = output.album.value
         return try photoKitService.fetchMediaListWithNoThumbnail(from: album)
             .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
+    }
+}
+
+// MARK: - Alert
+
+extension DetailViewModel {
+    
+    /// 기록 삭제 실패 Alert
+    private var removeFailedAlert: AlertModel {
+        AlertModel(
+            title: "사진을 삭제할 수 없어요",
+            message: "사진 라이브러리 권한을 확인해주세요",
+            eventButton: .init(title: "확인")
+        )
     }
 }
 

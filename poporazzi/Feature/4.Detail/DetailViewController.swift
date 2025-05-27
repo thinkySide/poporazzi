@@ -196,10 +196,24 @@ extension DetailViewController {
             }
             .disposed(by: disposeBag)
         
+        output.alertPresented
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, alert in
+                owner.showAlert(alert)
+            }
+            .disposed(by: disposeBag)
+        
         output.actionSheetPresented
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, actionSheet in
                 owner.showActionSheet(actionSheet)
+            }
+            .disposed(by: disposeBag)
+        
+        output.toggleLoading
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isActive in
+                owner.scene.action(.toggleLoading(isActive))
             }
             .disposed(by: disposeBag)
     }

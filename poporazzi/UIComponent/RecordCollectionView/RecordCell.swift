@@ -108,11 +108,11 @@ final class RecordCell: UICollectionViewCell {
             guard NameSpace.isSelectionMode else { return }
             
             if isSelected {
-                selectOverlay.isHidden = false
-                checkIcon.isHidden = false
+                selectOverlay.alpha = 1
+                checkIcon.alpha = 1
             } else {
-                selectOverlay.isHidden = true
-                checkIcon.isHidden = true
+                selectOverlay.alpha = 0
+                checkIcon.alpha = 0
             }
         }
     }

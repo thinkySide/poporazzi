@@ -13,6 +13,9 @@ final class DetailView: CodeBaseUI {
     
     var containerView = UIView()
     
+    /// 로딩 인디케이터
+    private let loadingIndicator = LoadingIndicator()
+    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         leading: backButton,
@@ -57,6 +60,7 @@ final class DetailView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        addSubview(loadingIndicator)
     }
     
     required init?(coder: NSCoder) {
@@ -66,7 +70,9 @@ final class DetailView: CodeBaseUI {
     override func layoutSubviews() {
         super.layoutSubviews()
         containerView.pin.top(pin.safeArea).horizontally(pin.safeArea).bottom()
+        loadingIndicator.pin.all()
         containerView.flex.layout()
+        loadingIndicator.flex.layout()
     }
 }
 
@@ -78,6 +84,7 @@ extension DetailView {
         case setInitialIndex(Int)
         case updateDateLabel(dayCount: Int, Date)
         case updateMediaInfo(Media)
+        case toggleLoading(Bool)
     }
     
     func action(_ action: Action) {
@@ -103,6 +110,10 @@ extension DetailView {
                 UIImage(symbol: media.isFavorite ? .favoriteActive : .favoriteActiveLine, size: 16, weight: .bold),
                 for: .normal
             )
+            
+        case let .toggleLoading(isActive):
+            loadingIndicator.isHidden = !isActive
+            loadingIndicator.action(isActive ? .start : .stop)
         }
     }
 }
