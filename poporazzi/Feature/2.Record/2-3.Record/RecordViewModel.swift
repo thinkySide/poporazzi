@@ -91,7 +91,7 @@ extension RecordViewModel {
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
-        case pushDetail(Album, SectionMediaList, IndexPath)
+        case pushDetail(Album, [Media], Int)
     }
     
     enum Delegate {
@@ -268,8 +268,8 @@ extension RecordViewModel {
                     owner.navigation.accept(
                         .pushDetail(
                             owner.output.album.value,
-                            owner.output.sectionMediaList.value,
-                            indexPath
+                            owner.output.mediaList.value,
+                            owner.index(from: indexPath)
                         )
                     )
                 }

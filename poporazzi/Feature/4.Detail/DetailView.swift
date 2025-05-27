@@ -24,7 +24,6 @@ final class DetailView: CodeBaseUI {
             frame: .zero,
             collectionViewLayout: CollectionViewLayout.detailLayout
         )
-        collectionView.backgroundColor = .green
         collectionView.isPagingEnabled = true
         collectionView.register(
             DetailCell.self,
@@ -70,11 +69,21 @@ final class DetailView: CodeBaseUI {
 extension DetailView {
     
     enum Action {
-        
+        case setInitialIndex(Int)
     }
     
     func action(_ action: Action) {
-        
+        switch action {
+        case .setInitialIndex(let index):
+            mediaCollectionView.isPagingEnabled = false
+            let indexPath = IndexPath(row: index, section: 0)
+            mediaCollectionView.scrollToItem(
+                at: indexPath,
+                at: .centeredHorizontally,
+                animated: false
+            )
+            mediaCollectionView.isPagingEnabled = true
+        }
     }
 }
 

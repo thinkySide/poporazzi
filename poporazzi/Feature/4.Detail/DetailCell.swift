@@ -20,9 +20,8 @@ final class DetailCell: UICollectionViewCell {
     /// 미디어 이미지
     private let mediaImage: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
-        imageView.backgroundColor = .red
         return imageView
     }()
     

@@ -19,6 +19,7 @@ final class DetailViewController: ViewController {
     private let viewModel: DetailViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
+    private var selectedRow = 0
     private var imageCache = [String: UIImage?]()
     
     let disposeBag = DisposeBag()
@@ -69,15 +70,31 @@ extension DetailViewController {
     }
     
     /// 기본 DataSource를 업데이트합니다.
-    private func updateInitialDataSource(to sections: SectionMediaList) {
+    private func updateInitialDataSource(to mediaList: [Media]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
         
         snapshot.appendSections([.main])
         
-        for (_, medias) in sections {
-            snapshot.appendItems(medias, toSection: .main)
+        for media in mediaList {
+            snapshot.appendItems([media], toSection: .main)
         }
         
+        dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
+            guard let self else { return }
+            self.scene.action(.setInitialIndex(self.selectedRow))
+        }
+    }
+    
+    /// 페이지네이션 된 DataSource를 업데이트합니다.
+    private func updatePaginationDataSource(to mediaList: [Media]) {
+        guard !mediaList.isEmpty else { return }
+        
+        for media in mediaList {
+            imageCache.updateValue(media.thumbnail, forKey: media.id)
+        }
+        
+        var snapshot = dataSource.snapshot()
+        snapshot.reloadItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
@@ -93,13 +110,25 @@ extension DetailViewController {
         )
         let output = viewModel.transform(input)
         
-        output.sectionMediaList
+        output.selectedRow
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, sections in
-                owner.updateInitialDataSource(to: sections)
+            .bind(with: self) { owner, selectedRow in
+                owner.selectedRow = selectedRow
             }
             .disposed(by: disposeBag)
         
+        output.mediaList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, mediaList in
+                owner.updateInitialDataSource(to: mediaList)
+            }
+            .disposed(by: disposeBag)
         
+        output.updateMediaList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, mediaList in
+                owner.updatePaginationDataSource(to: mediaList)
+            }
+            .disposed(by: disposeBag)
     }
 }

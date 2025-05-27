@@ -38,9 +38,10 @@ extension DetailViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
-        let sectionMediaList: BehaviorRelay<SectionMediaList>
-        let selectedIndexPath: BehaviorRelay<IndexPath>
-        let mediaList = BehaviorRelay<[Media]>(value: [])
+        let mediaList: BehaviorRelay<[Media]>
+        let selectedRow: BehaviorRelay<Int>
+        
+        let updateMediaList = PublishRelay<[Media]>()
     }
     
     enum Navigation {
@@ -56,13 +57,10 @@ extension DetailViewModel {
         input.viewDidLoad
             .asObservable()
             .bind(with: self) { owner, _ in
-                owner.selectedMedia(
-                    from: owner.output.sectionMediaList.value,
-                    indexPath: owner.output.selectedIndexPath.value
-                )
-                .observe(on: MainScheduler.asyncInstance)
-                .bind(to: owner.output.mediaList)
-                .disposed(by: owner.disposeBag)
+                owner.mediaListWithImage(from: owner.output.mediaList.value)
+                    .observe(on: MainScheduler.asyncInstance)
+                    .bind(to: owner.output.updateMediaList)
+                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
         
@@ -81,11 +79,9 @@ extension DetailViewModel {
 extension DetailViewModel {
     
     /// 선택한 미디어를 고화질 이미지와 함께 반환합니다.
-    private func selectedMedia(
-        from sectionMediaList: SectionMediaList,
-        indexPath: IndexPath
+    private func mediaListWithImage(
+        from mediaList: [Media]
     ) -> Observable<[Media]> {
-        let media = sectionMediaList[indexPath.section].1[indexPath.row]
-        return photoKitService.fetchMedias(from: [media.id], option: .high)
+        photoKitService.fetchMedias(from: mediaList.map(\.id), option: .high)
     }
 }
