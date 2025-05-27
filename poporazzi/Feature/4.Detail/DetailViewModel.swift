@@ -18,6 +18,7 @@ final class DetailViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let menuAction = PublishRelay<MenuAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
     
     /// 이미지 업데이트를 받았는지 확인하는 마킹 배열
@@ -59,6 +60,7 @@ extension DetailViewModel {
         let viewDidRefresh = PublishRelay<Void>()
         let toggleLoading = PublishRelay<Bool>()
         
+        let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
     }
@@ -66,6 +68,11 @@ extension DetailViewModel {
     enum Navigation {
         case pop
         case updateRecord(Album)
+        case presentMediaShareSheet([Any])
+    }
+    
+    enum MenuAction {
+        case share
     }
     
     enum ActionSheetAction {
@@ -83,6 +90,7 @@ extension DetailViewModel {
             .asObservable()
             .bind(with: self) { owner, _ in
                 owner.updateMarkingList = Array(repeating: false, count: owner.output.mediaList.value.count)
+                owner.output.setupSeeMoreMenu.accept(owner.seemoreToolbarMenu)
             }
             .disposed(by: disposeBag)
         
@@ -166,6 +174,20 @@ extension DetailViewModel {
         input.backButtonTapped
             .emit(with: self) { owner, _ in
                 owner.navigation.accept(.pop)
+            }
+            .disposed(by: disposeBag)
+        
+        menuAction
+            .bind(with: self) { owner , action in
+                switch action {
+                case .share:
+                    let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                    owner.photoKitService.fetchShareItemList(from: [media.id])
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
             }
             .disposed(by: disposeBag)
         
@@ -314,5 +336,18 @@ extension DetailViewModel {
                 .init(title: "취소", style: .cancel)
             ]
         )
+    }
+}
+
+// MARK: - Menu
+
+extension DetailViewModel {
+    
+    /// 더보기 툴바 버튼 Menu
+    private var seemoreToolbarMenu: [MenuModel] {
+        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+            self?.menuAction.accept(.share)
+        }
+        return [share]
     }
 }

@@ -210,6 +210,13 @@ extension DetailViewController {
             }
             .disposed(by: disposeBag)
         
+        output.setupSeeMoreMenu
+            .bind(with: self) { owner, menu in
+                owner.scene.seemoreButton.button.showsMenuAsPrimaryAction = true
+                owner.scene.seemoreButton.button.menu = menu.toUIMenu
+            }
+            .disposed(by: disposeBag)
+        
         output.toggleLoading
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, isActive in

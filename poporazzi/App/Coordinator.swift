@@ -331,6 +331,7 @@ extension Coordinator {
         self.navigationController.pushViewController(detailVC, animated: true)
         
         detailVM.navigation
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .pop:
@@ -338,6 +339,13 @@ extension Coordinator {
                     
                 case let .updateRecord(album):
                     recordVM?.delegate.accept(.updateExcludeRecord(album))
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
                 }
             }
             .disposed(by: detailVC.disposeBag)
