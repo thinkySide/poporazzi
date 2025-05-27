@@ -36,34 +36,23 @@ final class DetailView: CodeBaseUI {
         return label
     }()
     
-    let mediaCollectionView: UICollectionView = {
-        let collectionView = UICollectionView(
-            frame: .zero,
-            collectionViewLayout: CollectionViewLayout.detailLayout
-        )
-        collectionView.isPagingEnabled = true
-        collectionView.register(
-            DetailCell.self,
-            forCellWithReuseIdentifier: DetailCell.identifier
-        )
-        return collectionView
-    }()
+    var mediaCollectionView = UICollectionView(frame: .zero, collectionViewLayout: .init())
     
     let toolBarView = UIView()
     
     let centerToolBarView = UIView()
     
-    /// 즐겨찾기 툴 바 버튼
-    let favoriteToolBarButton = ToolBarButton(.favorite)
+    /// 즐겨찾기 버튼
+    let favoriteButton = ToolBarButton(.favorite)
     
-    /// 앨범에서 제외 툴 바 버튼
-    let excludeToolBarButton = ToolBarButton(.title("앨범에서 제외"))
+    /// 앨범에서 제외 버튼
+    let excludeButton = ToolBarButton(.title("앨범에서 제외"))
     
-    /// 더보기 툴 바 버튼
-    let seemoreToolBarButton = ToolBarButton(.seemore)
+    /// 더보기 버튼
+    let seemoreButton = ToolBarButton(.seemore)
     
-    /// 삭제 툴 바 버튼
-    let removeToolBarButton = ToolBarButton(.remove)
+    /// 삭제 버튼
+    let removeButton = ToolBarButton(.remove)
     
     init() {
         super.init(frame: .zero)
@@ -86,18 +75,13 @@ final class DetailView: CodeBaseUI {
 extension DetailView {
     
     enum Action {
-        case setDateLabel(dayCount: Int, Date)
         case setInitialIndex(Int)
+        case updateDateLabel(dayCount: Int, Date)
+        case updateMediaInfo(Media)
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .setDateLabel(dayCount, date):
-            dayCountLabel.text = "\(dayCount)일차"
-            dateLabel.text = date.sectionHeaderFormat
-            [dayCountLabel, dateLabel].forEach { $0.flex.markDirty() }
-            containerView.flex.layout()
-            
         case .setInitialIndex(let index):
             mediaCollectionView.isPagingEnabled = false
             let indexPath = IndexPath(row: index, section: 0)
@@ -107,6 +91,18 @@ extension DetailView {
                 animated: false
             )
             mediaCollectionView.isPagingEnabled = true
+            
+        case let .updateDateLabel(dayCount, date):
+            dayCountLabel.text = "\(dayCount)일차"
+            dateLabel.text = date.detailFormat
+            [dayCountLabel, dateLabel].forEach { $0.flex.markDirty() }
+            containerView.flex.layout()
+            
+        case let .updateMediaInfo(media):
+            favoriteButton.button.setImage(
+                UIImage(symbol: media.isFavorite ? .favoriteActive : .favoriteActiveLine, size: 16, weight: .bold),
+                for: .normal
+            )
         }
     }
 }
@@ -134,14 +130,14 @@ extension DetailView {
         }
         
         toolBarView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
-            flex.addItem(favoriteToolBarButton)
+            flex.addItem(favoriteButton)
             flex.addItem(centerToolBarView)
-            flex.addItem(removeToolBarButton)
+            flex.addItem(removeButton)
         }
         
         centerToolBarView.flex.direction(.row).define { flex in
-            flex.addItem(excludeToolBarButton)
-            flex.addItem(seemoreToolBarButton).marginLeft(8)
+            flex.addItem(excludeButton)
+            flex.addItem(seemoreButton).marginLeft(8)
         }
     }
 }

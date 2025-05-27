@@ -36,7 +36,10 @@ extension DetailViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
-        let willDisplayCell: Signal<IndexPath>
+        let currentIndex: Signal<Int>
+        let favoriteButtonTapped: Signal<Void>
+        let excludeButtonTapped: Signal<Void>
+        let removeButtonTapped: Signal<Void>
         let backButtonTapped: Signal<Void>
     }
     
@@ -46,7 +49,7 @@ extension DetailViewModel {
         let selectedRow: BehaviorRelay<Int>
         
         let updateMediaList = BehaviorRelay<[Media]>(value: [])
-        let updateDayCount = PublishRelay<(dayCount: Int, Date)>()
+        let updateMediaInfo = PublishRelay<(Media, dayCount: Int, Date)>()
     }
     
     enum Navigation {
@@ -66,19 +69,26 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.willDisplayCell
+        input.currentIndex
             .asObservable()
             .distinctUntilChanged()
-            .bind(with: self) { owner, indexPath in
-                let creationDate = owner.output.mediaList.value[indexPath.row].creationDate ?? .now
+            .bind(with: self) { owner, index in
+                let media = owner.output.mediaList.value[index]
+                let creationDate = media.creationDate ?? .now
                 let dayCount = owner.days(from: creationDate)
-                owner.output.updateDayCount.accept((dayCount, creationDate))
+                owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
                 
-                let fetchMediaList = owner.calcForFetchMediaList(displayRow: indexPath.row)
+                let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
                 owner.mediaListWithImage(from: fetchMediaList)
                     .observe(on: MainScheduler.asyncInstance)
                     .bind(to: owner.output.updateMediaList)
                     .disposed(by: owner.disposeBag)
+            }
+            .disposed(by: disposeBag)
+        
+        input.favoriteButtonTapped
+            .emit(with: self) { owner, _ in
+                
             }
             .disposed(by: disposeBag)
         

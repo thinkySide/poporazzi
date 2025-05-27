@@ -22,6 +22,9 @@ final class DetailViewController: ViewController {
     private var selectedRow = 0
     private var imageCache = [String: UIImage?]()
     
+    /// 현재 바라보고 있는 CollectionView Index
+    private let currentIndexRelay = PublishRelay<Int>()
+    
     let disposeBag = DisposeBag()
     
     init(viewModel: DetailViewModel) {
@@ -39,6 +42,7 @@ final class DetailViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupCollectionView()
         setupDataSource()
         bind()
     }
@@ -51,6 +55,16 @@ final class DetailViewController: ViewController {
 // MARK: - UICollectionViewDiffableDataSource
 
 extension DetailViewController {
+    
+    /// CollectionView를 세팅합니다.
+    private func setupCollectionView() {
+        scene.mediaCollectionView.collectionViewLayout = mediaCollectionViewLayout
+        scene.mediaCollectionView.isPagingEnabled = true
+        scene.mediaCollectionView.register(
+            DetailCell.self,
+            forCellWithReuseIdentifier: DetailCell.identifier
+        )
+    }
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
@@ -99,6 +113,43 @@ extension DetailViewController {
     }
 }
 
+// MARK: - CollectionView Layout
+
+extension DetailViewController {
+    
+    /// 레이아웃을 반환합니다.
+    var mediaCollectionViewLayout: UICollectionViewCompositionalLayout {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalHeight(1)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalHeight(1)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(
+            layoutSize: groupSize,
+            subitems: [item]
+        )
+        let section = NSCollectionLayoutSection(group: group)
+        section.orthogonalScrollingBehavior = .groupPaging
+        
+        section.visibleItemsInvalidationHandler = { [weak self] visibleItems, point, environment in
+            let centerX = point.x + environment.container.contentSize.width / 2
+            let sortedItems = visibleItems.sorted {
+                abs($0.frame.midX - centerX) < abs($1.frame.midX - centerX)
+            }
+            if let closestItem = sortedItems.first {
+                self?.currentIndexRelay.accept(closestItem.indexPath.item)
+            }
+        }
+        
+        return UICollectionViewCompositionalLayout(section: section)
+    }
+}
+
 // MARK: - Binding
 
 extension DetailViewController {
@@ -106,7 +157,11 @@ extension DetailViewController {
     func bind() {
         let input = DetailViewModel.Input(
             viewDidLoad: .just(()),
-            willDisplayCell: scene.mediaCollectionView.rx.willDisplayCell.map(\.at).asSignal(onErrorJustReturn: .init(row: 0, section: 0)),
+            currentIndex: currentIndexRelay.asSignal(),
+            favoriteButtonTapped: scene.favoriteButton.button.rx.tap.asSignal(),
+            excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
+            removeButtonTapped: scene.removeButton.button.rx.tap
+                .asSignal(),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -132,11 +187,12 @@ extension DetailViewController {
             }
             .disposed(by: disposeBag)
         
-        output.updateDayCount
+        output.updateMediaInfo
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, day in
-                let (dayCount, date) = day
-                owner.scene.action(.setDateLabel(dayCount: dayCount, date))
+            .bind(with: self) { owner, info in
+                let (media, dayCount, date) = info
+                owner.scene.action(.updateDateLabel(dayCount: dayCount, date))
+                owner.scene.action(.updateMediaInfo(media))
             }
             .disposed(by: disposeBag)
     }
