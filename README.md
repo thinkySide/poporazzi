@@ -104,3 +104,8 @@
 |[#111 미디어 공유하기 기능 구현](https://github.com/thinkySide/poporazzi/pull/111)|UIActivityViewController를 이용한 에셋 공유 기능 구현|
 |[#113 사진 라이브러리 권한 동의 UX 개선](https://github.com/thinkySide/poporazzi/pull/113)|사진 라이브러리 권한 Alert 출력 전 Sheet를 통한 UX 개선, 권한 거부 시 플로우 추가|
 |[#115 CollectionView Context Menu 기능 구현](https://github.com/thinkySide/poporazzi/pull/115)|CollectionView Context Menu를 이용한 기능 추가|
+|[#117 Live Activity 종료되지 않는 현상 해결](https://github.com/thinkySide/poporazzi/pull/117)|재진입 시 LiveActivity 관리 객체 업데이트|
+|[#119 AlbumList 화면 구현 및 커스텀 TabBar 구현](https://github.com/thinkySide/poporazzi/pull/119)|MainViewModel을 이용한 CustomTabBar 구현 및 제어|
+|[#121 AlbumList 데이터 및 이벤트 연결](https://github.com/thinkySide/poporazzi/pull/121)|앨범 및 폴더 정보, 썸네일 반환 로직 구현|
+|[#123 애니메이션 적용 시 터치 이벤트 먹힘 현상 수정](https://github.com/thinkySide/poporazzi/pull/123)|animate option을 이용한 애니메이션 터치 버그 수정|
+|[#125 DetailView 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/125)|DetailView 화면 및 기능 구현, 페이지네이션 최적화|
