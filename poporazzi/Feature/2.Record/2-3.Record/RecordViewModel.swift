@@ -153,7 +153,6 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
-        
         input.viewDidLoad
             .emit(with: self) { owner, _ in
                 owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
@@ -161,7 +160,6 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        // 1. 화면 진입 시 기본 이미지 로드
         input.viewDidLoad
             .asObservable()
             .observe(on: MainScheduler.asyncInstance)
@@ -182,7 +180,6 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        // 2. 업데이트
         input.recentIndexPath
             .filter { !$0.isEmpty }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
@@ -206,7 +203,6 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        // 3. 리프레쉬 및 라이브러리 변경 감지
         Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryAssetChange)
             .asObservable()
             .bind(with: self) { owner, _ in

@@ -317,8 +317,9 @@ extension Coordinator {
         let detailVM = DetailViewModel(
             output: .init(
                 album: .init(value: album),
-                mediaList: .init(value: mediaList),
-                selectedRow: .init(value: selectedRow)
+                initialRow: .init(value: selectedRow),
+                currentRow: .init(value: selectedRow),
+                mediaList: .init(value: mediaList)
             )
         )
         let detailVC = DetailViewController(viewModel: detailVM)

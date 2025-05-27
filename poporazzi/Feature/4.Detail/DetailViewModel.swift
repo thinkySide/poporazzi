@@ -45,11 +45,16 @@ extension DetailViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
+        
+        let initialRow: BehaviorRelay<Int>
+        let currentRow: BehaviorRelay<Int>
+        
         let mediaList: BehaviorRelay<[Media]>
-        let selectedRow: BehaviorRelay<Int>
         
         let updateMediaList = BehaviorRelay<[Media]>(value: [])
-        let updateMediaInfo = PublishRelay<(Media, dayCount: Int, Date)>()
+        let updateMediaInfo = BehaviorRelay<(Media, dayCount: Int, Date)>(value: (.initialValue, 0, .now))
+        
+        let viewDidRefresh = PublishRelay<Void>()
     }
     
     enum Navigation {
@@ -69,10 +74,35 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
+        output.viewDidRefresh
+            .bind(with: self) { owner, _ in
+                do {
+                    let index = owner.output.currentRow.value
+                    owner.output.initialRow.accept(index)
+                    owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
+                    
+                    let media = owner.output.mediaList.value[index]
+                    let creationDate = media.creationDate ?? .now
+                    let dayCount = owner.days(from: creationDate)
+                    owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
+                    
+                    let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
+                    owner.mediaListWithImage(from: fetchMediaList)
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind(to: owner.output.updateMediaList)
+                        .disposed(by: owner.disposeBag)
+                } catch {
+                    print(error)
+                }
+            }
+            .disposed(by: disposeBag)
+        
         input.currentIndex
             .asObservable()
             .distinctUntilChanged()
             .bind(with: self) { owner, index in
+                owner.output.currentRow.accept(index)
+                
                 let media = owner.output.mediaList.value[index]
                 let creationDate = media.creationDate ?? .now
                 let dayCount = owner.days(from: creationDate)
@@ -86,9 +116,20 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
+        Signal.merge(photoKitService.photoLibraryAssetChange)
+            .asObservable()
+            .bind(with: self) { owner, _ in
+                owner.output.viewDidRefresh.accept(())
+            }
+            .disposed(by: disposeBag)
+        
         input.favoriteButtonTapped
             .emit(with: self) { owner, _ in
-                
+                let (media, _, _ ) = owner.output.updateMediaInfo.value
+                owner.photoKitService.toggleFavorite(
+                    from: [media.id],
+                    isFavorite: !media.isFavorite
+                )
             }
             .disposed(by: disposeBag)
         
@@ -153,5 +194,15 @@ extension DetailViewModel {
         from mediaList: [Media]
     ) -> Observable<[Media]> {
         photoKitService.fetchMedias(from: mediaList.map(\.id), option: .high)
+    }
+    
+    /// 썸네일 없이 전체 Media 리스트를 반환합니다.
+    ///
+    /// - 제외된 사진을 필터링합니다.
+    /// - 스크린샷이 제외되었을 때 필터링합니다.
+    private func fetchAllMediaListWithNoThumbnail() throws -> [Media] {
+        let album = output.album.value
+        return try photoKitService.fetchMediaListWithNoThumbnail(from: album)
+            .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
     }
 }

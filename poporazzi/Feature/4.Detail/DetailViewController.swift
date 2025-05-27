@@ -180,7 +180,7 @@ extension DetailViewController {
             }
             .disposed(by: disposeBag)
         
-        output.selectedRow
+        output.initialRow
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, selectedRow in
                 owner.selectedRow = selectedRow
