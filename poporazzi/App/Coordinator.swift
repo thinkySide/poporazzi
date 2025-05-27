@@ -118,8 +118,8 @@ final class Coordinator: NSObject {
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
                     
-                case let .pushDetail(album, mediaList, selectedRow):
-                    owner.pushtDetail(recordVM, album, mediaList, selectedRow)
+                case let .pushDetail(album, initialImage, mediaList, selectedRow):
+                    owner.presentDetail(recordVM, album, initialImage, mediaList, selectedRow)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -312,30 +312,33 @@ extension Coordinator {
             .disposed(by: finishVC.disposeBag)
     }
     
-    /// 상세보기 화면으로 Push 합니다.
-    private func pushtDetail(
+    /// 상세보기 화면으로 Present 합니다.
+    private func presentDetail(
         _ recordVM: RecordViewModel?,
         _ album: Album,
+        _ initialImage: UIImage?,
         _ mediaList: [Media],
         _ selectedRow: Int
     ) {
         let detailVM = DetailViewModel(
             output: .init(
                 album: .init(value: album),
+                initialImage: .init(value: initialImage),
                 initialRow: .init(value: selectedRow),
                 currentRow: .init(value: selectedRow),
                 mediaList: .init(value: mediaList)
             )
         )
         let detailVC = DetailViewController(viewModel: detailVM)
-        self.navigationController.pushViewController(detailVC, animated: true)
+        detailVC.modalPresentationStyle = .overFullScreen
+        self.navigationController.present(detailVC, animated: true)
         
         detailVM.navigation
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
-                case .pop:
-                    owner.navigationController.popViewController(animated: true)
+                case .dismiss:
+                    owner.navigationController.dismiss(animated: true)
                     
                 case let .updateRecord(album):
                     recordVM?.delegate.accept(.updateExcludeRecord(album))

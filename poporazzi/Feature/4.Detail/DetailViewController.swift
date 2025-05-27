@@ -24,6 +24,9 @@ final class DetailViewController: ViewController {
     
     /// 현재 바라보고 있는 CollectionView Index
     private let currentIndexRelay = PublishRelay<Int>()
+
+    /// 현재 스크롤 Offset
+    private let currentScrollOffsetRelay = PublishRelay<CGPoint>()
     
     let disposeBag = DisposeBag()
     
@@ -144,6 +147,7 @@ extension DetailViewController {
             if let closestItem = sortedItems.first {
                 self?.currentIndexRelay.accept(closestItem.indexPath.item)
             }
+            self?.currentScrollOffsetRelay.accept(point)
         }
         
         return UICollectionViewCompositionalLayout(section: section)
@@ -158,6 +162,7 @@ extension DetailViewController {
         let input = DetailViewModel.Input(
             viewDidLoad: .just(()),
             currentIndex: currentIndexRelay.asSignal(),
+            currentScrollOffset: currentScrollOffsetRelay.asSignal(),
             favoriteButtonTapped: scene.favoriteButton.button.rx.tap.asSignal(),
             excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap

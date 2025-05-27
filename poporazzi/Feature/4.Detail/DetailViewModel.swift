@@ -5,7 +5,7 @@
 //  Created by 김민준 on 5/26/25.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 
@@ -40,6 +40,7 @@ extension DetailViewModel {
     struct Input {
         let viewDidLoad: Signal<Void>
         let currentIndex: Signal<Int>
+        let currentScrollOffset: Signal<CGPoint>
         let favoriteButtonTapped: Signal<Void>
         let excludeButtonTapped: Signal<Void>
         let removeButtonTapped: Signal<Void>
@@ -48,7 +49,7 @@ extension DetailViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
-        
+        let initialImage: BehaviorRelay<UIImage?>
         let initialRow: BehaviorRelay<Int>
         let currentRow: BehaviorRelay<Int>
         
@@ -66,7 +67,7 @@ extension DetailViewModel {
     }
     
     enum Navigation {
-        case pop
+        case dismiss
         case updateRecord(Album)
         case presentMediaShareSheet([Any])
     }
@@ -120,10 +121,19 @@ extension DetailViewModel {
         input.currentIndex
             .asObservable()
             .distinctUntilChanged()
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, index in
                 owner.output.currentRow.accept(index)
                 
-                let media = owner.output.mediaList.value[index]
+                var media = owner.output.mediaList.value[index]
+                
+                // 첫 번째 화면 진입 시 기존 이미지 사용으로 반응성 높이기
+                if let image = owner.output.initialImage.value {
+                    media.thumbnail = image
+                    owner.output.updateMediaList.accept([media])
+                    owner.output.initialImage.accept(nil)
+                }
+                
                 let creationDate = media.creationDate ?? .now
                 let dayCount = owner.days(from: creationDate)
                 owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
@@ -133,6 +143,14 @@ extension DetailViewModel {
                     .observe(on: MainScheduler.asyncInstance)
                     .bind(to: owner.output.updateMediaList)
                     .disposed(by: owner.disposeBag)
+            }
+            .disposed(by: disposeBag)
+        
+        input.currentScrollOffset
+            .filter { $0.y <= -72 }
+            .distinctUntilChanged()
+            .emit(with: self) { owner, point in
+                owner.navigation.accept(.dismiss)
             }
             .disposed(by: disposeBag)
         
@@ -173,7 +191,7 @@ extension DetailViewModel {
         
         input.backButtonTapped
             .emit(with: self) { owner, _ in
-                owner.navigation.accept(.pop)
+                owner.navigation.accept(.dismiss)
             }
             .disposed(by: disposeBag)
         
@@ -255,7 +273,7 @@ extension DetailViewModel {
             updateMarkingList[displayRow] = true
         }
         
-        for i in 1...3 {
+        for i in 1...1 {
             let previousIndex = displayRow - i
             let nextIndex = displayRow + i
             

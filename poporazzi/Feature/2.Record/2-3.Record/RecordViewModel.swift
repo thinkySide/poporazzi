@@ -5,7 +5,7 @@
 //  Created by 김민준 on 4/5/25.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 
@@ -91,7 +91,7 @@ extension RecordViewModel {
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
-        case pushDetail(Album, [Media], Int)
+        case pushDetail(Album, UIImage?, [Media], Int)
     }
     
     enum Delegate {
@@ -261,9 +261,11 @@ extension RecordViewModel {
                     owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
                     
                 case false:
+                    let initialImage = owner.output.updateRecordCells.value[indexPath.row].thumbnail
                     owner.navigation.accept(
                         .pushDetail(
                             owner.output.album.value,
+                            initialImage,
                             owner.output.mediaList.value,
                             owner.index(from: indexPath)
                         )
