@@ -19,6 +19,7 @@ final class RecordCell: UICollectionViewCell {
     private let defaultoverlay: UIView = {
         let view = UIView()
         view.clipsToBounds = true
+        view.alpha = 0
         return view
     }()
     
@@ -36,7 +37,7 @@ final class RecordCell: UICollectionViewCell {
     private let selectOverlay: UIView = {
         let view = UIView()
         view.backgroundColor = .white.withAlphaComponent(0.4)
-        view.isHidden = true
+        view.alpha = 0
         return view
     }()
     
@@ -59,7 +60,7 @@ final class RecordCell: UICollectionViewCell {
     /// 셀 선택 아이콘
     private let checkIcon: UIImageView = {
         let imageView = UIImageView(image: .checkIcon)
-        imageView.isHidden = true
+        imageView.alpha = 0
         return imageView
     }()
     
@@ -71,7 +72,7 @@ final class RecordCell: UICollectionViewCell {
             weight: .bold,
             tintColor: .white
         )
-        imageView.isHidden = true
+        imageView.alpha = 0
         return imageView
     }()
     
@@ -104,12 +105,14 @@ final class RecordCell: UICollectionViewCell {
     
     override var isSelected: Bool {
         didSet {
+            guard NameSpace.isSelectionMode else { return }
+            
             if isSelected {
-                selectOverlay.isHidden = false
-                checkIcon.isHidden = false
+                selectOverlay.alpha = 1
+                checkIcon.alpha = 1
             } else {
-                selectOverlay.isHidden = true
-                checkIcon.isHidden = true
+                selectOverlay.alpha = 0
+                checkIcon.alpha = 0
             }
         }
     }
@@ -124,31 +127,29 @@ final class RecordCell: UICollectionViewCell {
 extension RecordCell {
     
     enum Action {
-        case setImage(UIImage?)
-        case setMediaInfo(Media)
+        case setMedia(Media, UIImage?)
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .setImage(image):
+        case let .setMedia(media, image):
             if let image {
                 self.thumbnail.image = image
             } else {
                 self.backgroundColor = .brandTertiary
             }
             
-        case let .setMediaInfo(media):
             switch media.mediaType {
             case .photo:
                 videoDurationLabel.text = ""
-                defaultoverlay.isHidden = !media.isFavorite
-                favoriteIcon.isHidden = !media.isFavorite
+                defaultoverlay.alpha = media.isFavorite ? 1 : 0
+                favoriteIcon.alpha = media.isFavorite ? 1 : 0
                 videoDurationLabel.flex.markDirty()
                 
             case let .video(_, _, duration):
                 videoDurationLabel.text = duration.videoDurationFormat
-                defaultoverlay.isHidden = false
-                favoriteIcon.isHidden = !media.isFavorite
+                defaultoverlay.alpha = 0
+                favoriteIcon.alpha = media.isFavorite ? 1 : 0
                 videoDurationLabel.flex.markDirty()
             }
         }

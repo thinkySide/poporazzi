@@ -41,11 +41,12 @@ struct MockPhotoKitService: PhotoKitInterface {
             id: UUID().uuidString,
             creationDate: .now,
             mediaType: .photo(.selfShooting, .heic),
+            originalMediaSize: .zero,
             isFavorite: false
         ), count: 30))
     }
     
-    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
+    func fetchMedias(from assetIdentifiers: [String], option: MediaQualityOption) -> Observable<[Media]> {
         var array = [Media]()
         for _ in 0..<30 {
             array.append(.init(
@@ -53,6 +54,7 @@ struct MockPhotoKitService: PhotoKitInterface {
                 creationDate: .now,
                 mediaType: .photo(.selfShooting, .heic),
                 thumbnail: UIImage(),
+                originalMediaSize: .zero,
                 isFavorite: false
             ))
         }

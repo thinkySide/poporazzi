@@ -5,7 +5,7 @@
 //  Created by 김민준 on 4/5/25.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 
@@ -77,7 +77,7 @@ extension RecordViewModel {
         let setupSeeMoreToolbarMenu = BehaviorRelay<[MenuModel]>(value: [])
         let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
         
-        let switchSelectMode = PublishRelay<Bool>()
+        let switchSelectMode = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
         let toggleLoading = PublishRelay<Bool>()
@@ -91,6 +91,7 @@ extension RecordViewModel {
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
+        case pushDetail(Album, UIImage?, [Media], Int)
     }
     
     enum Delegate {
@@ -152,7 +153,6 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
-        
         input.viewDidLoad
             .emit(with: self) { owner, _ in
                 owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
@@ -160,7 +160,6 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        // 1. 화면 진입 시 기본 이미지 로드
         input.viewDidLoad
             .asObservable()
             .observe(on: MainScheduler.asyncInstance)
@@ -181,7 +180,6 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        // 2. 업데이트
         input.recentIndexPath
             .filter { !$0.isEmpty }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
@@ -205,7 +203,6 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        // 3. 리프레쉬 및 라이브러리 변경 감지
         Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryAssetChange)
             .asObservable()
             .bind(with: self) { owner, _ in
@@ -241,6 +238,7 @@ extension RecordViewModel {
                 owner.output.switchSelectMode.accept(true)
                 owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
                 owner.navigation.accept(.toggleTabBar(false))
+                NameSpace.isSelectionMode = true
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
@@ -249,15 +247,30 @@ extension RecordViewModel {
             .emit(with: self) { owner, _ in
                 owner.cancelSelectMode()
                 owner.navigation.accept(.toggleTabBar(true))
+                NameSpace.isSelectionMode = false
             }
             .disposed(by: disposeBag)
         
         input.recordCellSelected
             .emit(with: self) { owner, indexPath in
-                var currentCells = owner.output.selectedRecordCells.value
-                currentCells.append(indexPath)
-                owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                switch owner.output.switchSelectMode.value {
+                case true:
+                    var currentCells = owner.output.selectedRecordCells.value
+                    currentCells.append(indexPath)
+                    owner.output.selectedRecordCells.accept(currentCells)
+                    owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                    
+                case false:
+                    let initialImage = owner.output.updateRecordCells.value[indexPath.row].thumbnail
+                    owner.navigation.accept(
+                        .pushDetail(
+                            owner.output.album.value,
+                            initialImage,
+                            owner.output.mediaList.value,
+                            owner.index(from: indexPath)
+                        )
+                    )
+                }
             }
             .disposed(by: disposeBag)
         
@@ -540,7 +553,10 @@ extension RecordViewModel {
     
     /// 전체 Media 리스트를 반환합니다.
     private func fetchAllMediaList(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        photoKitService.fetchMedias(from: assetIdentifiers)
+        photoKitService.fetchMedias(
+            from: assetIdentifiers,
+            option: .normal
+        )
     }
 }
 

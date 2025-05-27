@@ -117,6 +117,9 @@ final class Coordinator: NSObject {
                     
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
+                    
+                case let .pushDetail(album, initialImage, mediaList, selectedRow):
+                    owner.presentDetail(recordVM, album, initialImage, mediaList, selectedRow)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -307,6 +310,48 @@ extension Coordinator {
                 }
             }
             .disposed(by: finishVC.disposeBag)
+    }
+    
+    /// 상세보기 화면으로 Present 합니다.
+    private func presentDetail(
+        _ recordVM: RecordViewModel?,
+        _ album: Album,
+        _ initialImage: UIImage?,
+        _ mediaList: [Media],
+        _ selectedRow: Int
+    ) {
+        let detailVM = DetailViewModel(
+            output: .init(
+                album: .init(value: album),
+                initialImage: .init(value: initialImage),
+                initialRow: .init(value: selectedRow),
+                currentRow: .init(value: selectedRow),
+                mediaList: .init(value: mediaList)
+            )
+        )
+        let detailVC = DetailViewController(viewModel: detailVM)
+        detailVC.modalPresentationStyle = .overFullScreen
+        self.navigationController.present(detailVC, animated: true)
+        
+        detailVM.navigation
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, path in
+                switch path {
+                case .dismiss:
+                    owner.navigationController.dismiss(animated: true)
+                    
+                case let .updateRecord(album):
+                    recordVM?.delegate.accept(.updateExcludeRecord(album))
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
+                }
+            }
+            .disposed(by: detailVC.disposeBag)
     }
 }
 

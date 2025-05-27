@@ -48,6 +48,13 @@ extension Date {
         return Date.dateFormatter.string(from: self)
     }
     
+    /// Section의 Header 포맷을 반환합니다.
+    var detailFormat: String {
+        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 EEEE"
+        return Date.dateFormatter.string(from: self)
+    }
+
+    
     /// album 날짜 포맷을 반환합니다.
     var albumFormat: String {
         Date.dateFormatter.dateFormat = "yyMMdd"

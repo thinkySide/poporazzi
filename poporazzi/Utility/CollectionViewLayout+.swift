@@ -31,7 +31,7 @@ struct CollectionViewLayout {
             let subHeader = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1),
-                    heightDimension: .absolute(32)
+                    heightDimension: .absolute(36)
                 ),
                 elementKind: CollectionViewLayout.subHeaderKind,
                 alignment: .top
@@ -43,12 +43,12 @@ struct CollectionViewLayout {
                 let mainHeader = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: NSCollectionLayoutSize(
                         widthDimension: .fractionalWidth(1),
-                        heightDimension: .absolute(104)
+                        heightDimension: .absolute(64)
                     ),
                     elementKind: CollectionViewLayout.mainHeaderKind,
                     alignment: .top
                 )
-                mainHeader.zIndex = -1
+                mainHeader.zIndex = 0
                 supplementaryItems = [mainHeader, subHeader]
             } else {
                 // 이후에는 subHeader만 적용

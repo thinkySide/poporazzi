@@ -14,9 +14,9 @@ final class AlbumListView: CodeBaseUI {
     var containerView = UIView()
     
     /// NavigationBar
-    private lazy var navigationBar = NavigationBar()
+    private lazy var navigationBar = NavigationBar(leading: titleLabel)
     
-    private let titleLabel = UILabel("앨범 리스트", size: 20, color: .mainLabel)
+    private let titleLabel = UILabel("내 앨범", size: 20, color: .mainLabel)
     
     let albumCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
@@ -68,12 +68,8 @@ extension AlbumListView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem().paddingHorizontal(20).define { flex in
-                flex.addItem(titleLabel)
-            }
-            
-            flex.addItem().grow(1).marginTop(12).define { flex in
-                flex.addItem(albumCollectionView).position(.absolute).top(0).horizontally(0).bottom(48)
+            flex.addItem().grow(1).define { flex in
+                flex.addItem(albumCollectionView).position(.absolute).top(0).horizontally(0).bottom(38)
             }
         }
     }

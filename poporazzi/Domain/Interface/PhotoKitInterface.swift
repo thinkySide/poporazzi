@@ -34,7 +34,7 @@ protocol PhotoKitInterface {
     func fetchMediaListWithNoThumbnail(from album: Album) throws -> [Media]
     
     /// 미디어 리스트 스트림을 반환합니다.
-    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]>
+    func fetchMedias(from assetIdentifiers: [String], option: MediaQualityOption) -> Observable<[Media]>
     
     /// 즐겨찾기 상태를 전환합니다.
     func toggleFavorite(from assetIdentifiers: [String], isFavorite: Bool)

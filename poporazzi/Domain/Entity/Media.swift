@@ -24,6 +24,9 @@ struct Media: Hashable, Equatable {
     /// 썸네일
     var thumbnail: UIImage?
     
+    /// 원본 미디어 사이즈
+    var originalMediaSize: CGSize
+    
     /// 즐겨찾기 여부
     var isFavorite: Bool
     
@@ -72,6 +75,17 @@ struct Media: Hashable, Equatable {
             case quickTimeMovie = "quicktime-movie"
             case mpeg4 = "mpeg-4"
         }
+    }
+    
+    static var initialValue: Media {
+        .init(
+            id: "",
+            creationDate: nil,
+            mediaType: .photo(.selfShooting, .jpeg),
+            thumbnail: nil,
+            originalMediaSize: .zero,
+            isFavorite: false
+        )
     }
 }
 

@@ -319,7 +319,10 @@ extension ExcludeRecordViewModel {
     
     /// 제외된 사진을 반환합니다.
     private func fetchExcludePhotos() -> Observable<[Media]> {
-        photoKitService.fetchMedias(from: Array(output.album.value.excludeMediaList))
+        photoKitService.fetchMedias(
+            from: Array(output.album.value.excludeMediaList),
+            option: .normal
+        )
     }
 }
 

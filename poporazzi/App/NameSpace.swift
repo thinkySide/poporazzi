@@ -14,4 +14,7 @@ enum NameSpace {
     
     /// TabBar 사이즈
     static let tabBarSize: CGFloat = 72
+    
+    /// 선택 모드 여부
+    static var isSelectionMode = false
 }

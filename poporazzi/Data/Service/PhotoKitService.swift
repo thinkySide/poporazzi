@@ -190,6 +190,7 @@ extension PhotoKitService {
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
                         thumbnail: nil,
+                        originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                         isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
@@ -205,6 +206,7 @@ extension PhotoKitService {
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
                         thumbnail: nil,
+                        originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                         isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
@@ -216,7 +218,7 @@ extension PhotoKitService {
     }
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
-    func fetchMedias(from assetIdentifiers: [String]) -> Observable<[Media]> {
+    func fetchMedias(from assetIdentifiers: [String], option: MediaQualityOption) -> Observable<[Media]> {
         Observable.create { [weak self] observer in
             Task {
                 guard let self else {
@@ -229,12 +231,19 @@ extension PhotoKitService {
                 let medias: [Media] = await withTaskGroup(of: Media.self) { group in
                     for asset in assetList {
                         group.addTask {
-                            let image = await self.requestNormalQuailityImage(for: asset)
+                            var image: UIImage?
+                            switch option {
+                            case .normal:
+                                image = await self.requestNormalQuailityImage(for: asset)
+                            case .high:
+                                image = await self.requestHighQuailityImage(for: asset)
+                            }
                             return Media(
                                 id: asset.localIdentifier,
                                 creationDate: asset.creationDate,
                                 mediaType: self.mediaType(from: asset),
                                 thumbnail: image,
+                                originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                                 isFavorite: asset.isFavorite
                             )
                         }
@@ -600,6 +609,20 @@ extension PhotoKitService {
             PHImageManager.default().requestImage(
                 for: asset,
                 targetSize: CGSize(width: 360, height: 360),
+                contentMode: .aspectFill,
+                options: self.defaultImageRequestOptions
+            ) { image, _ in
+                continuation.resume(returning: image)
+            }
+        }
+    }
+    
+    /// 높은 퀄리티의 이미지를 비동기로 요청합니다.
+    private func requestHighQuailityImage(for asset: PHAsset) async -> UIImage? {
+        await withCheckedContinuation { continuation in
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: PHImageManagerMaximumSize,
                 contentMode: .aspectFill,
                 options: self.defaultImageRequestOptions
             ) { image, _ in

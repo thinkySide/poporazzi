@@ -21,8 +21,11 @@ final class RecordView: CodeBaseUI {
     
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
+        leading: titleLabel,
         trailing: navigationTrailingButtons
     )
+    
+    private let titleLabel = UILabel("기록 중", size: 20, color: .mainLabel)
     
     /// 오른쪽 버튼들
     private let navigationTrailingButtons: UIView = {
@@ -78,21 +81,8 @@ final class RecordView: CodeBaseUI {
         return label
     }()
     
-    /// 시작 날짜 라벨
-    private let startDateLabel: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(16)
-        label.textColor = .subLabel
-        return label
-    }()
-    
     /// 총 기록 개수 라벨
-    private let totalRecordCountLabel: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(16)
-        label.textColor = .subLabel
-        return label
-    }()
+    private let totalRecordCountLabel = UILabel("총 0장", size: 16, color: .subLabel)
     
     private let emptyView = UIView()
     
@@ -132,7 +122,6 @@ final class RecordView: CodeBaseUI {
         )
         collectionView.backgroundColor = .white
         collectionView.contentInset.bottom = 24
-        collectionView.allowsSelection = false
         collectionView.register(
             RecordCell.self,
             forCellWithReuseIdentifier: RecordCell.identifier
@@ -175,7 +164,6 @@ extension RecordView {
     
     enum Action {
         case updateTitleLabel(String)
-        case updateStartDateLabel(String)
         case updateInfoLabel(Album)
         case toggleEmptyLabel(Bool)
         case toggleSelectMode(Bool)
@@ -190,11 +178,6 @@ extension RecordView {
         case let .updateTitleLabel(text):
             albumTitleLabel.text = text
             albumTitleLabel.flex.markDirty()
-            containerView.flex.layout()
-            
-        case let .updateStartDateLabel(text):
-            startDateLabel.text = text
-            startDateLabel.flex.markDirty()
             containerView.flex.layout()
             
         case let .updateInfoLabel(album):
@@ -242,7 +225,8 @@ extension RecordView {
             }
             
         case let .toggleSelectMode(bool):
-            recordCollectionView.allowsSelection = bool
+            recordCollectionView.allowsSelection = false
+            recordCollectionView.allowsSelection = true // 셀 선택 상태 초기화용
             recordCollectionView.allowsMultipleSelection = bool
             [seemoreButton, selectButton, finishRecordButton].forEach { $0.isHidden = bool }
             [selectCancelButton].forEach { $0.isHidden = !bool }
@@ -288,7 +272,7 @@ extension RecordView {
             flex.addItem(navigationBar)
             
             flex.addItem(headerView)
-                .marginTop(4)
+                .marginTop(12)
                 .paddingHorizontal(20)
             
             flex.addItem().grow(1).marginTop(12).define { flex in
@@ -299,19 +283,14 @@ extension RecordView {
                 .position(.absolute)
                 .alignSelf(.center)
                 .alignItems(.center)
-                .top(40%)
+                .top(35%)
             
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
         }
         
-        headerView.flex.direction(.column).define { flex in
-            flex.addItem(albumTitleLabel)
-            
-            flex.addItem().direction(.row).marginTop(6).define { flex in
-                flex.addItem(startDateLabel)
-                flex.addItem().grow(1)
-                flex.addItem(totalRecordCountLabel)
-            }
+        headerView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
+            flex.addItem(albumTitleLabel).marginRight(4).shrink(1)
+            flex.addItem(totalRecordCountLabel)
         }
         
         emptyView.flex.define { flex in
