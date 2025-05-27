@@ -14,10 +14,27 @@ final class DetailView: CodeBaseUI {
     var containerView = UIView()
     
     /// NavigationBar
-    private lazy var navigationBar = NavigationBar(leading: backButton)
+    private lazy var navigationBar = NavigationBar(
+        leading: backButton,
+        center: navigationCenterView
+    )
     
     /// 뒤로가기 버튼
     let backButton = NavigationButton(buttonType: .back)
+    
+    let navigationCenterView = UIView()
+    
+    let dayCountLabel: UILabel = {
+        let label = UILabel(size: 18, color: .mainLabel)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let dateLabel: UILabel = {
+        let label = UILabel(size: 14, color: .subLabel)
+        label.textAlignment = .center
+        return label
+    }()
     
     let mediaCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
@@ -69,11 +86,18 @@ final class DetailView: CodeBaseUI {
 extension DetailView {
     
     enum Action {
+        case setDateLabel(dayCount: Int, Date)
         case setInitialIndex(Int)
     }
     
     func action(_ action: Action) {
         switch action {
+        case let .setDateLabel(dayCount, date):
+            dayCountLabel.text = "\(dayCount)일차"
+            dateLabel.text = date.sectionHeaderFormat
+            [dayCountLabel, dateLabel].forEach { $0.flex.markDirty() }
+            containerView.flex.layout()
+            
         case .setInitialIndex(let index):
             mediaCollectionView.isPagingEnabled = false
             let indexPath = IndexPath(row: index, section: 0)
@@ -102,6 +126,11 @@ extension DetailView {
             flex.addItem(toolBarView)
                 .paddingHorizontal(16)
                 .height(72)
+        }
+        
+        navigationCenterView.flex.direction(.column).define { flex in
+            flex.addItem(dayCountLabel)
+            flex.addItem(dateLabel).marginTop(2)
         }
         
         toolBarView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in

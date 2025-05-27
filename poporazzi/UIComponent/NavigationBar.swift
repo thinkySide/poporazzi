@@ -20,19 +20,23 @@ final class NavigationBar: CodeBaseUI {
         let label = UILabel()
         label.font = .setDovemayo(16)
         label.textColor = .mainLabel
+        label.textAlignment = .center
         return label
     }()
     
     private let leadingView: UIView
+    private let centerView: UIView?
     private let trailingView: UIView
     
     init(
         title: String = "",
         leading: UIView = UIView(),
+        center: UIView? = nil,
         trailing: UIView = UIView()
     ) {
         self.titleLabel.text = title
         self.leadingView = leading
+        self.centerView = center
         self.trailingView = trailing
         super.init(frame: .zero)
         setup(color: .clear)
@@ -61,7 +65,13 @@ extension NavigationBar {
             .paddingHorizontal(20)
             .define { flex in
                 flex.addItem(leadingView)
-                flex.addItem(titleLabel)
+                
+                if let centerView {
+                    flex.addItem(centerView).position(.absolute).horizontally(120)
+                } else {
+                    flex.addItem(titleLabel).position(.absolute).horizontally(120)
+                }
+                
                 flex.addItem(trailingView)
             }
     }

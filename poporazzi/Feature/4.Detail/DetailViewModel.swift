@@ -44,7 +44,9 @@ extension DetailViewModel {
         let album: BehaviorRelay<Album>
         let mediaList: BehaviorRelay<[Media]>
         let selectedRow: BehaviorRelay<Int>
+        
         let updateMediaList = BehaviorRelay<[Media]>(value: [])
+        let updateDayCount = PublishRelay<(dayCount: Int, Date)>()
     }
     
     enum Navigation {
@@ -68,6 +70,10 @@ extension DetailViewModel {
             .asObservable()
             .distinctUntilChanged()
             .bind(with: self) { owner, indexPath in
+                let creationDate = owner.output.mediaList.value[indexPath.row].creationDate ?? .now
+                let dayCount = owner.days(from: creationDate)
+                owner.output.updateDayCount.accept((dayCount, creationDate))
+                
                 let fetchMediaList = owner.calcForFetchMediaList(displayRow: indexPath.row)
                 owner.mediaListWithImage(from: fetchMediaList)
                     .observe(on: MainScheduler.asyncInstance)
@@ -90,6 +96,17 @@ extension DetailViewModel {
 
 extension DetailViewModel {
     
+    /// 시작날짜를 기준으로 생성일이 몇일차인지 반환합니다.
+    private func days(from creationDate: Date) -> Int {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: output.album.value.startDate),
+            to: calendar.startOfDay(for: creationDate)
+        )
+        return (components.day ?? 0) + 1
+    }
+    
     /// 페이지네이션에 필요한 MediaList를 계산합니다.
     private func calcForFetchMediaList(displayRow: Int) -> [Media] {
         let mediaList = output.mediaList.value
@@ -97,7 +114,6 @@ extension DetailViewModel {
         
         if let currentMedia = mediaList[safe: displayRow],
            !updateMarkingList[displayRow] {
-            print("현재: \(displayRow)")
             fetchMediaList.append(currentMedia)
             updateMarkingList[displayRow] = true
         }
@@ -108,14 +124,12 @@ extension DetailViewModel {
             
             if let previousMedia = mediaList[safe: previousIndex],
                !updateMarkingList[previousIndex] {
-                print("이전: \(previousIndex)")
                 fetchMediaList.append(previousMedia)
                 updateMarkingList[previousIndex] = true
             }
             
             if let nextMedia = mediaList[safe: nextIndex],
                !updateMarkingList[nextIndex] {
-                print("다음: \(nextIndex)")
                 fetchMediaList.append(nextMedia)
                 updateMarkingList[nextIndex] = true
             }

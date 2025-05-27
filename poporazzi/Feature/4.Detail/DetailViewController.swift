@@ -111,13 +111,6 @@ extension DetailViewController {
         )
         let output = viewModel.transform(input)
         
-        output.selectedRow
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, selectedRow in
-                owner.selectedRow = selectedRow
-            }
-            .disposed(by: disposeBag)
-        
         output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, mediaList in
@@ -129,6 +122,21 @@ extension DetailViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, mediaList in
                 owner.updatePaginationDataSource(to: mediaList)
+            }
+            .disposed(by: disposeBag)
+        
+        output.selectedRow
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, selectedRow in
+                owner.selectedRow = selectedRow
+            }
+            .disposed(by: disposeBag)
+        
+        output.updateDayCount
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, day in
+                let (dayCount, date) = day
+                owner.scene.action(.setDateLabel(dayCount: dayCount, date))
             }
             .disposed(by: disposeBag)
     }
