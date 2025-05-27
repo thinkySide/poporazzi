@@ -106,6 +106,7 @@ extension DetailViewController {
     func bind() {
         let input = DetailViewModel.Input(
             viewDidLoad: .just(()),
+            willDisplayCell: scene.mediaCollectionView.rx.willDisplayCell.map(\.at).asSignal(onErrorJustReturn: .init(row: 0, section: 0)),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)

@@ -97,6 +97,7 @@ extension DetailView {
             
             flex.addItem(mediaCollectionView)
                 .grow(1)
+                .marginVertical(24)
             
             flex.addItem(toolBarView)
                 .paddingHorizontal(16)

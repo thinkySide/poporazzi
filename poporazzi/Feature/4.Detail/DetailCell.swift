@@ -83,7 +83,7 @@ extension DetailCell {
     
     func configLayout() {
         containerView.flex.define { flex in
-            flex.addItem(mediaImage).cornerRadius(16).grow(1)
+            flex.addItem(mediaImage).grow(1)
         }
     }
 }
