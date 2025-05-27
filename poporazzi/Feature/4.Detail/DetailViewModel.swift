@@ -57,6 +57,7 @@ extension DetailViewModel {
         
         let updateMediaList = BehaviorRelay<[Media]>(value: [])
         let updateMediaInfo = BehaviorRelay<(Media, dayCount: Int, Date)>(value: (.initialValue, 0, .now))
+        let updateCountInfo = BehaviorRelay<(currentIndex: Int, totalCount: Int)>(value: (0, 0))
         
         let viewDidRefresh = PublishRelay<Void>()
         let toggleLoading = PublishRelay<Bool>()
@@ -123,9 +124,11 @@ extension DetailViewModel {
             .distinctUntilChanged()
             .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, index in
-                owner.output.currentRow.accept(index)
+                let mediaList = owner.output.mediaList.value
+                var media = mediaList[index]
                 
-                var media = owner.output.mediaList.value[index]
+                owner.output.currentRow.accept(index)
+                owner.output.updateCountInfo.accept((index, mediaList.count))
                 
                 // 첫 번째 화면 진입 시 기존 이미지 사용으로 반응성 높이기
                 if let image = owner.output.initialImage.value {

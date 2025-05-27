@@ -19,7 +19,8 @@ final class DetailView: CodeBaseUI {
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
         leading: backButton,
-        center: navigationCenterView
+        center: navigationCenterView,
+        trailing: mediaCountLabel
     )
     
     /// 뒤로가기 버튼
@@ -36,6 +37,13 @@ final class DetailView: CodeBaseUI {
     let dateLabel: UILabel = {
         let label = UILabel(size: 14, color: .subLabel)
         label.textAlignment = .center
+        return label
+    }()
+    
+    /// 개수 라벨
+    private let mediaCountLabel: UILabel = {
+        let label = UILabel(size: 16, color: .subLabel)
+        label.textAlignment = .right
         return label
     }()
     
@@ -84,6 +92,7 @@ extension DetailView {
         case setInitialIndex(Int)
         case updateDateLabel(dayCount: Int, Date)
         case updateMediaInfo(Media)
+        case updateCountInfo(currentIndex: Int, totalCount: Int)
         case toggleLoading(Bool)
     }
     
@@ -111,6 +120,11 @@ extension DetailView {
                 for: .normal
             )
             
+        case let .updateCountInfo(currentIndex, totalCount):
+            mediaCountLabel.text = "\(currentIndex + 1)/\(totalCount)"
+            mediaCountLabel.flex.markDirty()
+            containerView.flex.layout()
+            
         case let .toggleLoading(isActive):
             loadingIndicator.isHidden = !isActive
             loadingIndicator.action(isActive ? .start : .stop)
@@ -132,7 +146,7 @@ extension DetailView {
             
             flex.addItem(toolBarView)
                 .paddingHorizontal(16)
-                .height(72)
+                .height(80)
         }
         
         navigationCenterView.flex.direction(.column).define { flex in

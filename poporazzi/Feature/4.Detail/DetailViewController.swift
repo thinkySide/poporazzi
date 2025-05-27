@@ -201,6 +201,14 @@ extension DetailViewController {
             }
             .disposed(by: disposeBag)
         
+        output.updateCountInfo
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, countInfo in
+                let (currentIndex, totalCount) = countInfo
+                owner.scene.action(.updateCountInfo(currentIndex: currentIndex, totalCount: totalCount))
+            }
+            .disposed(by: disposeBag)
+        
         output.alertPresented
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, alert in

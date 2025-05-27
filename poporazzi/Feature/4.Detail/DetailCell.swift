@@ -69,9 +69,9 @@ extension DetailCell {
         switch action {
         case let .setImage(image):
             if let image {
-                self.mediaImage.image = image
+                mediaImage.image = image
             } else {
-                self.mediaImage.backgroundColor = .brandTertiary
+                mediaImage.backgroundColor = .brandTertiary
             }
         }
     }
