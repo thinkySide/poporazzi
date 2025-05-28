@@ -16,8 +16,7 @@ final class RecordViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<RecordSection, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    
-    private var albumCache = Album.initialValue
+    private var albumCache = Record.initialValue
     private var totalCount = 0
     private var imageCache = [String: UIImage?]()
     

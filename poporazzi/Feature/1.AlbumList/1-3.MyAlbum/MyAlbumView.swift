@@ -13,6 +13,39 @@ final class MyAlbumView: CodeBaseUI {
     
     var containerView = UIView()
     
+    /// NavigationBar
+    private lazy var navigationBar = NavigationBar(
+        leading: backButton
+    )
+    
+    /// 뒤로 가기 버튼
+    let backButton = NavigationButton(buttonType: .back)
+    
+    /// 기록 컬렉션 뷰
+    let recordCollectionView: UICollectionView = {
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: CollectionViewLayout.recordHeaderSection
+        )
+        collectionView.backgroundColor = .white
+        collectionView.contentInset.bottom = 24
+        collectionView.register(
+            RecordCell.self,
+            forCellWithReuseIdentifier: RecordCell.identifier
+        )
+        collectionView.register(
+            RecordTitleHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
+            withReuseIdentifier: RecordTitleHeader.identifier
+        )
+        collectionView.register(
+            RecordDateHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
+            withReuseIdentifier: RecordDateHeader.identifier
+        )
+        return collectionView
+    }()
+    
     init() {
         super.init(frame: .zero)
         setup()
@@ -34,8 +67,12 @@ final class MyAlbumView: CodeBaseUI {
 extension MyAlbumView {
     
     func configLayout() {
-        containerView.flex.direction(.column).paddingHorizontal(20).define { flex in
+        containerView.flex.direction(.column).define { flex in
+            flex.addItem(navigationBar)
             
+            flex.addItem().grow(1).marginTop(12).define { flex in
+                flex.addItem(recordCollectionView).position(.absolute).all(0)
+            }
         }
     }
 }

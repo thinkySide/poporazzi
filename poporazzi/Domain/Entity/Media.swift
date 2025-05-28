@@ -24,22 +24,8 @@ struct Media: Hashable, Equatable {
     /// 썸네일
     var thumbnail: UIImage?
     
-    /// 원본 미디어 사이즈
-    var originalMediaSize: CGSize
-    
     /// 즐겨찾기 여부
     var isFavorite: Bool
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    static func == (lhs: Media, rhs: Media) -> Bool {
-        lhs.id == rhs.id
-        && lhs.mediaType == rhs.mediaType
-        && lhs.thumbnail != rhs.thumbnail
-        && lhs.isFavorite == rhs.isFavorite
-    }
     
     /// 미디어 타입
     enum MediaType: Hashable {
@@ -76,20 +62,39 @@ struct Media: Hashable, Equatable {
             case mpeg4 = "mpeg-4"
         }
     }
+}
+
+// MARK: - Hashable & Equatable
+
+extension Media {
     
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: Media, rhs: Media) -> Bool {
+        lhs.id == rhs.id
+        && lhs.mediaType == rhs.mediaType
+        && lhs.thumbnail != rhs.thumbnail
+        && lhs.isFavorite == rhs.isFavorite
+    }
+}
+
+// MARK: - Helper
+
+extension Media {
+    
+    /// 기본 생성 값
     static var initialValue: Media {
         .init(
             id: "",
             creationDate: nil,
             mediaType: .photo(.selfShooting, .jpeg),
             thumbnail: nil,
-            originalMediaSize: .zero,
             isFavorite: false
         )
     }
 }
-
-// MARK: - Helper
 
 extension [Media] {
     

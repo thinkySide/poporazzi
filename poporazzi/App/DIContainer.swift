@@ -51,7 +51,7 @@ extension DIContainer {
             case .testValue: .init(
                 persistenceService: MockPersistenceService(),
                 liveActivityService: MockLiveActivityService(),
-                photoKitService: MockPhotoKitService(),
+                photoKitService: PhotoKitService(),
                 storeKitService: MockStoreKitService()
             )
             }

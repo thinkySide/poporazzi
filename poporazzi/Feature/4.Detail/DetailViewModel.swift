@@ -48,7 +48,7 @@ extension DetailViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Album>
+        let album: BehaviorRelay<Record>
         let initialImage: BehaviorRelay<UIImage?>
         let initialRow: BehaviorRelay<Int>
         let currentRow: BehaviorRelay<Int>
@@ -69,7 +69,7 @@ extension DetailViewModel {
     
     enum Navigation {
         case dismiss
-        case updateRecord(Album)
+        case updateRecord(Record)
         case presentMediaShareSheet([Any])
     }
     
@@ -167,7 +167,7 @@ extension DetailViewModel {
         input.favoriteButtonTapped
             .emit(with: self) { owner, _ in
                 let (media, _, _ ) = owner.output.updateMediaInfo.value
-                owner.photoKitService.toggleFavorite(
+                owner.photoKitService.toggleMediaFavorite(
                     from: [media.id],
                     isFavorite: !media.isFavorite
                 )
@@ -227,7 +227,7 @@ extension DetailViewModel {
                     owner.output.toggleLoading.accept(true)
                     
                     let identifiers = mediaList.map(\.id)
-                    owner.photoKitService.deletePhotos(from: identifiers)
+                    owner.photoKitService.removePhotos(from: identifiers)
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in
                             if isSuccess {
@@ -300,7 +300,7 @@ extension DetailViewModel {
     private func mediaListWithImage(
         from mediaList: [Media]
     ) -> Observable<[Media]> {
-        photoKitService.fetchMedias(from: mediaList.map(\.id), option: .high)
+        photoKitService.fetchMediaListWithThumbnail(from: mediaList.map(\.id), option: .high)
     }
     
     /// 썸네일 없이 전체 Media 리스트를 반환합니다.
@@ -309,7 +309,7 @@ extension DetailViewModel {
     /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() throws -> [Media] {
         let album = output.album.value
-        return try photoKitService.fetchMediaListWithNoThumbnail(from: album)
+        return try photoKitService.fetchMediaList(from: album)
             .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
     }
 }

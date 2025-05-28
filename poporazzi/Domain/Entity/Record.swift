@@ -1,5 +1,5 @@
 //
-//  Album.swift
+//  Record.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/9/25.
@@ -7,13 +7,13 @@
 
 import UIKit
 
-/// 앨범
-struct Album: Hashable, Equatable {
+/// 기록
+struct Record: Hashable, Equatable {
     
     /// 고유 아이디
     let id: String
     
-    /// 앨범 제목
+    /// 기록 제목
     var title: String
     
     /// 시작 날짜
@@ -68,7 +68,7 @@ struct Album: Hashable, Equatable {
     }
     
     static var initialValue: Self {
-        Album(
+        Record(
             title: "",
             startDate: .now,
             albumType: .album,
@@ -82,7 +82,7 @@ struct Album: Hashable, Equatable {
         hasher.combine(id)
     }
     
-    static func == (lhs: Album, rhs: Album) -> Bool {
+    static func == (lhs: Record, rhs: Record) -> Bool {
         lhs.id == rhs.id
     }
 }

@@ -80,11 +80,11 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Service/LiveActivityService.swift,
-				Domain/Entity/Album.swift,
 				Domain/Entity/Media.swift,
 				Domain/Entity/MediaFetchOption.swift,
 				Domain/Entity/MediaFilterOption.swift,
 				Domain/Entity/MediaQualityOption.swift,
+				Domain/Entity/Record.swift,
 				Domain/Entity/Tab.swift,
 				Domain/Interface/LiveActivityInterface.swift,
 				Resource/Colors.xcassets,

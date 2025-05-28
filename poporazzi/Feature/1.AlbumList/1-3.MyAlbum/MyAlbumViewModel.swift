@@ -32,15 +32,16 @@ final class MyAlbumViewModel: ViewModel {
 extension MyAlbumViewModel {
     
     struct Input {
-        
+        let viewDidLoad: Signal<Void>
+        let backButtonTapped: Signal<Void>
     }
     
     struct Output {
-        let album: BehaviorRelay<Album>
+        let album: BehaviorRelay<Record>
     }
     
     enum Navigation {
-        
+        case pop
     }
 }
 
@@ -49,6 +50,17 @@ extension MyAlbumViewModel {
 extension MyAlbumViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.viewDidLoad
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
+        input.backButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.pop)
+            }
+            .disposed(by: disposeBag)
         
         return output
     }

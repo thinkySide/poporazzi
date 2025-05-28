@@ -62,7 +62,7 @@ extension RecordViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Album>
+        let album: BehaviorRelay<Record>
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
@@ -85,19 +85,19 @@ extension RecordViewModel {
     
     enum Navigation {
         case finishRecord
-        case pushAlbumEdit(Album)
-        case presentExcludeRecord(Album)
-        case presentFinishModal(Album, SectionMediaList)
+        case pushAlbumEdit(Record)
+        case presentExcludeRecord(Record)
+        case presentFinishModal(Record, SectionMediaList)
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
-        case pushDetail(Album, UIImage?, [Media], Int)
+        case pushDetail(Record, UIImage?, [Media], Int)
     }
     
     enum Delegate {
-        case startRecord(Album)
-        case albumDidEdited(Album)
-        case updateExcludeRecord(Album)
+        case startRecord(Record)
+        case albumDidEdited(Record)
+        case updateExcludeRecord(Record)
         case completeSharing
     }
     
@@ -293,7 +293,7 @@ extension RecordViewModel {
         
         input.favoriteToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.photoKitService.toggleFavorite(
+                owner.photoKitService.toggleMediaFavorite(
                     from: owner.selectedAssetIdentifiers(),
                     isFavorite: owner.shouldBeFavorite(from: owner.selectedMediaList())
                 )
@@ -359,7 +359,7 @@ extension RecordViewModel {
                     
                 case let .remove(mediaList):
                     owner.output.toggleLoading.accept(true)
-                    owner.photoKitService.deletePhotos(from: mediaList.map(\.id))
+                    owner.photoKitService.removePhotos(from: mediaList.map(\.id))
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in
                             if isSuccess {
@@ -402,7 +402,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .toggleFavorite(media):
-                    owner.photoKitService.toggleFavorite(
+                    owner.photoKitService.toggleMediaFavorite(
                         from: [media.id],
                         isFavorite: owner.shouldBeFavorite(from: [media])
                     )
@@ -547,13 +547,13 @@ extension RecordViewModel {
     /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() throws -> [Media] {
         let album = output.album.value
-        return try photoKitService.fetchMediaListWithNoThumbnail(from: album)
+        return try photoKitService.fetchMediaList(from: album)
             .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
     }
     
     /// 전체 Media 리스트를 반환합니다.
     private func fetchAllMediaList(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        photoKitService.fetchMedias(
+        photoKitService.fetchMediaListWithThumbnail(
             from: assetIdentifiers,
             option: .normal
         )

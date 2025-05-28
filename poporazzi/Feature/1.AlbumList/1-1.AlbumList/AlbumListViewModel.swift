@@ -5,7 +5,7 @@
 //  Created by 김민준 on 5/23/25.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 
@@ -38,14 +38,14 @@ extension AlbumListViewModel {
     }
     
     struct Output {
-        let albumList = BehaviorRelay<[Album]>(value: [])
-        let updateThumbnail = BehaviorRelay<[Album]>(value: [])
+        let albumList = BehaviorRelay<[Record]>(value: [])
+        let updateThumbnail = BehaviorRelay<[Record]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
     }
     
     enum Navigation {
         case presentPermissionRequestModal
-        case pushMyAlbum(Album)
+        case pushMyAlbum(Record)
     }
     
     enum Delegate {
@@ -58,21 +58,26 @@ extension AlbumListViewModel {
 extension AlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
-        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal(), photoKitService.photoLibraryCollectionChange)
-            .emit(with: self) { owner, _ in
-                do {
-                    let albumList = try owner.photoKitService.fetchAlbumListWithNoThumbnail()
-                    owner.output.albumList.accept(albumList)
-                    
-                    owner.photoKitService.fetchAlbumList(from: albumList)
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind { albumList in
-                            owner.output.updateThumbnail.accept(albumList)
-                        }
-                        .disposed(by: owner.disposeBag)
-                } catch {
-                    owner.navigation.accept(.presentPermissionRequestModal)
-                }
+        Signal.merge(
+            input.viewDidLoad,
+            output.viewDidRefresh.asSignal(),
+            photoKitService.photoLibraryCollectionChange
+        )
+        .emit(with: self) { owner, _ in
+            do {
+                let albumList = try owner.photoKitService.fetchAllAlbumList()
+                owner.output.albumList.accept(albumList)
+            } catch {
+                owner.navigation.accept(.presentPermissionRequestModal)
+            }
+        }
+        .disposed(by: disposeBag)
+        
+        output.albumList
+            .withUnretained(self)
+            .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
+            .bind(with: self) { owner, albumList in
+                owner.output.updateThumbnail.accept(albumList)
             }
             .disposed(by: disposeBag)
         

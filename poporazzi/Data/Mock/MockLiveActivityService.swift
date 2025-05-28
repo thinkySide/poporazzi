@@ -8,11 +8,11 @@
 import Foundation
 
 struct MockLiveActivityService: LiveActivityInterface {
-    func start(to album: Album) {
+    func start(to album: Record) {
         print("[Live Activity 시작] - \(album.title), \(album.startDate.startDateFullFormat)")
     }
     
-    func update(to album: Album, totalCount: Int) {
+    func update(to album: Record, totalCount: Int) {
         print("[Live Activity 업데이트] - \(album.title), \(album.startDate.startDateFullFormat), 총\(totalCount)개")
     }
     

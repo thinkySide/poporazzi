@@ -78,7 +78,7 @@ extension AlbumCell {
     
     enum Action {
         case setThumbnail(UIImage?)
-        case setAlbumInfo(Album)
+        case setAlbumInfo(Record)
     }
     
     func action(_ action: Action) {
