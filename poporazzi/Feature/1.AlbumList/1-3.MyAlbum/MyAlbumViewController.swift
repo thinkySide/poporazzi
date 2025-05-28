@@ -16,9 +16,7 @@ final class MyAlbumViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
     
-    private let contextMenuPresented = PublishRelay<IndexPath>()
-    private let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
-    
+    let event = Event()
     let disposeBag = DisposeBag()
     
     init(viewModel: MyAlbumViewModel) {
@@ -46,6 +44,15 @@ final class MyAlbumViewController: ViewController {
     }
 }
 
+// MARK: - Event
+
+extension MyAlbumViewController {
+    
+    struct Event {
+        let willDisplayIndexPath = PublishRelay<IndexPath>()
+    }
+}
+
 // MARK: - UICollectionView
 
 extension MyAlbumViewController {
@@ -53,7 +60,6 @@ extension MyAlbumViewController {
     /// CollectionView를 세팅합니다.
     private func setupCollectionView() {
         let collectionView = scene.mediaCollectionView
-        collectionView.delegate = self
         collectionView.collectionViewLayout = collectionViewLayout
         collectionView.register(
             RecordCell.self,
@@ -83,6 +89,11 @@ extension MyAlbumViewController {
             } else {
                 section.boundarySupplementaryItems = [CollectionViewLayout.dateHeader]
             }
+            
+            section.visibleItemsInvalidationHandler = { [weak self] visibleItems, _, _ in
+                
+            }
+            
             return section
         }
     }
@@ -139,7 +150,6 @@ extension MyAlbumViewController {
                         header?.action(.updateDateLabel(date))
                     }
                 }
-                
                 return header
             }
         }
@@ -175,27 +185,6 @@ extension MyAlbumViewController {
     }
 }
 
-// MARK: - UICollectionViewDelegate
-
-extension MyAlbumViewController: UICollectionViewDelegate {
-    
-    /// 선택된 IndexPath의 Context Menu를 설정합니다.
-    func collectionView(
-        _ collectionView: UICollectionView,
-        contextMenuConfigurationForItemAt indexPath: IndexPath,
-        point: CGPoint
-    ) -> UIContextMenuConfiguration? {
-        contextMenuPresented.accept(indexPath)
-        return UIContextMenuConfiguration(
-            identifier: nil,
-            previewProvider: nil,
-            actionProvider: { [weak self] _ in
-                self?.selectedContextMenu.value.toUIMenu
-            }
-        )
-    }
-}
-
 // MARK: - Binding
 
 extension MyAlbumViewController {
@@ -203,6 +192,7 @@ extension MyAlbumViewController {
     func bind() {
         let input = MyAlbumViewModel.Input(
             viewDidLoad: .just(()),
+            willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
@@ -210,10 +200,14 @@ extension MyAlbumViewController {
         output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, mediaList in
-                let creationDate = owner.viewModel.album.creationDate
-                let sectionMediaList = mediaList.toSectionMediaList(startDate: creationDate)
-                owner.updateInitialDataSource(to: sectionMediaList)
                 owner.updateTitleHeader()
+            }
+            .disposed(by: disposeBag)
+        
+        output.sectionMediaList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, sectionMediaList in
+                owner.updateInitialDataSource(to: sectionMediaList)
             }
             .disposed(by: disposeBag)
         
@@ -222,6 +216,13 @@ extension MyAlbumViewController {
             .bind(with: self) { owner, thumbnailList in
                 let mediaList = thumbnailList.map(\.key)
                 owner.updatePaginationDataSource(to: mediaList)
+            }
+            .disposed(by: disposeBag)
+        
+        scene.mediaCollectionView.rx.willDisplayCell
+            .bind(with: self) { owner, cell in
+                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
+                owner.event.willDisplayIndexPath.accept(indexPath)
             }
             .disposed(by: disposeBag)
     }
