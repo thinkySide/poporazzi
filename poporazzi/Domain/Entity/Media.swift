@@ -64,6 +64,62 @@ struct Media: Hashable, Equatable {
     }
 }
 
+/// 미디어 검색 타입
+enum MediaFetchOption {
+    
+    /// 전체 검색
+    case all
+    
+    /// 사진 검색
+    case photo
+    
+    /// 비디오 검색
+    case video
+    
+    /// 각 검색 타입 별 제목
+    var title: String {
+        switch self {
+        case .all: "사진 및 동영상"
+        case .photo: "사진"
+        case .video: "동영상"
+        }
+    }
+}
+
+/// 미디어 필터링 옵션
+struct MediaFilterOption {
+    
+    /// 직접 촬영한 사진 포함 여부
+    var isContainSelfShooting: Bool
+    
+    /// 다운로드 사진 포함 여부
+    var isContainDownload: Bool
+    
+    /// 스크린샷 포함 여부
+    var isContainScreenshot: Bool
+    
+    init(
+        isContainSelfShooting: Bool = true,
+        isContainDownload: Bool = false,
+        isContainScreenshot: Bool = false
+    ) {
+        self.isContainSelfShooting = isContainSelfShooting
+        self.isContainDownload = isContainDownload
+        self.isContainScreenshot = isContainScreenshot
+    }
+}
+
+/// 미디어 요청 시 품질 옵션
+enum MediaQualityOption {
+    
+    /// 보통 옵션
+    case normal
+    
+    /// 높은 옵션
+    case high
+}
+
+
 // MARK: - Hashable & Equatable
 
 extension Media {

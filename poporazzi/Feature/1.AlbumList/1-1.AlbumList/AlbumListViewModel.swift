@@ -38,14 +38,14 @@ extension AlbumListViewModel {
     }
     
     struct Output {
-        let albumList = BehaviorRelay<[Record]>(value: [])
-        let updateThumbnail = BehaviorRelay<[Record]>(value: [])
+        let albumList = BehaviorRelay<[Album]>(value: [])
+        let updateThumbnail = BehaviorRelay<[Album]>(value: [])
         let viewDidRefresh = PublishRelay<Void>()
     }
     
     enum Navigation {
         case presentPermissionRequestModal
-        case pushMyAlbum(Record)
+        case pushMyAlbum(Album)
     }
     
     enum Delegate {

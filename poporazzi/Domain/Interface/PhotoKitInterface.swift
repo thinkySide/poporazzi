@@ -33,16 +33,16 @@ protocol PhotoKitInterface {
     // MARK: - Album List
     
     /// 앨범 리스트를 반환합니다.
-    func fetchAllAlbumList() throws -> [Record]
+    func fetchAllAlbumList() throws -> [Album]
     
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
-    func fetchAlbumListWithThumbnail(from albumList: [Record]) -> Observable<[Record]>
+    func fetchAlbumListWithThumbnail(from albumList: [Album]) -> Observable<[Album]>
     
     
     // MARK: - Media List
     
     /// 미디어 리스트를 반환합니다.
-    func fetchMediaList(from album: Record) throws -> [Media]
+    func fetchMediaList(from record: Record) throws -> [Media]
     
     /// 썸네일과 함께 미디어 리스트를 반환합니다.
     func fetchMediaListWithThumbnail(

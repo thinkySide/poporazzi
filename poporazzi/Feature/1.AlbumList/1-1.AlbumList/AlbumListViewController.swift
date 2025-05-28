@@ -14,7 +14,7 @@ final class AlbumListViewController: ViewController {
     private let scene = AlbumListView()
     private let viewModel: AlbumListViewModel
     
-    private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Record>!
+    private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
     
     private var imageCache = [String: UIImage?]()
     
@@ -56,7 +56,7 @@ extension AlbumListViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<AlbumSection, Record>(collectionView: scene.albumCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<AlbumSection, Album>(collectionView: scene.albumCollectionView) {
             [weak self] (collectionView, indexPath, album) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: AlbumCell.identifier,
@@ -74,14 +74,14 @@ extension AlbumListViewController {
     }
     
     /// 기본 DataSource를 업데이트합니다.
-    private func updateInitialDataSource(to albumList: [Record]) {
-        var snapshot = NSDiffableDataSourceSnapshot<AlbumSection, Record>()
+    private func updateInitialDataSource(to albumList: [Album]) {
+        var snapshot = NSDiffableDataSourceSnapshot<AlbumSection, Album>()
         snapshot.appendSections([.main])
         snapshot.appendItems(albumList, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    private func updatePaginationDataSource(to albumList: [Record]) {
+    private func updatePaginationDataSource(to albumList: [Album]) {
         guard !albumList.isEmpty else { return }
         
         for album in albumList {

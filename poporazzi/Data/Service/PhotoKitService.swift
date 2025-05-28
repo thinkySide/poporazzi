@@ -95,7 +95,7 @@ extension PhotoKitService {
 extension PhotoKitService {
     
     /// 앨범 리스트를 반환합니다.
-    public func fetchAllAlbumList() throws -> [Record] {
+    public func fetchAllAlbumList() throws -> [Album] {
         
         // 권한 확인
         guard checkPermission() == .authorized else { throw PhotoKitError.noPermission }
@@ -107,58 +107,41 @@ extension PhotoKitService {
         self.collectionFetchResult = collectionFetchResult
         
         // 앨범 리스트 패치
-        var albumList = [Record]()
+        var albumList = [Album]()
         collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
             guard let self else { return }
             
             // 앨범의 경우
             if let album = collection as? PHAssetCollection {
-                let album = Record(
+                let album = Album(
                     id: album.localIdentifier,
                     title: album.localizedTitle ?? "",
-                    startDate: album.startDate ?? .now,
-                    endDate: album.endDate,
-                    thumbnail: nil,
+                    creationDate: album.startDate ?? .now,
                     albumType: .album,
-                    estimateCount: album.estimatedAssetCount,
-                    excludeMediaList: [],
-                    mediaFetchOption: .all,
-                    mediaFilterOption: .init(
-                        isContainSelfShooting: true,
-                        isContainDownload: true,
-                        isContainScreenshot: true
-                    )
+                    estimateCount: album.estimatedAssetCount
                 )
                 albumList.append(album)
             }
             
             // 폴더의 경우
             else {
-                let album = Record(
+                let album = Album(
                     id: collection.localIdentifier,
                     title: collection.localizedTitle ?? "",
-                    startDate: .now,
-                    endDate: nil,
+                    creationDate: folderCreationDate(in: collection),
                     albumType: .folder,
-                    estimateCount: estimateAlbumCount(in: collection),
-                    excludeMediaList: [],
-                    mediaFetchOption: .all,
-                    mediaFilterOption: .init(
-                        isContainSelfShooting: true,
-                        isContainDownload: true,
-                        isContainScreenshot: true
-                    )
+                    estimateCount: estimateAlbumCount(in: collection)
                 )
                 albumList.append(album)
             }
         }
         
         // 최신순으로 정렬 후 반환
-        return albumList.sorted { $0.startDate > $1.startDate }
+        return albumList.sorted { $0.creationDate > $1.creationDate }
     }
     
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
-    public func fetchAlbumListWithThumbnail(from albumList: [Record]) -> Observable<[Record]> {
+    public func fetchAlbumListWithThumbnail(from albumList: [Album]) -> Observable<[Album]> {
         Observable.create { [weak self] observer in
             Task {
                 guard let self else {
@@ -201,17 +184,17 @@ extension PhotoKitService {
 extension PhotoKitService {
     
     /// 썸네일 없이 기록을 반환합니다.
-    func fetchMediaList(from album: Record) throws -> [Media] {
+    func fetchMediaList(from record: Record) throws -> [Media] {
         if checkPermission() != .authorized { throw PhotoKitError.noPermission }
         
-        let fetchResult = fetchAssetResult(from: album)
+        let fetchResult = fetchAssetResult(from: record)
         self.assetFetchResult = fetchResult
         
         var mediaList = [Media]()
         fetchResult.enumerateObjects { [weak self] asset, _, _ in
             guard let self else { return }
             let mediaType = self.mediaType(from: asset)
-            let option = album.mediaFilterOption
+            let option = record.mediaFilterOption
             
             switch mediaType {
             case let .photo(type, _):
@@ -543,6 +526,15 @@ extension PhotoKitService {
             withLocalIdentifiers: [locaIdentifier], options: nil
         )
         .firstObject
+    }
+    
+    /// 폴더 생성일을 반환합니다.
+    ///
+    /// - 폴더 내 첫 번째 앨범의 생성일 기준
+    private func folderCreationDate(in collection: PHCollection) -> Date {
+        guard let collectionList = collection as? PHCollectionList else { return .now }
+        let album = fetchAlbum(from: collectionList)
+        return album?.startDate ?? .now
     }
     
     /// 폴더 내 예상되는 앨범의 개수를 반환합니다.

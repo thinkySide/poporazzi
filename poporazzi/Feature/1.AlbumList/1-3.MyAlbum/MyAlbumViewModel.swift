@@ -37,7 +37,7 @@ extension MyAlbumViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Record>
+        let album: BehaviorRelay<Album>
     }
     
     enum Navigation {

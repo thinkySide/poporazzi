@@ -78,7 +78,7 @@ extension AlbumCell {
     
     enum Action {
         case setThumbnail(UIImage?)
-        case setAlbumInfo(Record)
+        case setAlbumInfo(Album)
     }
     
     func action(_ action: Action) {
@@ -92,7 +92,7 @@ extension AlbumCell {
             
         case let .setAlbumInfo(album):
             titleLabel.text = album.title
-            startDateLabel.text = album.startDate.startDateFormat
+            startDateLabel.text = album.creationDate.startDateFormat
             countLabel.text = "\(album.estimateCount)"
             [titleLabel, startDateLabel, countLabel].forEach { $0.flex.markDirty() }
             containerView.flex.layout()

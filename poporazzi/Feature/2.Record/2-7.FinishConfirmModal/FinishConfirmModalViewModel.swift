@@ -44,7 +44,7 @@ extension FinishConfirmModalViewModel {
     struct Output {
         let album: BehaviorRelay<Record>
         let sectionMediaList: BehaviorRelay<SectionMediaList>
-        let saveOption = BehaviorRelay<AlbumSaveOption>(value: .saveAsSingle)
+        let saveOption = BehaviorRelay<RecordSaveOption>(value: .saveAsSingle)
         let toggleLoading = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
     }

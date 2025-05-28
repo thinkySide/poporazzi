@@ -81,7 +81,7 @@ final class Coordinator: NSObject {
                     owner.presentPermissionRequestModal(albumListVM)
                     
                 case let .pushMyAlbum(album):
-                    owner.pushRecord(album)
+                    owner.pushMyAlbum(album)
                 }
             }
             .disposed(by: mainVC.disposeBag)
@@ -362,55 +362,8 @@ extension Coordinator {
 
 extension Coordinator {
     
-    private func pushRecord(_ album: Record) {
-        let recordVM = RecordViewModel(output: .init(album: .init(value: album)))
-        let recordVC = RecordViewController(viewModel: recordVM)
-        self.navigationController.pushViewController(recordVC, animated: true)
-        
-        recordVM.navigation
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { [weak mainViewModel, weak recordVM] owner, path in
-                switch path {
-                case .finishRecord:
-                    mainViewModel?.delegate.accept(.finishRecord)
-                    
-                case let .pushAlbumEdit(album):
-                    owner.pushAlbumEdit(recordVM, album)
-                    
-                case let .presentExcludeRecord(album):
-                    owner.pushExcludeRecord(recordVM, album)
-                    
-                case let .presentFinishModal(album, sectionMediaList):
-                    owner.presentFinishModal(recordVM, album: album, sectionMediaList: sectionMediaList)
-                    
-                case let .presentMediaShareSheet(shareItemList):
-                    let activityController = UIActivityViewController(
-                        activityItems: shareItemList,
-                        applicationActivities: nil
-                    )
-                    owner.navigationController.present(activityController, animated: true)
-                    
-                    activityController.completionWithItemsHandler = { _, isComplete, _, _ in
-                        if isComplete {
-                            recordVM?.delegate.accept(.completeSharing)
-                        }
-                    }
-                    
-                case let .toggleTabBar(bool):
-                    mainViewModel?.delegate.accept(.toggleTabBar(bool))
-                    
-                case .presentPermissionRequestModal:
-                    mainViewModel?.delegate.accept(.presentAuthRequestModal)
-                    
-                case let .pushDetail(album, initialImage, mediaList, selectedRow):
-                    owner.presentDetail(recordVM, album, initialImage, mediaList, selectedRow)
-                }
-            }
-            .disposed(by: recordVC.disposeBag)
-    }
-    
     /// MyAlbum 화면으로 Push 합니다.
-    private func pushMyAlbum(_ album: Record) {
+    private func pushMyAlbum(_ album: Album) {
         let myAlbumVM = MyAlbumViewModel(output: .init(album: .init(value: album)))
         let myAlbumVC = MyAlbumViewController(viewModel: myAlbumVM)
         navigationController.pushViewController(myAlbumVC, animated: true)

@@ -25,9 +25,6 @@ struct Record: Hashable, Equatable {
     /// 썸네일
     var thumbnail: UIImage?
     
-    /// 앨범 타입
-    var albumType: AlbumType
-    
     /// 추정 개수
     ///
     /// - 앨범의 경우 전체 에셋 개수
@@ -60,13 +57,20 @@ struct Record: Hashable, Equatable {
         self.startDate = startDate
         self.endDate = endDate
         self.thumbnail = thumbnail
-        self.albumType = albumType
         self.estimateCount = estimateCount
         self.excludeMediaList = excludeMediaList
         self.mediaFetchOption = mediaFetchOption
         self.mediaFilterOption = mediaFilterOption
     }
     
+    
+}
+
+// MARK: - Helper
+
+extension Record {
+    
+    /// 기본 생성값
     static var initialValue: Self {
         Record(
             title: "",
@@ -77,6 +81,11 @@ struct Record: Hashable, Equatable {
             mediaFilterOption: .init()
         )
     }
+}
+
+// MARK: - Hashable & Equatable
+
+extension Record {
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -87,21 +96,8 @@ struct Record: Hashable, Equatable {
     }
 }
 
-/// 앨범 타입
-enum AlbumType {
-    
-    /// 생성중
-    case creating
-    
-    /// 앨범
-    case album
-    
-    /// 폴더
-    case folder
-}
-
-/// 앨범 저장 옵션
-enum AlbumSaveOption {
+/// 기록 저장 옵션
+enum RecordSaveOption {
     
     /// 하나로 저장
     case saveAsSingle
