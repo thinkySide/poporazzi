@@ -79,7 +79,7 @@ extension MyAlbumViewController {
     
     /// CollectionViewLayout을 반환합니다.
     private var collectionViewLayout: UICollectionViewCompositionalLayout {
-        UICollectionViewCompositionalLayout { sectionIndex, environment in
+        UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             let section = CollectionViewLayout.threeStageSection
             if sectionIndex == 0 {
                 section.boundarySupplementaryItems = [
@@ -90,8 +90,8 @@ extension MyAlbumViewController {
                 section.boundarySupplementaryItems = [CollectionViewLayout.dateHeader]
             }
             
-            section.visibleItemsInvalidationHandler = { [weak self] visibleItems, _, _ in
-                
+            section.visibleItemsInvalidationHandler = { visibleItems, _, _ in
+                guard let self else { return }
             }
             
             return section
