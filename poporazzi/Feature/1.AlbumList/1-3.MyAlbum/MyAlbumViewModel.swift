@@ -13,6 +13,8 @@ final class MyAlbumViewModel: ViewModel {
     
     @Dependency(\.photoKitService) private var photoKitService
     
+    private let paginationManager = PaginationManager(pageSize: 100, threshold: 10)
+    
     private let disposeBag = DisposeBag()
     private let output: Output
     
@@ -46,6 +48,7 @@ extension MyAlbumViewModel {
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
         let viewDidRefresh = PublishRelay<Void>()
+        let pagination = PublishRelay<Void>()
     }
     
     enum Navigation {
@@ -59,7 +62,29 @@ extension MyAlbumViewModel {
     
     func transform(_ input: Input) -> Output {
         
-        // 1. 미디어 리스트 정보만 불러오기
+        // 이미지 불러오기(페이지네이션)
+        output.pagination
+            .withUnretained(self)
+            .map { owner, _ in
+                (owner, owner.paginationManager.paginationList(from: owner.mediaList))
+            }
+            .flatMap { owner, paginationList in
+                owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: paginationList.map(\.id),
+                    option: .normal
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                let thumbnailList = Dictionary(uniqueKeysWithValues: mediaList.map {
+                    ($0, $0.thumbnail)
+                })
+                var lastThumnailList = owner.thumbnailList
+                lastThumnailList.merge(thumbnailList) { $1 }
+                owner.output.thumbnailList.accept(lastThumnailList)
+            }
+            .disposed(by: disposeBag)
+        
+        // 미디어 리스트 정보만 불러오기
         Signal.merge(
             input.viewDidLoad,
             output.viewDidRefresh.asSignal()
@@ -71,39 +96,26 @@ extension MyAlbumViewModel {
             let startDate = owner.album.creationDate
             let sectionMediaList = mediaList.toSectionMediaList(startDate: startDate)
             owner.output.sectionMediaList.accept(sectionMediaList)
+            
+            owner.paginationManager.reset()
+            owner.output.pagination.accept(())
         }
         .disposed(by: disposeBag)
         
-        // 2. 썸네일 불러오기
-        output.mediaList
-            .withUnretained(self)
-            .flatMap {
-                $0.photoKitService.fetchMediaListWithThumbnail(
-                    from: $1.map(\.id),
-                    option: .normal
-                )
-            }
-            .bind(with: self) { owner, mediaList in
-                let thumbnailList = Dictionary(uniqueKeysWithValues: mediaList.map {
-                    ($0, $0.thumbnail)
-                })
-                owner.output.thumbnailList.accept(thumbnailList)
-            }
-            .disposed(by: disposeBag)
-        
+        // 현재 보이는 IndexPath를 기준으로 페이지네이션 여부 결정
         input.willDisplayIndexPath
             .emit(with: self) { owner, indexPath in
-                
-                // 인덱스 계산
                 let index = owner.index(
                     from: owner.sectionMediaList,
                     indexPath: indexPath
                 )
                 
-                // 인덱스 오버플로우 방지
                 guard index <= owner.mediaList.count else { return }
                 
-                
+                if owner.paginationManager.isPagination(to: index) {
+                    owner.paginationManager.updateForNextPagination()
+                    owner.output.pagination.accept(())
+                }
             }
             .disposed(by: disposeBag)
         
