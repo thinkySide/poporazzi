@@ -22,27 +22,24 @@ struct Album: Hashable, Equatable {
     /// 썸네일
     var thumbnail: UIImage?
     
-    /// 앨범 타입
-    var albumType: AlbumType
-    
     /// 추정 개수
     ///
     /// - 앨범의 경우 전체 에셋 개수
     /// - 폴더의 경우 전체 앨범 개수
     var estimateCount: Int
-}
-
-/// 앨범 타입
-enum AlbumType {
     
-    /// 생성중
-    case creating
+    /// 앨범 타입
+    var albumType: AlbumType
     
-    /// 앨범
-    case album
-    
-    /// 폴더
-    case folder
+    /// 앨범 타입
+    enum AlbumType {
+        
+        /// 앨범
+        case album
+        
+        /// 폴더
+        case folder
+    }
 }
 
 // MARK: - Hashable & Equatable

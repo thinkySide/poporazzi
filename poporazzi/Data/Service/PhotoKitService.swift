@@ -117,8 +117,8 @@ extension PhotoKitService {
                     id: album.localIdentifier,
                     title: album.localizedTitle ?? "",
                     creationDate: album.startDate ?? .now,
-                    albumType: .album,
-                    estimateCount: album.estimatedAssetCount
+                    estimateCount: album.estimatedAssetCount,
+                    albumType: .album
                 )
                 albumList.append(album)
             }
@@ -129,8 +129,8 @@ extension PhotoKitService {
                     id: collection.localIdentifier,
                     title: collection.localizedTitle ?? "",
                     creationDate: folderCreationDate(in: collection),
-                    albumType: .folder,
-                    estimateCount: estimateAlbumCount(in: collection)
+                    estimateCount: estimateAlbumCount(in: collection),
+                    albumType: .folder
                 )
                 albumList.append(album)
             }

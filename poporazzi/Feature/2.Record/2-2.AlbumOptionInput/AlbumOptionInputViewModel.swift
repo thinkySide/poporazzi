@@ -156,7 +156,6 @@ extension AlbumOptionInputViewModel {
     private func startRecord() {
         let album = Record(
             title: output.titleText.value,
-            albumType: .creating,
             mediaFetchOption: output.mediaFetchOption.value,
             mediaFilterOption: output.mediaFilterOption.value
         )

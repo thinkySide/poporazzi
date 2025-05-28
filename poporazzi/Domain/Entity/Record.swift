@@ -11,6 +11,8 @@ import UIKit
 struct Record: Hashable, Equatable {
     
     /// 고유 아이디
+    ///
+    /// - 생성 시 UUID 할당
     let id: String
     
     /// 기록 제목
@@ -21,9 +23,6 @@ struct Record: Hashable, Equatable {
     
     /// 종료 날짜
     var endDate: Date?
-    
-    /// 썸네일
-    var thumbnail: UIImage?
     
     /// 추정 개수
     ///
@@ -45,8 +44,6 @@ struct Record: Hashable, Equatable {
         title: String,
         startDate: Date = .now,
         endDate: Date? = nil,
-        thumbnail: UIImage? = nil,
-        albumType: AlbumType,
         estimateCount: Int = 0,
         excludeMediaList: Set<String> = [],
         mediaFetchOption: MediaFetchOption,
@@ -56,7 +53,6 @@ struct Record: Hashable, Equatable {
         self.title = title
         self.startDate = startDate
         self.endDate = endDate
-        self.thumbnail = thumbnail
         self.estimateCount = estimateCount
         self.excludeMediaList = excludeMediaList
         self.mediaFetchOption = mediaFetchOption
@@ -75,7 +71,6 @@ extension Record {
         Record(
             title: "",
             startDate: .now,
-            albumType: .album,
             excludeMediaList: [],
             mediaFetchOption: .all,
             mediaFilterOption: .init()

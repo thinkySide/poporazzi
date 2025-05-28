@@ -204,7 +204,6 @@ extension AlbumEditViewModel {
                     title: albumTitle,
                     startDate: owner.output.startDate.value,
                     endDate: owner.output.endDate.value,
-                    albumType: .creating,
                     excludeMediaList: oldAlbum.excludeMediaList,
                     mediaFetchOption: owner.output.mediaFetchOption.value,
                     mediaFilterOption: owner.output.mediaFilterOption.value

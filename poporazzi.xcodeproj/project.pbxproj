@@ -79,11 +79,11 @@
 		8221E3632DC366D50092469D /* Exceptions for "poporazzi" folder in "poporazziWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/Tab.swift,
 				Data/Service/LiveActivityService.swift,
 				Domain/Entity/Album.swift,
 				Domain/Entity/Media.swift,
 				Domain/Entity/Record.swift,
-				Domain/Entity/Tab.swift,
 				Domain/Interface/LiveActivityInterface.swift,
 				Resource/Colors.xcassets,
 				Resource/Font/DovemayoGothic/Dovemayo_gothic.ttf,
