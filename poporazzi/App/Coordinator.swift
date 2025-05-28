@@ -29,10 +29,10 @@ final class Coordinator: NSObject {
         
         let albumId = UserDefaultsService.trackingAlbumId
         let selectedTab: Tab = albumId.isEmpty ? .albumList : .record(isTracking: true)
-        var recordVMOutput = RecordViewModel.Output(album: .init(value: .initialValue))
+        var recordVMOutput = RecordViewModel.Output(record: .init(value: .initialValue))
         if !albumId.isEmpty {
             let album = persistenceService.readAlbum(fromId: albumId)
-            recordVMOutput = .init(album: .init(value: album))
+            recordVMOutput = .init(record: .init(value: album))
         }
         
         let recordVM = RecordViewModel(output: recordVMOutput)

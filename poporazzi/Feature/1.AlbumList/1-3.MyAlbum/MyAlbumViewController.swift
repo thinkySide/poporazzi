@@ -14,10 +14,8 @@ final class MyAlbumViewController: ViewController {
     private let scene = MyAlbumView()
     private let viewModel: MyAlbumViewModel
     
-    private var dataSource: UICollectionViewDiffableDataSource<RecordSection, Media>!
+    private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    private var albumCache = Record.initialValue
-    private var totalCount = 0
     private var imageCache = [String: UIImage?]()
     
     private let contextMenuPresented = PublishRelay<IndexPath>()
@@ -40,6 +38,7 @@ final class MyAlbumViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDataSource()
         bind()
     }
     
@@ -56,7 +55,7 @@ extension MyAlbumViewController {
     private func setupDataSource() {
         scene.recordCollectionView.delegate = self
         
-        dataSource = UICollectionViewDiffableDataSource<RecordSection, Media>(collectionView: scene.recordCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
@@ -83,8 +82,8 @@ extension MyAlbumViewController {
                     for: indexPath
                 ) as? RecordTitleHeader
                 
-                header?.action(.updateAlbumTitleLabel(albumCache.title))
-                header?.action(.updateTotalImageCountLabel(totalCount))
+                header?.action(.updateAlbumTitleLabel(viewModel.album.title))
+                header?.action(.updateTotalImageCountLabel(viewModel.mediaList.count))
                 
                 return header
             } else {
@@ -118,7 +117,7 @@ extension MyAlbumViewController {
     
     /// 기본 DataSource를 업데이트합니다.
     private func updateInitialDataSource(to sections: SectionMediaList) {
-        var snapshot = NSDiffableDataSourceSnapshot<RecordSection, Media>()
+        var snapshot = NSDiffableDataSourceSnapshot<MediaSection, Media>()
         
         for (section, medias) in sections {
             snapshot.appendSections([section])
@@ -174,5 +173,21 @@ extension MyAlbumViewController {
         )
         let output = viewModel.transform(input)
         
+        output.mediaList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, mediaList in
+                let creationDate = owner.viewModel.album.creationDate
+                let sectionMediaList = mediaList.toSectionMediaList(startDate: creationDate)
+                owner.updateInitialDataSource(to: sectionMediaList)
+                owner.updateTitleHeader()
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaListWithThumbnail
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, mediaList in
+                owner.updatePaginationDataSource(to: mediaList)
+            }
+            .disposed(by: disposeBag)
     }
 }

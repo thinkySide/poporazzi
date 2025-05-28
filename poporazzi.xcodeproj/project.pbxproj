@@ -83,6 +83,7 @@
 				Data/Service/LiveActivityService.swift,
 				Domain/Entity/Album.swift,
 				Domain/Entity/Media.swift,
+				Domain/Entity/MediaSection.swift,
 				Domain/Entity/Record.swift,
 				Domain/Interface/LiveActivityInterface.swift,
 				Resource/Colors.xcassets,

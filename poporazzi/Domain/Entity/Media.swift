@@ -150,6 +150,17 @@ extension Media {
             isFavorite: false
         )
     }
+    
+    /// Media 생성일이 시작 날짜를 기준으로 몇일차인지 반환합니다.
+    func daysSince(startDate: Date) -> Int {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: startDate),
+            to: calendar.startOfDay(for: creationDate ?? .now)
+        )
+        return (components.day ?? 0) + 1
+    }
 }
 
 extension [Media] {
@@ -157,5 +168,23 @@ extension [Media] {
     /// 날짜순으로 정렬 후 반환합니다.
     var sortedByCreationDate: [Media] {
         sorted { $0.creationDate ?? Date() < $1.creationDate ?? Date() }
+    }
+    
+    /// 날짜별로 MediaList를 분리해 반환합니다.
+    func toSectionMediaList(startDate: Date) -> SectionMediaList {
+        var dic = [MediaSection: [Media]]()
+        
+        for media in self.sortedByCreationDate {
+            guard let creationDate = media.creationDate else { continue }
+            let days = media.daysSince(startDate: startDate)
+            dic[.day(
+                order: days,
+                date: Calendar.current.startOfDay(for: creationDate)
+            ), default: []].append(media)
+        }
+        
+        return dic.keys
+            .sorted(by: <)
+            .map { ($0, dic[$0] ?? []) }
     }
 }

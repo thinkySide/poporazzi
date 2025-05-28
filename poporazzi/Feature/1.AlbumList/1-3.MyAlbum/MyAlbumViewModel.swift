@@ -38,6 +38,8 @@ extension MyAlbumViewModel {
     
     struct Output {
         let album: BehaviorRelay<Album>
+        let mediaList = BehaviorRelay<[Media]>(value: [])
+        let mediaListWithThumbnail = BehaviorRelay<[Media]>(value: [])
     }
     
     enum Navigation {
@@ -52,7 +54,21 @@ extension MyAlbumViewModel {
     func transform(_ input: Input) -> Output {
         input.viewDidLoad
             .emit(with: self) { owner, _ in
-                
+                let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
+                owner.output.mediaList.accept(mediaList)
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaList
+            .withUnretained(self)
+            .flatMap {
+                $0.photoKitService.fetchMediaListWithThumbnail(
+                    from: $1.map(\.id),
+                    option: .normal
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                owner.output.mediaListWithThumbnail.accept(mediaList)
             }
             .disposed(by: disposeBag)
         
@@ -63,5 +79,18 @@ extension MyAlbumViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Syntax Sugar
+
+extension MyAlbumViewModel {
+    
+    var album: Album {
+        output.album.value
+    }
+    
+    var mediaList: [Media] {
+        output.mediaList.value
     }
 }

@@ -183,7 +183,35 @@ extension PhotoKitService {
 
 extension PhotoKitService {
     
-    /// 썸네일 없이 기록을 반환합니다.
+    /// 앨범으로 미디어 리스트를 반환합니다.
+    func fetchMediaList(from album: Album) -> [Media] {
+        var mediaList = [Media]()
+        
+        switch album.albumType {
+        case .album:
+            if let phAlbum = fetchAlbum(from: album.id) {
+                let fetchResult = PHAsset.fetchAssets(in: phAlbum, options: nil)
+                fetchResult.enumerateObjects { [weak self] asset, _, _ in
+                    guard let self else { return }
+                    let media = Media(
+                        id: asset.localIdentifier,
+                        creationDate: asset.creationDate,
+                        mediaType: self.mediaType(from: asset),
+                        thumbnail: nil,
+                        isFavorite: asset.isFavorite
+                    )
+                    mediaList.append(media)
+                }
+            }
+            
+        case .folder:
+            let phFolder = fetchFolder(from: album.id)
+        }
+        
+        return mediaList
+    }
+    
+    /// 기록으로 미디어 리스트를 반환합니다.
     func fetchMediaList(from record: Record) throws -> [Media] {
         if checkPermission() != .authorized { throw PhotoKitError.noPermission }
         

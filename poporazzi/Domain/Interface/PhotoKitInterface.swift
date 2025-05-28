@@ -41,7 +41,10 @@ protocol PhotoKitInterface {
     
     // MARK: - Media List
     
-    /// 미디어 리스트를 반환합니다.
+    /// 앨범으로 미디어 리스트를 반환합니다.
+    func fetchMediaList(from album: Album) -> [Media]
+    
+    /// 기록으로 미디어 리스트를 반환합니다.
     func fetchMediaList(from record: Record) throws -> [Media]
     
     /// 썸네일과 함께 미디어 리스트를 반환합니다.

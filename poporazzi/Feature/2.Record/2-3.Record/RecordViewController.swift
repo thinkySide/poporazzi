@@ -14,7 +14,7 @@ final class RecordViewController: ViewController {
     private let scene = RecordView()
     private let viewModel: RecordViewModel
     
-    private var dataSource: UICollectionViewDiffableDataSource<RecordSection, Media>!
+    private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
     private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
     private var albumCache = Record.initialValue
     private var totalCount = 0
@@ -49,29 +49,6 @@ final class RecordViewController: ViewController {
     }
 }
 
-// MARK: - RecordSection
-
-typealias SectionMediaList = [(RecordSection, [Media])]
-
-enum RecordSection: Hashable, Comparable {
-    case day(order: Int, date: Date)
-    
-    /// DateFormat을 반환합니다.
-    var dateFormat: String {
-        switch self {
-        case let .day(order, date):
-            "\(order)일차 - \(date.albumFormat)"
-        }
-    }
-    
-    static func < (lhs: RecordSection, rhs: RecordSection) -> Bool {
-        switch (lhs, rhs) {
-        case let (.day(order1, _), .day(order2, _)):
-            return order1 < order2
-        }
-    }
-}
-
 // MARK: - UICollectionViewDiffableDataSource
 
 extension RecordViewController {
@@ -80,7 +57,7 @@ extension RecordViewController {
     private func setupDataSource() {
         scene.recordCollectionView.delegate = self
         
-        dataSource = UICollectionViewDiffableDataSource<RecordSection, Media>(collectionView: scene.recordCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
@@ -142,7 +119,7 @@ extension RecordViewController {
     
     /// 기본 DataSource를 업데이트합니다.
     private func updateInitialDataSource(to sections: SectionMediaList) {
-        var snapshot = NSDiffableDataSourceSnapshot<RecordSection, Media>()
+        var snapshot = NSDiffableDataSourceSnapshot<MediaSection, Media>()
         
         for (section, medias) in sections {
             snapshot.appendSections([section])
@@ -214,7 +191,7 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.album
+        output.record
             .bind(with: self) { owner, album in
                 owner.albumCache = album
                 owner.scene.action(.updateTitleLabel(album.title))
