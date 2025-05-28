@@ -15,8 +15,6 @@ final class MyAlbumViewController: ViewController {
     private let viewModel: MyAlbumViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
-    private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    private var imageCache = [String: UIImage?]()
     
     private let contextMenuPresented = PublishRelay<IndexPath>()
     private let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
@@ -38,6 +36,7 @@ final class MyAlbumViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupCollectionView()
         setupDataSource()
         bind()
     }
@@ -47,23 +46,63 @@ final class MyAlbumViewController: ViewController {
     }
 }
 
+// MARK: - UICollectionView
+
+extension MyAlbumViewController {
+    
+    /// CollectionView를 세팅합니다.
+    private func setupCollectionView() {
+        let collectionView = scene.mediaCollectionView
+        collectionView.delegate = self
+        collectionView.collectionViewLayout = collectionViewLayout
+        collectionView.register(
+            RecordCell.self,
+            forCellWithReuseIdentifier: RecordCell.identifier
+        )
+        collectionView.register(
+            RecordTitleHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
+            withReuseIdentifier: RecordTitleHeader.identifier
+        )
+        collectionView.register(
+            RecordDateHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
+            withReuseIdentifier: RecordDateHeader.identifier
+        )
+    }
+    
+    /// CollectionViewLayout을 반환합니다.
+    private var collectionViewLayout: UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout { sectionIndex, environment in
+            let section = CollectionViewLayout.threeStageSection
+            if sectionIndex == 0 {
+                section.boundarySupplementaryItems = [
+                    CollectionViewLayout.titleHeader,
+                    CollectionViewLayout.dateHeader
+                ]
+            } else {
+                section.boundarySupplementaryItems = [CollectionViewLayout.dateHeader]
+            }
+            return section
+        }
+    }
+}
+
 // MARK: - UICollectionViewDiffableDataSource
 
 extension MyAlbumViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        scene.recordCollectionView.delegate = self
-        
-        dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.recordCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.mediaCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            if let cacheThumbnail = self.imageCache[media.id] {
-                cell.action(.setMedia(media, cacheThumbnail))
+            if let thumbnail = self.viewModel.thumbnailList[media] {
+                cell.action(.setMedia(media, thumbnail))
             } else {
                 cell.action(.setMedia(media, nil))
             }
@@ -130,11 +169,6 @@ extension MyAlbumViewController {
     /// 페이지네이션 된 DataSource를 업데이트합니다.
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
-        
-        for media in mediaList {
-            imageCache.updateValue(media.thumbnail, forKey: media.id)
-        }
-        
         var snapshot = dataSource.snapshot()
         snapshot.reloadItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
@@ -183,9 +217,10 @@ extension MyAlbumViewController {
             }
             .disposed(by: disposeBag)
         
-        output.mediaListWithThumbnail
+        output.thumbnailList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, mediaList in
+            .bind(with: self) { owner, thumbnailList in
+                let mediaList = thumbnailList.map(\.key)
                 owner.updatePaginationDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)

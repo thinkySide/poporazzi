@@ -5,7 +5,7 @@
 //  Created by 김민준 on 5/27/25.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 
@@ -39,7 +39,7 @@ extension MyAlbumViewModel {
     struct Output {
         let album: BehaviorRelay<Album>
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let mediaListWithThumbnail = BehaviorRelay<[Media]>(value: [])
+        let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
     }
     
     enum Navigation {
@@ -68,7 +68,10 @@ extension MyAlbumViewModel {
                 )
             }
             .bind(with: self) { owner, mediaList in
-                owner.output.mediaListWithThumbnail.accept(mediaList)
+                let thumbnailList = Dictionary(uniqueKeysWithValues: mediaList.map {
+                    ($0, $0.thumbnail)
+                })
+                owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
         
@@ -92,5 +95,9 @@ extension MyAlbumViewModel {
     
     var mediaList: [Media] {
         output.mediaList.value
+    }
+    
+    var thumbnailList: [Media: UIImage?] {
+        output.thumbnailList.value
     }
 }
