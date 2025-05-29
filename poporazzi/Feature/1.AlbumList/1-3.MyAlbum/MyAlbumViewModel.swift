@@ -69,6 +69,7 @@ extension MyAlbumViewModel {
     enum Navigation {
         case pop
         case presentDetail(Album, UIImage?, [Media], Int)
+        case presentMediaShareSheet([Any])
     }
     
     enum MenuAction {
@@ -229,7 +230,12 @@ extension MyAlbumViewModel {
                     print("앨범 삭제")
                     
                 case .share:
-                    print("공유하기")
+                    let selectedList = owner.selectedMediaList.map(\.id)
+                    owner.photoKitService.fetchShareItemList(from: selectedList)
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
                 }
             }
             .disposed(by: disposeBag)

@@ -386,6 +386,13 @@ extension Coordinator {
                         mediaFilterOption: .initialValue
                     )
                     owner.presentDetail(nil, record, image, mediaList, selectedIndex)
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    myAlbumVC.present(activityController, animated: true)
                 }
             }
             .disposed(by: myAlbumVC.disposeBag)
