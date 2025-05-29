@@ -200,7 +200,10 @@ extension MyAlbumViewController {
             selectButtonTapped: scene.selectButton.button.rx.tap
                 .asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap
-                .asSignal()
+                .asSignal(),
+            favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
+            excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
+            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
@@ -245,10 +248,20 @@ extension MyAlbumViewController {
                 owner.scene.action(.updateSelectedCount(indexPathList.count))
             }
             .disposed(by: disposeBag)
+        
+        output.shouldBeFavorite
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isFavorite in
+                owner.scene.action(.updateShouldFavorite(isFavorite))
+            }
+            .disposed(by: disposeBag)
     }
     
     func setupMenu() {
         scene.seemoreButton.button.showsMenuAsPrimaryAction = true
         scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
+        
+        scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
+        scene.seemoreToolBarButton.button.menu = viewModel.seemoreToolbarMenu.toUIMenu
     }
 }

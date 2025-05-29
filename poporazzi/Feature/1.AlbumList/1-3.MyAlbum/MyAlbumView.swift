@@ -94,6 +94,7 @@ extension MyAlbumView {
     enum Action {
         case toggleSelectMode(Bool)
         case updateSelectedCount(Int)
+        case updateShouldFavorite(Bool)
     }
     
     func action(_ action: Action) {
@@ -127,6 +128,10 @@ extension MyAlbumView {
                     $0.action(.toggleDisabled(false))
                 }
             }
+            
+        case let .updateShouldFavorite(isFavorite):
+            let symbol = UIImage(symbol: isFavorite ? .favoriteActive : .favoriteRemove, size: 16, weight: .bold)
+            favoriteToolBarButton.button.setImage(symbol, for: .normal)
         }
     }
 }

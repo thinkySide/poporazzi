@@ -191,6 +191,7 @@ extension PhotoKitService {
         case .album:
             if let phAlbum = fetchAlbum(from: album.id) {
                 let fetchResult = PHAsset.fetchAssets(in: phAlbum, options: nil)
+                self.assetFetchResult = fetchResult
                 fetchResult.enumerateObjects { [weak self] asset, _, _ in
                     guard let self else { return }
                     let media = Media(

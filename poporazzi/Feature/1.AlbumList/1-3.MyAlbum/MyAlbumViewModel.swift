@@ -45,6 +45,10 @@ extension MyAlbumViewModel {
         let backButtonTapped: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
+        
+        let favoriteToolbarButtonTapped: Signal<Void>
+        let excludeToolbarButtonTapped: Signal<Void>
+        let removeToolbarButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -56,6 +60,7 @@ extension MyAlbumViewModel {
         
         let isSelectMode = BehaviorRelay<Bool>(value: false)
         let selectedIndexPathList = BehaviorRelay<[IndexPath]>(value: [])
+        let shouldBeFavorite = BehaviorRelay<Bool>(value: false)
         
         let viewDidRefresh = PublishRelay<Void>()
         let pagination = PublishRelay<Void>()
@@ -69,6 +74,7 @@ extension MyAlbumViewModel {
     enum MenuAction {
         case editAlbum
         case removeAlbum
+        case share
     }
 }
 
@@ -103,7 +109,8 @@ extension MyAlbumViewModel {
         // 미디어 리스트 정보만 불러오기
         Signal.merge(
             input.viewDidLoad,
-            output.viewDidRefresh.asSignal()
+            output.viewDidRefresh.asSignal(),
+            photoKitService.photoLibraryAssetChange
         )
         .emit(with: self) { owner, _ in
             let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
@@ -142,6 +149,7 @@ extension MyAlbumViewModel {
                     var indexPathList = owner.selectedIndexPathList
                     indexPathList.append(indexPath)
                     owner.output.selectedIndexPathList.accept(indexPathList)
+                    owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
                     
                 case false:
                     let media = owner.mediaList[indexPath.row]
@@ -163,6 +171,7 @@ extension MyAlbumViewModel {
                 var indexPathList = owner.selectedIndexPathList
                 indexPathList.removeAll(where: { $0 == indexPath })
                 owner.output.selectedIndexPathList.accept(indexPathList)
+                owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
             }
             .disposed(by: disposeBag)
         
@@ -175,6 +184,7 @@ extension MyAlbumViewModel {
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.isSelectMode.accept(true)
+                owner.output.shouldBeFavorite.accept(true)
                 NameSpace.isSelectionMode = true
                 HapticManager.impact(style: .light)
             }
@@ -186,13 +196,40 @@ extension MyAlbumViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.favoriteToolbarButtonTapped
+            .emit(with: self) { owner, _ in
+                let selectedMediaList = owner.selectedMediaList
+                owner.photoKitService.toggleMediaFavorite(
+                    from: selectedMediaList.map(\.id),
+                    isFavorite: selectedMediaList.shouldBeFavorite
+                )
+                owner.cancelSelectMode()
+            }
+            .disposed(by: disposeBag)
+        
+        input.excludeToolbarButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
+        input.removeToolbarButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
         menuAction
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
                     print("앨범 수정")
+                    
                 case .removeAlbum:
                     print("앨범 삭제")
+                    
+                case .share:
+                    print("공유하기")
                 }
             }
             .disposed(by: disposeBag)
@@ -227,6 +264,12 @@ extension MyAlbumViewModel {
     
     var selectedIndexPathList: [IndexPath] {
         output.selectedIndexPathList.value
+    }
+    
+    var selectedMediaList: [Media] {
+        selectedIndexPathList.compactMap {
+            mediaList[index(from: sectionMediaList, indexPath: $0)]
+        }
     }
 }
 
@@ -272,5 +315,13 @@ extension MyAlbumViewModel {
             self?.menuAction.accept(.removeAlbum)
         }
         return [editAlbum, removeAlbum]
+    }
+    
+    /// 더보기 툴바 버튼 Menu
+    var seemoreToolbarMenu: [MenuModel] {
+        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+            self?.menuAction.accept(.share)
+        }
+        return [share]
     }
 }

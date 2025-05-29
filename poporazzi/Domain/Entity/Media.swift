@@ -139,9 +139,7 @@ extension Media {
     
     static func == (lhs: Media, rhs: Media) -> Bool {
         lhs.id == rhs.id
-        && lhs.mediaType == rhs.mediaType
         && lhs.thumbnail != rhs.thumbnail
-        && lhs.isFavorite == rhs.isFavorite
     }
 }
 
@@ -195,5 +193,15 @@ extension [Media] {
         return dic.keys
             .sorted(by: <)
             .map { ($0, dic[$0] ?? []) }
+    }
+    
+    /// 미디어 리스트의 값을 비교 후 즐겨찾기 값을 결정합니다.
+    var shouldBeFavorite: Bool {
+        let isFavoriteSet = Set(self.map(\.isFavorite))
+        if isFavoriteSet.count > 1 {
+            return isFavoriteSet.contains(true)
+        } else {
+            return !(isFavoriteSet.first ?? false)
+        }
     }
 }
