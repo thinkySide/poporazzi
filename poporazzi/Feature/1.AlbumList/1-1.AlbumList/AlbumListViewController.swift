@@ -89,7 +89,8 @@ extension AlbumListViewController {
         }
         
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems(albumList)
+        let validList = albumList.filter { snapshot.itemIdentifiers.contains($0) }
+        snapshot.reloadItems(validList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }

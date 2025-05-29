@@ -82,6 +82,7 @@
 				App/Tab.swift,
 				Data/Service/LiveActivityService.swift,
 				Domain/Entity/Album.swift,
+				Domain/Entity/DataType.swift,
 				Domain/Entity/Media.swift,
 				Domain/Entity/MediaSection.swift,
 				Domain/Entity/Record.swift,

@@ -121,8 +121,8 @@ final class Coordinator: NSObject {
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
                     
-                case let .pushDetail(album, initialImage, mediaList, selectedRow):
-                    owner.presentDetail(recordVM, album, initialImage, mediaList, selectedRow)
+                case let .pushDetail(record, initialImage, mediaList, selectedRow):
+                    owner.presentDetail(recordVM, .record(record), initialImage, mediaList, selectedRow)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -318,14 +318,14 @@ extension Coordinator {
     /// 상세보기 화면으로 Present 합니다.
     private func presentDetail(
         _ recordVM: RecordViewModel?,
-        _ album: Record,
+        _ dataType: DataType,
         _ initialImage: UIImage?,
         _ mediaList: [Media],
         _ selectedRow: Int
     ) {
         let detailVM = DetailViewModel(
             output: .init(
-                record: .init(value: album),
+                dataType: .init(value: dataType),
                 initialImage: .init(value: initialImage),
                 initialRow: .init(value: selectedRow),
                 currentRow: .init(value: selectedRow),
@@ -376,16 +376,7 @@ extension Coordinator {
                     owner.navigationController.popViewController(animated: true)
                     
                 case let .presentDetail(album, image, mediaList, selectedIndex):
-                    let record = Record(
-                        id: album.id,
-                        title: album.title,
-                        startDate: album.creationDate,
-                        endDate: nil,
-                        excludeMediaList: [],
-                        mediaFetchOption: .all,
-                        mediaFilterOption: .initialValue
-                    )
-                    owner.presentDetail(nil, record, image, mediaList, selectedIndex)
+                    owner.presentDetail(nil, .album(album), image, mediaList, selectedIndex)
                     
                 case let .presentMediaShareSheet(shareItemList):
                     let activityController = UIActivityViewController(
