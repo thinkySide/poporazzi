@@ -52,6 +52,7 @@ extension MyAlbumViewController {
     
     struct Event {
         let willDisplayIndexPath = PublishRelay<IndexPath>()
+        let contextMenuPresented = PublishRelay<IndexPath>()
     }
 }
 
@@ -62,6 +63,7 @@ extension MyAlbumViewController {
     /// CollectionView를 세팅합니다.
     private func setupCollectionView() {
         let collectionView = scene.mediaCollectionView
+        collectionView.delegate = self
         collectionView.collectionViewLayout = collectionViewLayout
         collectionView.register(
             RecordCell.self,
@@ -188,6 +190,27 @@ extension MyAlbumViewController {
     }
 }
 
+// MARK: - UICollectionViewDelegate
+
+extension MyAlbumViewController: UICollectionViewDelegate {
+    
+    /// 선택된 IndexPath의 Context Menu를 설정합니다.
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        event.contextMenuPresented.accept(indexPath)
+        return UIContextMenuConfiguration(
+            identifier: nil,
+            previewProvider: nil,
+            actionProvider: { [weak self] _ in
+                self?.viewModel.contextMenu(from: indexPath).toUIMenu
+            }
+        )
+    }
+}
+
 // MARK: - Binding
 
 extension MyAlbumViewController {
@@ -203,6 +226,7 @@ extension MyAlbumViewController {
                 .asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap
                 .asSignal(),
+            contextMenuPresented: event.contextMenuPresented.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
             removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()

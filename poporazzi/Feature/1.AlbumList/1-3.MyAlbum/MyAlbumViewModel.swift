@@ -21,6 +21,7 @@ final class MyAlbumViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let menuAction = PublishRelay<MenuAction>()
+    let contextMenuAction = PublishRelay<ContextMenuAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
     
     init(output: Output) {
@@ -46,6 +47,8 @@ extension MyAlbumViewModel {
         let backButtonTapped: Signal<Void>
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
+        
+        let contextMenuPresented: Signal<IndexPath>
         
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
@@ -81,6 +84,13 @@ extension MyAlbumViewModel {
         case editAlbum
         case removeAlbum
         case share
+    }
+    
+    enum ContextMenuAction {
+        case toggleFavorite(Media)
+        case share(Media)
+        case exclude(Media)
+        case remove(Media)
     }
     
     enum ActionSheetAction {
@@ -256,6 +266,24 @@ extension MyAlbumViewModel {
             }
             .disposed(by: disposeBag)
         
+        contextMenuAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case let .toggleFavorite(media):
+                    print("toggleFavorite")
+                    
+                case let .share(media):
+                    print("share")
+                    
+                case let .exclude(media):
+                    print("exclude")
+                    
+                case let .remove(media):
+                    print("remove")
+                }
+            }
+            .disposed(by: disposeBag)
+        
         actionSheetAction
             .bind(with: self) { owner, action in
                 switch action {
@@ -390,6 +418,28 @@ extension MyAlbumViewModel {
             self?.menuAction.accept(.share)
         }
         return [share]
+    }
+    
+    /// Context Menu
+    func contextMenu(from indexPath: IndexPath) -> [MenuModel] {
+        let index = index(from: sectionMediaList, indexPath: indexPath)
+        let media = mediaList[index]
+        let favorite = MenuModel(
+            symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
+            title: media.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"
+        ) { [weak self] in
+            self?.contextMenuAction.accept(.toggleFavorite(media))
+        }
+        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+            self?.contextMenuAction.accept(.share(media))
+        }
+        let exclude = MenuModel(symbol: .exclude, title: "앨범에서 제외하기") { [weak self] in
+            self?.contextMenuAction.accept(.exclude(media))
+        }
+        let remove = MenuModel(symbol: .removeLine, title: "삭제하기", attributes: .destructive) { [weak self] in
+            self?.contextMenuAction.accept(.remove(media))
+        }
+        return [favorite, share, exclude, remove]
     }
 }
 
