@@ -284,10 +284,14 @@ extension MyAlbumViewModel {
                         .disposed(by: owner.disposeBag)
                     
                 case let .exclude(media):
-                    print("exclude")
+                    let actionSheet = owner.excludeActionSheet(from: [media])
+                    owner.output.actionSheetPresented.accept(actionSheet)
+                    HapticManager.notification(type: .warning)
                     
                 case let .remove(media):
-                    print("remove")
+                    let actionSheet = owner.removeActionSheet(from: [media])
+                    owner.output.actionSheetPresented.accept(actionSheet)
+                    HapticManager.notification(type: .warning)
                 }
             }
             .disposed(by: disposeBag)
