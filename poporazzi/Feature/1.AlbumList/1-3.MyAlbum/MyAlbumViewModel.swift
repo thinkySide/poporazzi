@@ -21,6 +21,7 @@ final class MyAlbumViewModel: ViewModel {
     
     let navigation = PublishRelay<Navigation>()
     let menuAction = PublishRelay<MenuAction>()
+    let actionSheetAction = PublishRelay<ActionSheetAction>()
     
     init(output: Output) {
         self.output = output
@@ -64,6 +65,10 @@ extension MyAlbumViewModel {
         
         let viewDidRefresh = PublishRelay<Void>()
         let pagination = PublishRelay<Void>()
+        let toggleLoading = PublishRelay<Bool>()
+        
+        let alertPresented = PublishRelay<AlertModel>()
+        let actionSheetPresented = PublishRelay<ActionSheetModel>()
     }
     
     enum Navigation {
@@ -76,6 +81,11 @@ extension MyAlbumViewModel {
         case editAlbum
         case removeAlbum
         case share
+    }
+    
+    enum ActionSheetAction {
+        case exclude([Media])
+        case remove([Media])
     }
 }
 
@@ -216,7 +226,9 @@ extension MyAlbumViewModel {
         
         input.removeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                
+                let actionSheet = owner.removeActionSheet(from: owner.selectedMediaList)
+                owner.output.actionSheetPresented.accept(actionSheet)
+                HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
         
@@ -232,8 +244,32 @@ extension MyAlbumViewModel {
                 case .share:
                     let selectedList = owner.selectedMediaList.map(\.id)
                     owner.photoKitService.fetchShareItemList(from: selectedList)
+                        .observe(on: MainScheduler.asyncInstance)
                         .bind { shareItemList in
                             owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        actionSheetAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case let .exclude(mediaList):
+                    break
+                    
+                case let .remove(mediaList):
+                    owner.output.toggleLoading.accept(true)
+                    owner.photoKitService.removePhotos(from: mediaList.map(\.id))
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { isSuccess in
+                            if isSuccess {
+                                owner.cancelSelectMode()
+                            } else {
+                                owner.output.alertPresented.accept(owner.removeFailedAlert)
+                            }
+                            owner.output.toggleLoading.accept(false)
                         }
                         .disposed(by: owner.disposeBag)
                 }
@@ -308,6 +344,20 @@ extension MyAlbumViewModel {
     }
 }
 
+// MARK: - Alert
+
+extension MyAlbumViewModel {
+    
+    /// 기록 삭제 실패 Alert
+    private var removeFailedAlert: AlertModel {
+        AlertModel(
+            title: "사진을 삭제할 수 없어요",
+            message: "사진 라이브러리 권한을 확인해주세요",
+            eventButton: .init(title: "확인")
+        )
+    }
+}
+
 // MARK: - Menu
 
 extension MyAlbumViewModel {
@@ -329,5 +379,36 @@ extension MyAlbumViewModel {
             self?.menuAction.accept(.share)
         }
         return [share]
+    }
+}
+
+// MARK: - Action Sheet
+
+extension MyAlbumViewModel {
+    
+    /// 앨범 제외 Action Sheet
+    private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
+        ActionSheetModel(
+            message: "선택한 기록이 ‘\(album.title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
+            buttons: [
+                .init(title: "\(mediaList.count)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                    self?.actionSheetAction.accept(.exclude(mediaList))
+                },
+                .init(title: "취소", style: .cancel)
+            ]
+        )
+    }
+    
+    /// 기록 삭제 Action Sheet
+    private func removeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
+        ActionSheetModel(
+            message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
+            buttons: [
+                .init(title: "\(mediaList.count)장의 기록 삭제", style: .destructive) { [weak self] in
+                    self?.actionSheetAction.accept(.remove(mediaList))
+                },
+                .init(title: "취소", style: .cancel)
+            ]
+        )
     }
 }

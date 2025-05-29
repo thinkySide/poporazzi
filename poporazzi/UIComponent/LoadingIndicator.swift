@@ -48,8 +48,13 @@ extension LoadingIndicator {
     
     func action(_ action: Action) {
         switch action {
-        case .start: indicator.startAnimating()
-        case .stop: indicator.stopAnimating()
+        case .start:
+            isHidden = false
+            indicator.startAnimating()
+            
+        case .stop:
+            isHidden = true
+            indicator.stopAnimating()
         }
     }
 }

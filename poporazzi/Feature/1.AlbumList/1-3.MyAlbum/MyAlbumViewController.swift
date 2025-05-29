@@ -34,6 +34,7 @@ final class MyAlbumViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupLoadingIndicator()
         setupCollectionView()
         setupDataSource()
         bind()
@@ -230,6 +231,7 @@ extension MyAlbumViewController {
             .disposed(by: disposeBag)
         
         scene.mediaCollectionView.rx.willDisplayCell
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, cell in
                 let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
                 owner.event.willDisplayIndexPath.accept(indexPath)
@@ -237,6 +239,7 @@ extension MyAlbumViewController {
             .disposed(by: disposeBag)
         
         output.isSelectMode
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, isSelect in
                 owner.scene.action(.toggleSelectMode(isSelect))
             }
@@ -253,6 +256,27 @@ extension MyAlbumViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, isFavorite in
                 owner.scene.action(.updateShouldFavorite(isFavorite))
+            }
+            .disposed(by: disposeBag)
+        
+        output.toggleLoading
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isLoading in
+                owner.toggleLoadingIndicator(isLoading)
+            }
+            .disposed(by: disposeBag)
+        
+        output.alertPresented
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, alert in
+                owner.showAlert(alert)
+            }
+            .disposed(by: disposeBag)
+        
+        output.actionSheetPresented
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, actionSheet in
+                owner.showActionSheet(actionSheet)
             }
             .disposed(by: disposeBag)
     }
