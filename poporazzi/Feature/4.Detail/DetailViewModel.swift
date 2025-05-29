@@ -290,16 +290,16 @@ extension DetailViewModel {
     
     /// 시작날짜를 기준으로 생성일이 몇일차인지 반환합니다.
     private func days(from creationDate: Date) -> Int {
-        var creationDate = Date()
+        var startDate = Date()
         switch dataType {
-        case let .album(album): creationDate = album.creationDate
-        case let .record(record): creationDate = record.startDate
+        case let .album(album): startDate = album.creationDate
+        case let .record(record): startDate = record.startDate
         }
         
         let calendar = Calendar.current
         let components = calendar.dateComponents(
             [.day],
-            from: calendar.startOfDay(for: creationDate),
+            from: calendar.startOfDay(for: startDate),
             to: calendar.startOfDay(for: creationDate)
         )
         return (components.day ?? 0) + 1
