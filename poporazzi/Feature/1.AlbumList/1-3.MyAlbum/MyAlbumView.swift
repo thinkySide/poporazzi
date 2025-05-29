@@ -49,6 +49,29 @@ final class MyAlbumView: CodeBaseUI {
         return collectionView
     }()
     
+    /// ToolBar
+    lazy var toolBar: ToolBar = {
+        let toolBar = ToolBar(
+            leading: favoriteToolBarButton,
+            centers: [excludeToolBarButton, seemoreToolBarButton],
+            trailing: removeToolBarButton
+        )
+        toolBar.alpha = 0
+        return toolBar
+    }()
+    
+    /// 즐겨찾기 툴 바 버튼
+    let favoriteToolBarButton = ToolBarButton(.favorite)
+    
+    /// 앨범에서 제외 툴 바 버튼
+    let excludeToolBarButton = ToolBarButton(.title("앨범에서 제외"))
+    
+    /// 더보기 툴 바 버튼
+    let seemoreToolBarButton = ToolBarButton(.seemore)
+    
+    /// 삭제 툴 바 버튼
+    let removeToolBarButton = ToolBarButton(.remove)
+    
     init() {
         super.init(frame: .zero)
         setup()
@@ -60,7 +83,7 @@ final class MyAlbumView: CodeBaseUI {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        containerView.pin.all(pin.safeArea)
+        containerView.pin.top(pin.safeArea).horizontally().bottom()
         containerView.flex.layout()
     }
 }
@@ -71,6 +94,7 @@ extension MyAlbumView {
     
     enum Action {
         case toggleSelectMode(Bool)
+        case updateSelectedCount(Int)
     }
     
     func action(_ action: Action) {
@@ -83,7 +107,24 @@ extension MyAlbumView {
             [selectCancelButton].forEach { $0.isHidden = !isSelectMode }
             UIView.animate(withDuration: 0.2) { [weak self] in
                 self?.mediaCollectionView.contentInset.bottom = isSelectMode ? 80 : 24
-                // self?.toolBar.alpha = bool ? 1 : 0
+                self?.toolBar.alpha = isSelectMode ? 1 : 0
+            }
+            
+        case let .updateSelectedCount(count):
+            if count == 0 {
+                toolBar.action(.updateTitle("기록을 선택해주세요"))
+                [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(true))
+                }
+            } else {
+                let attributedText = NSMutableAttributedString()
+                    .tint("\(count)장", color: .brandPrimary)
+                    .tint("의 기록이 선택됨", color: .mainLabel)
+                
+                toolBar.action(.updateTitle(AttributedString(attributedText)))
+                [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
+                    $0.action(.toggleDisabled(false))
+                }
             }
         }
     }
@@ -100,6 +141,9 @@ extension MyAlbumView {
             flex.addItem().grow(1).marginTop(12).define { flex in
                 flex.addItem(mediaCollectionView).position(.absolute).all(0)
             }
+            
+            flex.addItem(toolBar).position(.absolute)
+                .horizontally(0).bottom(0)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in

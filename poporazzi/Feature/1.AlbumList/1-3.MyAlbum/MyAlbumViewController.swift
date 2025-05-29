@@ -238,6 +238,13 @@ extension MyAlbumViewController {
                 owner.scene.action(.toggleSelectMode(isSelect))
             }
             .disposed(by: disposeBag)
+        
+        output.selectedIndexPathList
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, indexPathList in
+                owner.scene.action(.updateSelectedCount(indexPathList.count))
+            }
+            .disposed(by: disposeBag)
     }
     
     func setupMenu() {

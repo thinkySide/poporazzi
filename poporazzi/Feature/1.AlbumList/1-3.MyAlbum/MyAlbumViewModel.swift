@@ -55,6 +55,7 @@ extension MyAlbumViewModel {
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
         let isSelectMode = BehaviorRelay<Bool>(value: false)
+        let selectedIndexPathList = BehaviorRelay<[IndexPath]>(value: [])
         
         let viewDidRefresh = PublishRelay<Void>()
         let pagination = PublishRelay<Void>()
@@ -136,16 +137,32 @@ extension MyAlbumViewModel {
         
         input.cellSelected
             .emit(with: self) { owner, indexPath in
-                let media = owner.mediaList[indexPath.row]
-                let image = owner.thumbnailList[media] ?? .init()
-                owner.navigation.accept(
-                    .presentDetail(
-                        owner.album,
-                        image,
-                        owner.mediaList,
-                        owner.index(from: owner.sectionMediaList, indexPath: indexPath)
+                switch owner.isSelectMode {
+                case true:
+                    var indexPathList = owner.selectedIndexPathList
+                    indexPathList.append(indexPath)
+                    owner.output.selectedIndexPathList.accept(indexPathList)
+                    
+                case false:
+                    let media = owner.mediaList[indexPath.row]
+                    let image = owner.thumbnailList[media] ?? .init()
+                    owner.navigation.accept(
+                        .presentDetail(
+                            owner.album,
+                            image,
+                            owner.mediaList,
+                            owner.index(from: owner.sectionMediaList, indexPath: indexPath)
+                        )
                     )
-                )
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        input.cellDeselected
+            .emit(with: self) { owner, indexPath in
+                var indexPathList = owner.selectedIndexPathList
+                indexPathList.removeAll(where: { $0 == indexPath })
+                owner.output.selectedIndexPathList.accept(indexPathList)
             }
             .disposed(by: disposeBag)
         
@@ -158,13 +175,14 @@ extension MyAlbumViewModel {
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.isSelectMode.accept(true)
+                NameSpace.isSelectionMode = true
                 HapticManager.impact(style: .light)
             }
             .disposed(by: disposeBag)
         
         input.selectCancelButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.isSelectMode.accept(false)
+                owner.cancelSelectMode()
             }
             .disposed(by: disposeBag)
         
@@ -202,6 +220,14 @@ extension MyAlbumViewModel {
     var thumbnailList: [Media: UIImage?] {
         output.thumbnailList.value
     }
+    
+    var isSelectMode: Bool {
+        output.isSelectMode.value
+    }
+    
+    var selectedIndexPathList: [IndexPath] {
+        output.selectedIndexPathList.value
+    }
 }
 
 // MARK: - Helper
@@ -222,6 +248,14 @@ extension MyAlbumViewModel {
             currentIndex += mediaList.1.count
         }
         return currentIndex
+    }
+    
+    /// 선택 모드를 취소합니다.
+    private func cancelSelectMode() {
+        output.isSelectMode.accept(false)
+        output.selectedIndexPathList.accept([])
+        HapticManager.impact(style: .light)
+        NameSpace.isSelectionMode = false
     }
 }
 
