@@ -182,7 +182,8 @@ extension MyAlbumViewController {
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems(mediaList)
+        let validList = mediaList.filter { snapshot.itemIdentifiers.contains($0) }
+        snapshot.reloadItems(validList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
