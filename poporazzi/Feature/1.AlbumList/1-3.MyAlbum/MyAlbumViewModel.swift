@@ -276,7 +276,12 @@ extension MyAlbumViewModel {
                     )
                     
                 case let .share(media):
-                    print("share")
+                    owner.photoKitService.fetchShareItemList(from: [media.id])
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
                     
                 case let .exclude(media):
                     print("exclude")
