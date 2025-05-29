@@ -56,7 +56,6 @@ final class MyAlbumView: CodeBaseUI {
             centers: [excludeToolBarButton, seemoreToolBarButton],
             trailing: removeToolBarButton
         )
-        toolBar.alpha = 0
         return toolBar
     }()
     
@@ -105,9 +104,11 @@ extension MyAlbumView {
             mediaCollectionView.allowsMultipleSelection = isSelectMode
             [seemoreButton, selectButton].forEach { $0.isHidden = isSelectMode }
             [selectCancelButton].forEach { $0.isHidden = !isSelectMode }
-            UIView.animate(withDuration: 0.2) { [weak self] in
+            
+            UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut) { [weak self] in
                 self?.mediaCollectionView.contentInset.bottom = isSelectMode ? 80 : 24
-                self?.toolBar.alpha = isSelectMode ? 1 : 0
+                self?.toolBar.transform = isSelectMode ?
+                CGAffineTransform(translationX: 0, y: -128) : .identity
             }
             
         case let .updateSelectedCount(count):
@@ -143,7 +144,7 @@ extension MyAlbumView {
             }
             
             flex.addItem(toolBar).position(.absolute)
-                .horizontally(0).bottom(0)
+                .horizontally(0).bottom(-128)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
