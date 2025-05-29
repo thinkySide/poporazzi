@@ -107,6 +107,15 @@ struct MediaFilterOption {
         self.isContainDownload = isContainDownload
         self.isContainScreenshot = isContainScreenshot
     }
+    
+    /// 기본값
+    static var initialValue: MediaFilterOption {
+        .init(
+            isContainSelfShooting: true,
+            isContainDownload: true,
+            isContainScreenshot: true
+        )
+    }
 }
 
 /// 미디어 요청 시 품질 옵션

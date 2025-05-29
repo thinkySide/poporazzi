@@ -24,12 +24,6 @@ struct Record: Hashable, Equatable {
     /// 종료 날짜
     var endDate: Date?
     
-    /// 추정 개수
-    ///
-    /// - 앨범의 경우 전체 에셋 개수
-    /// - 폴더의 경우 전체 앨범 개수
-    var estimateCount: Int
-    
     /// 제외된 미디어 리스트
     var excludeMediaList: Set<String>
     
@@ -44,7 +38,6 @@ struct Record: Hashable, Equatable {
         title: String,
         startDate: Date = .now,
         endDate: Date? = nil,
-        estimateCount: Int = 0,
         excludeMediaList: Set<String> = [],
         mediaFetchOption: MediaFetchOption,
         mediaFilterOption: MediaFilterOption
@@ -53,7 +46,6 @@ struct Record: Hashable, Equatable {
         self.title = title
         self.startDate = startDate
         self.endDate = endDate
-        self.estimateCount = estimateCount
         self.excludeMediaList = excludeMediaList
         self.mediaFetchOption = mediaFetchOption
         self.mediaFilterOption = mediaFilterOption

@@ -48,7 +48,7 @@ extension DetailViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Record>
+        let record: BehaviorRelay<Record>
         let initialImage: BehaviorRelay<UIImage?>
         let initialRow: BehaviorRelay<Int>
         let currentRow: BehaviorRelay<Int>
@@ -216,9 +216,9 @@ extension DetailViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .exclude(mediaList):
-                    var album = owner.output.album.value
+                    var album = owner.output.record.value
                     album.excludeMediaList.formUnion(mediaList.map(\.id))
-                    owner.output.album.accept(album)
+                    owner.output.record.accept(album)
                     owner.output.viewDidRefresh.accept(())
                     owner.navigation.accept(.updateRecord(album))
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
@@ -231,9 +231,9 @@ extension DetailViewModel {
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in
                             if isSuccess {
-                                var album = owner.output.album.value
+                                var album = owner.output.record.value
                                 album.excludeMediaList.subtract(identifiers)
-                                owner.output.album.accept(album)
+                                owner.output.record.accept(album)
                                 owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                             } else {
                                 owner.output.alertPresented.accept(owner.removeFailedAlert)
@@ -259,7 +259,7 @@ extension DetailViewModel {
         let calendar = Calendar.current
         let components = calendar.dateComponents(
             [.day],
-            from: calendar.startOfDay(for: output.album.value.startDate),
+            from: calendar.startOfDay(for: output.record.value.startDate),
             to: calendar.startOfDay(for: creationDate)
         )
         return (components.day ?? 0) + 1
@@ -308,9 +308,9 @@ extension DetailViewModel {
     /// - 제외된 사진을 필터링합니다.
     /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() throws -> [Media] {
-        let album = output.album.value
+        let album = output.record.value
         return try photoKitService.fetchMediaList(from: album)
-            .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
+            .filter { !Set(output.record.value.excludeMediaList).contains($0.id) }
     }
 }
 
@@ -334,7 +334,7 @@ extension DetailViewModel {
     
     /// 앨범 제외 Action Sheet
     private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
-        let title = output.album.value.title
+        let title = output.record.value.title
         return ActionSheetModel(
             message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
             buttons: [

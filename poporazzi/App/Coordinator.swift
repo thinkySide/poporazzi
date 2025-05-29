@@ -325,7 +325,7 @@ extension Coordinator {
     ) {
         let detailVM = DetailViewModel(
             output: .init(
-                album: .init(value: album),
+                record: .init(value: album),
                 initialImage: .init(value: initialImage),
                 initialRow: .init(value: selectedRow),
                 currentRow: .init(value: selectedRow),
@@ -351,7 +351,7 @@ extension Coordinator {
                         activityItems: shareItemList,
                         applicationActivities: nil
                     )
-                    owner.navigationController.present(activityController, animated: true)
+                    detailVC.present(activityController, animated: true)
                 }
             }
             .disposed(by: detailVC.disposeBag)
@@ -374,6 +374,18 @@ extension Coordinator {
                 switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
+                    
+                case let .presentDetail(album, image, mediaList, selectedIndex):
+                    let record = Record(
+                        id: album.id,
+                        title: album.title,
+                        startDate: album.creationDate,
+                        endDate: nil,
+                        excludeMediaList: [],
+                        mediaFetchOption: .all,
+                        mediaFilterOption: .initialValue
+                    )
+                    owner.presentDetail(nil, record, image, mediaList, selectedIndex)
                 }
             }
             .disposed(by: myAlbumVC.disposeBag)

@@ -37,6 +37,7 @@ final class MyAlbumViewController: ViewController {
         setupCollectionView()
         setupDataSource()
         bind()
+        setupMenu()
     }
     
     deinit {
@@ -193,7 +194,13 @@ extension MyAlbumViewController {
         let input = MyAlbumViewModel.Input(
             viewDidLoad: .just(()),
             willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
-            backButtonTapped: scene.backButton.button.rx.tap.asSignal()
+            cellSelected: scene.mediaCollectionView.rx.itemSelected.asSignal(),
+            cellDeselected: scene.mediaCollectionView.rx.itemDeselected.asSignal(),
+            backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
+            selectButtonTapped: scene.selectButton.button.rx.tap
+                .asSignal(),
+            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap
+                .asSignal()
         )
         let output = viewModel.transform(input)
         
@@ -225,5 +232,16 @@ extension MyAlbumViewController {
                 owner.event.willDisplayIndexPath.accept(indexPath)
             }
             .disposed(by: disposeBag)
+        
+        output.isSelectMode
+            .bind(with: self) { owner, isSelect in
+                owner.scene.action(.toggleSelectMode(isSelect))
+            }
+            .disposed(by: disposeBag)
+    }
+    
+    func setupMenu() {
+        scene.seemoreButton.button.showsMenuAsPrimaryAction = true
+        scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
     }
 }

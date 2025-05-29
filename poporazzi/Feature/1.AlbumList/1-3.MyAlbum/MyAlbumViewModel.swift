@@ -20,6 +20,7 @@ final class MyAlbumViewModel: ViewModel {
     
     
     let navigation = PublishRelay<Navigation>()
+    let menuAction = PublishRelay<MenuAction>()
     
     init(output: Output) {
         self.output = output
@@ -36,8 +37,14 @@ extension MyAlbumViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        
         let willDisplayIndexPath: Signal<IndexPath>
+        let cellSelected: Signal<IndexPath>
+        let cellDeselected: Signal<IndexPath>
+        
         let backButtonTapped: Signal<Void>
+        let selectButtonTapped: Signal<Void>
+        let selectCancelButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -47,12 +54,20 @@ extension MyAlbumViewModel {
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
+        let isSelectMode = BehaviorRelay<Bool>(value: false)
+        
         let viewDidRefresh = PublishRelay<Void>()
         let pagination = PublishRelay<Void>()
     }
     
     enum Navigation {
         case pop
+        case presentDetail(Album, UIImage?, [Media], Int)
+    }
+    
+    enum MenuAction {
+        case editAlbum
+        case removeAlbum
     }
 }
 
@@ -119,9 +134,48 @@ extension MyAlbumViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.cellSelected
+            .emit(with: self) { owner, indexPath in
+                let media = owner.mediaList[indexPath.row]
+                let image = owner.thumbnailList[media] ?? .init()
+                owner.navigation.accept(
+                    .presentDetail(
+                        owner.album,
+                        image,
+                        owner.mediaList,
+                        owner.index(from: owner.sectionMediaList, indexPath: indexPath)
+                    )
+                )
+            }
+            .disposed(by: disposeBag)
+        
         input.backButtonTapped
             .emit(with: self) { owner, _ in
                 owner.navigation.accept(.pop)
+            }
+            .disposed(by: disposeBag)
+        
+        input.selectButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.isSelectMode.accept(true)
+                HapticManager.impact(style: .light)
+            }
+            .disposed(by: disposeBag)
+        
+        input.selectCancelButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.isSelectMode.accept(false)
+            }
+            .disposed(by: disposeBag)
+        
+        menuAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case .editAlbum:
+                    print("앨범 수정")
+                case .removeAlbum:
+                    print("앨범 삭제")
+                }
             }
             .disposed(by: disposeBag)
         
@@ -168,5 +222,21 @@ extension MyAlbumViewModel {
             currentIndex += mediaList.1.count
         }
         return currentIndex
+    }
+}
+
+// MARK: - Menu
+
+extension MyAlbumViewModel {
+    
+    /// 더보기 Menu
+    var seemoreMenu: [MenuModel] {
+        let editAlbum = MenuModel(symbol: .edit, title: "앨범 수정") { [weak self] in
+            self?.menuAction.accept(.editAlbum)
+        }
+        let removeAlbum = MenuModel(symbol: .removeLine, title: "앨범 삭제", attributes: .destructive) { [weak self] in
+            self?.menuAction.accept(.removeAlbum)
+        }
+        return [editAlbum, removeAlbum]
     }
 }
