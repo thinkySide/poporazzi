@@ -270,7 +270,10 @@ extension MyAlbumViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .toggleFavorite(media):
-                    print("toggleFavorite")
+                    owner.photoKitService.toggleMediaFavorite(
+                        from: [media.id],
+                        isFavorite: [media].shouldBeFavorite
+                    )
                     
                 case let .share(media):
                     print("share")
