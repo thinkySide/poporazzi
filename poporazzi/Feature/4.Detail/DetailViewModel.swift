@@ -248,7 +248,7 @@ extension DetailViewModel {
                             if isSuccess {
                                 switch owner.dataType {
                                 case let .album(album):
-                                    break
+                                    owner.output.dataType.accept(.album(album))
                                     
                                 case let .record(record):
                                     var record = record
