@@ -24,22 +24,8 @@ struct Media: Hashable, Equatable {
     /// 썸네일
     var thumbnail: UIImage?
     
-    /// 원본 미디어 사이즈
-    var originalMediaSize: CGSize
-    
     /// 즐겨찾기 여부
     var isFavorite: Bool
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    static func == (lhs: Media, rhs: Media) -> Bool {
-        lhs.id == rhs.id
-        && lhs.mediaType == rhs.mediaType
-        && lhs.thumbnail != rhs.thumbnail
-        && lhs.isFavorite == rhs.isFavorite
-    }
     
     /// 미디어 타입
     enum MediaType: Hashable {
@@ -76,25 +62,146 @@ struct Media: Hashable, Equatable {
             case mpeg4 = "mpeg-4"
         }
     }
+}
+
+/// 미디어 검색 타입
+enum MediaFetchOption {
     
+    /// 전체 검색
+    case all
+    
+    /// 사진 검색
+    case photo
+    
+    /// 비디오 검색
+    case video
+    
+    /// 각 검색 타입 별 제목
+    var title: String {
+        switch self {
+        case .all: "사진 및 동영상"
+        case .photo: "사진"
+        case .video: "동영상"
+        }
+    }
+}
+
+/// 미디어 필터링 옵션
+struct MediaFilterOption {
+    
+    /// 직접 촬영한 사진 포함 여부
+    var isContainSelfShooting: Bool
+    
+    /// 다운로드 사진 포함 여부
+    var isContainDownload: Bool
+    
+    /// 스크린샷 포함 여부
+    var isContainScreenshot: Bool
+    
+    init(
+        isContainSelfShooting: Bool = true,
+        isContainDownload: Bool = false,
+        isContainScreenshot: Bool = false
+    ) {
+        self.isContainSelfShooting = isContainSelfShooting
+        self.isContainDownload = isContainDownload
+        self.isContainScreenshot = isContainScreenshot
+    }
+    
+    /// 기본값
+    static var initialValue: MediaFilterOption {
+        .init(
+            isContainSelfShooting: true,
+            isContainDownload: true,
+            isContainScreenshot: true
+        )
+    }
+}
+
+/// 미디어 요청 시 품질 옵션
+enum MediaQualityOption {
+    
+    /// 보통 옵션
+    case normal
+    
+    /// 높은 옵션
+    case high
+}
+
+
+// MARK: - Hashable & Equatable
+
+extension Media {
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: Media, rhs: Media) -> Bool {
+        lhs.id == rhs.id
+        && lhs.thumbnail != rhs.thumbnail
+    }
+}
+
+// MARK: - Helper
+
+extension Media {
+    
+    /// 기본 생성 값
     static var initialValue: Media {
         .init(
             id: "",
             creationDate: nil,
             mediaType: .photo(.selfShooting, .jpeg),
             thumbnail: nil,
-            originalMediaSize: .zero,
             isFavorite: false
         )
     }
+    
+    /// Media 생성일이 시작 날짜를 기준으로 몇일차인지 반환합니다.
+    func daysSince(startDate: Date) -> Int {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: startDate),
+            to: calendar.startOfDay(for: creationDate ?? .now)
+        )
+        return (components.day ?? 0) + 1
+    }
 }
-
-// MARK: - Helper
 
 extension [Media] {
     
     /// 날짜순으로 정렬 후 반환합니다.
     var sortedByCreationDate: [Media] {
         sorted { $0.creationDate ?? Date() < $1.creationDate ?? Date() }
+    }
+    
+    /// 날짜별로 MediaList를 분리해 반환합니다.
+    func toSectionMediaList(startDate: Date) -> SectionMediaList {
+        var dic = [MediaSection: [Media]]()
+        
+        for media in self.sortedByCreationDate {
+            guard let creationDate = media.creationDate else { continue }
+            let days = media.daysSince(startDate: startDate)
+            dic[.day(
+                order: days,
+                date: Calendar.current.startOfDay(for: creationDate)
+            ), default: []].append(media)
+        }
+        
+        return dic.keys
+            .sorted(by: <)
+            .map { ($0, dic[$0] ?? []) }
+    }
+    
+    /// 미디어 리스트의 값을 비교 후 즐겨찾기 값을 결정합니다.
+    var shouldBeFavorite: Bool {
+        let isFavoriteSet = Set(self.map(\.isFavorite))
+        if isFavoriteSet.count > 1 {
+            return isFavoriteSet.contains(true)
+        } else {
+            return !(isFavoriteSet.first ?? false)
+        }
     }
 }

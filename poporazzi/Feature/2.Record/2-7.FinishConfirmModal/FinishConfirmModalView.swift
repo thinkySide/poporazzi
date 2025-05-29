@@ -76,7 +76,7 @@ final class FinishConfirmModalView: CodeBaseUI {
 extension FinishConfirmModalView {
     
     enum Action {
-        case updateRadioState(AlbumSaveOption)
+        case updateRadioState(RecordSaveOption)
         case toggleLoading(Bool)
     }
     

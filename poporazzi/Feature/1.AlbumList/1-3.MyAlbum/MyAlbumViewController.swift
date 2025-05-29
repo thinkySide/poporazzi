@@ -1,31 +1,25 @@
 //
-//  RecordViewController.swift
+//  MyAlbumViewController.swift
 //  poporazzi
 //
-//  Created by 김민준 on 4/5/25.
+//  Created by 김민준 on 5/27/25.
 //
 
 import UIKit
 import RxSwift
 import RxCocoa
 
-final class RecordViewController: ViewController {
+final class MyAlbumViewController: ViewController {
     
-    private let scene = RecordView()
-    private let viewModel: RecordViewModel
+    private let scene = MyAlbumView()
+    private let viewModel: MyAlbumViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
-    private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    private var albumCache = Record.initialValue
-    private var totalCount = 0
-    private var imageCache = [String: UIImage?]()
     
-    private let contextMenuPresented = PublishRelay<IndexPath>()
-    private let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
-    
+    let event = Event()
     let disposeBag = DisposeBag()
     
-    init(viewModel: RecordViewModel) {
+    init(viewModel: MyAlbumViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -40,8 +34,11 @@ final class RecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupLoadingIndicator()
+        setupCollectionView()
         setupDataSource()
         bind()
+        setupMenu()
     }
     
     deinit {
@@ -49,23 +46,78 @@ final class RecordViewController: ViewController {
     }
 }
 
+// MARK: - Event
+
+extension MyAlbumViewController {
+    
+    struct Event {
+        let willDisplayIndexPath = PublishRelay<IndexPath>()
+        let contextMenuPresented = PublishRelay<IndexPath>()
+    }
+}
+
+// MARK: - UICollectionView
+
+extension MyAlbumViewController {
+    
+    /// CollectionView를 세팅합니다.
+    private func setupCollectionView() {
+        let collectionView = scene.mediaCollectionView
+        collectionView.delegate = self
+        collectionView.collectionViewLayout = collectionViewLayout
+        collectionView.register(
+            RecordCell.self,
+            forCellWithReuseIdentifier: RecordCell.identifier
+        )
+        collectionView.register(
+            RecordTitleHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
+            withReuseIdentifier: RecordTitleHeader.identifier
+        )
+        collectionView.register(
+            RecordDateHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
+            withReuseIdentifier: RecordDateHeader.identifier
+        )
+    }
+    
+    /// CollectionViewLayout을 반환합니다.
+    private var collectionViewLayout: UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+            let section = CollectionViewLayout.threeStageSection
+            if sectionIndex == 0 {
+                section.boundarySupplementaryItems = [
+                    CollectionViewLayout.titleHeader,
+                    CollectionViewLayout.dateHeader
+                ]
+            } else {
+                section.boundarySupplementaryItems = [CollectionViewLayout.dateHeader]
+            }
+            
+            section.visibleItemsInvalidationHandler = { visibleItems, _, _ in
+                guard let self else { return }
+            }
+            
+            return section
+        }
+    }
+}
+
 // MARK: - UICollectionViewDiffableDataSource
 
-extension RecordViewController {
+extension MyAlbumViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        scene.recordCollectionView.delegate = self
-        
-        dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.recordCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.mediaCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            if let cacheThumbnail = self.imageCache[media.id] {
-                cell.action(.setMedia(media, cacheThumbnail))
+            if let thumbnail = self.viewModel.thumbnailList[media] {
+                cell.action(.setMedia(media, thumbnail))
             } else {
                 cell.action(.setMedia(media, nil))
             }
@@ -84,8 +136,8 @@ extension RecordViewController {
                     for: indexPath
                 ) as? RecordTitleHeader
                 
-                header?.action(.updateAlbumTitleLabel(albumCache.title))
-                header?.action(.updateTotalImageCountLabel(totalCount))
+                header?.action(.updateAlbumTitleLabel(viewModel.album.title))
+                header?.action(.updateTotalImageCountLabel(viewModel.mediaList.count))
                 
                 return header
             } else {
@@ -102,7 +154,6 @@ extension RecordViewController {
                         header?.action(.updateDateLabel(date))
                     }
                 }
-                
                 return header
             }
         }
@@ -132,20 +183,16 @@ extension RecordViewController {
     /// 페이지네이션 된 DataSource를 업데이트합니다.
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
-        
-        for media in mediaList {
-            imageCache.updateValue(media.thumbnail, forKey: media.id)
-        }
-        
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems(mediaList)
+        let validList = mediaList.filter { snapshot.itemIdentifiers.contains($0) }
+        snapshot.reloadItems(validList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
 // MARK: - UICollectionViewDelegate
 
-extension RecordViewController: UICollectionViewDelegate {
+extension MyAlbumViewController: UICollectionViewDelegate {
     
     /// 선택된 IndexPath의 Context Menu를 설정합니다.
     func collectionView(
@@ -153,12 +200,12 @@ extension RecordViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        contextMenuPresented.accept(indexPath)
+        event.contextMenuPresented.accept(indexPath)
         return UIContextMenuConfiguration(
             identifier: nil,
             previewProvider: nil,
             actionProvider: { [weak self] _ in
-                self?.selectedContextMenu.value.toUIMenu
+                self?.viewModel.contextMenu(from: indexPath).toUIMenu
             }
         )
     }
@@ -166,100 +213,81 @@ extension RecordViewController: UICollectionViewDelegate {
 
 // MARK: - Binding
 
-extension RecordViewController {
+extension MyAlbumViewController {
     
     func bind() {
-        let input = RecordViewModel.Input(
+        let input = MyAlbumViewModel.Input(
             viewDidLoad: .just(()),
-            selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
-            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
-            recentIndexPath: recentIndexPath,
-            recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
-            recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
-            contextMenuPresented: contextMenuPresented.asSignal(),
+            willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
+            cellSelected: scene.mediaCollectionView.rx.itemSelected.asSignal(),
+            cellDeselected: scene.mediaCollectionView.rx.itemDeselected.asSignal(),
+            backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
+            selectButtonTapped: scene.selectButton.button.rx.tap
+                .asSignal(),
+            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap
+                .asSignal(),
+            contextMenuPresented: event.contextMenuPresented.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
-            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal(),
-            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
+            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
-        scene.recordCollectionView.rx.willDisplayCell
-            .bind(with: self) { owner, cell in
-                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
-                owner.recentIndexPath.accept(indexPath)
-            }
-            .disposed(by: disposeBag)
-        
-        output.record
-            .bind(with: self) { owner, album in
-                owner.albumCache = album
-                owner.scene.action(.updateTitleLabel(album.title))
-                owner.scene.action(.updateInfoLabel(album))
-            }
-            .disposed(by: disposeBag)
-        
         output.mediaList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, medias in
-                owner.totalCount = medias.count
+            .bind(with: self) { owner, mediaList in
                 owner.updateTitleHeader()
-                owner.scene.action(.toggleEmptyLabel(medias.isEmpty))
             }
             .disposed(by: disposeBag)
         
         output.sectionMediaList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, sections in
-                owner.updateInitialDataSource(to: sections)
+            .bind(with: self) { owner, sectionMediaList in
+                owner.updateInitialDataSource(to: sectionMediaList)
             }
             .disposed(by: disposeBag)
         
-        output.updateRecordCells
+        output.thumbnailList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, mediaList in
+            .bind(with: self) { owner, thumbnailList in
+                let mediaList = thumbnailList.map(\.key)
                 owner.updatePaginationDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)
         
-        output.selectedRecordCells
+        scene.mediaCollectionView.rx.willDisplayCell
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, selectedMedias in
-                owner.scene.action(.updateSelectedCountLabel(selectedMedias.count))
+            .bind(with: self) { owner, cell in
+                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
+                owner.event.willDisplayIndexPath.accept(indexPath)
             }
             .disposed(by: disposeBag)
         
-        output.setupSeeMoreMenu
-            .bind(with: self) { owner, menus in
-                owner.scene.seemoreButton.button.showsMenuAsPrimaryAction = true
-                owner.scene.seemoreButton.button.menu = menus.toUIMenu
-            }
-            .disposed(by: disposeBag)
-        
-        output.setupSeeMoreToolbarMenu
-            .bind(with: self) { owner, menus in
-                owner.scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
-                owner.scene.seemoreToolBarButton.button.menu = menus.toUIMenu
-            }
-            .disposed(by: disposeBag)
-        
-        output.selectedContextMenu
-            .bind(with: self) { owner, menus in
-                owner.selectedContextMenu.accept(menus)
-            }
-            .disposed(by: disposeBag)
-        
-        output.shoudBeFavorite
+        output.isSelectMode
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, bool in
-                owner.scene.action(.toggleFavoriteMode(bool))
+            .bind(with: self) { owner, isSelect in
+                owner.scene.action(.toggleSelectMode(isSelect))
             }
             .disposed(by: disposeBag)
         
-        output.switchSelectMode
+        output.selectedIndexPathList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, bool in
-                owner.scene.action(.toggleSelectMode(bool))
+            .bind(with: self) { owner, indexPathList in
+                owner.scene.action(.updateSelectedCount(indexPathList.count))
+            }
+            .disposed(by: disposeBag)
+        
+        output.shouldBeFavorite
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isFavorite in
+                owner.scene.action(.updateShouldFavorite(isFavorite))
+            }
+            .disposed(by: disposeBag)
+        
+        output.toggleLoading
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isLoading in
+                owner.toggleLoadingIndicator(isLoading)
             }
             .disposed(by: disposeBag)
         
@@ -276,12 +304,13 @@ extension RecordViewController {
                 owner.showActionSheet(actionSheet)
             }
             .disposed(by: disposeBag)
+    }
+    
+    func setupMenu() {
+        scene.seemoreButton.button.showsMenuAsPrimaryAction = true
+        scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
         
-        output.toggleLoading
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, isActive in
-                owner.scene.action(.toggleLoading(isActive))
-            }
-            .disposed(by: disposeBag)
+        scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
+        scene.seemoreToolBarButton.button.menu = viewModel.seemoreToolbarMenu.toUIMenu
     }
 }

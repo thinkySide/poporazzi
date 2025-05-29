@@ -53,7 +53,7 @@ extension AlbumEditViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Album>
+        let album: BehaviorRelay<Record>
         
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
@@ -70,7 +70,7 @@ extension AlbumEditViewModel {
         case presentStartDatePicker(startDate: Date, endDate: Date?)
         case presentEndDatePicker(startDate: Date, endDate: Date?)
         case pop
-        case dismissWithUpdate(Album)
+        case dismissWithUpdate(Record)
     }
     
     enum Delegate {
@@ -199,12 +199,11 @@ extension AlbumEditViewModel {
                 let oldAlbum = owner.output.album.value
                 let albumTitle = currentTitle.isEmpty ? oldAlbum.title : currentTitle
                 
-                let newAlbum = Album(
+                let newAlbum = Record(
                     id: oldAlbum.id,
                     title: albumTitle,
                     startDate: owner.output.startDate.value,
                     endDate: owner.output.endDate.value,
-                    albumType: .creating,
                     excludeMediaList: oldAlbum.excludeMediaList,
                     mediaFetchOption: owner.output.mediaFetchOption.value,
                     mediaFilterOption: owner.output.mediaFilterOption.value

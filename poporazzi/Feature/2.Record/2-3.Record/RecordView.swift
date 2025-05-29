@@ -164,7 +164,7 @@ extension RecordView {
     
     enum Action {
         case updateTitleLabel(String)
-        case updateInfoLabel(Album)
+        case updateInfoLabel(Record)
         case toggleEmptyLabel(Bool)
         case toggleSelectMode(Bool)
         case toggleFavoriteMode(Bool)

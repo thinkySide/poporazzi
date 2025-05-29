@@ -22,7 +22,7 @@ final class LiveActivityService: LiveActivityInterface {
 extension LiveActivityService {
     
     /// Live Activity를 시작합니다.
-    func start(to album: Album) {
+    func start(to album: Record) {
         guard activity == nil else { return }
         let attributes = PoporazziWidgetAttributes()
         let contentState = PoporazziWidgetAttributes.ContentState(
@@ -44,7 +44,7 @@ extension LiveActivityService {
     }
     
     /// Live Activity를 업데이트합니다.
-    func update(to album: Album, totalCount: Int) {
+    func update(to album: Record, totalCount: Int) {
         guard let activity = activity else { return }
         
         let contentState = PoporazziWidgetAttributes.ContentState(

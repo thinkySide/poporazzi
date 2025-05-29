@@ -55,7 +55,7 @@ extension ExcludeRecordViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Album>
+        let album: BehaviorRelay<Record>
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
@@ -74,7 +74,7 @@ extension ExcludeRecordViewModel {
     
     enum Navigation {
         case pop
-        case updateRecord(Album)
+        case updateRecord(Record)
         case presentMediaShareSheet([Any])
     }
     
@@ -168,7 +168,7 @@ extension ExcludeRecordViewModel {
         
         input.favoriteToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.photoKitService.toggleFavorite(
+                owner.photoKitService.toggleMediaFavorite(
                     from: owner.selectedAssetIdentifiers(),
                     isFavorite: owner.shouldBeFavorite(from: owner.selectedMediaList())
                 )
@@ -205,7 +205,7 @@ extension ExcludeRecordViewModel {
                 case let .remove(mediaList):
                     owner.output.toggleLoading.accept(true)
                     let identifiers = mediaList.map(\.id)
-                    owner.photoKitService.deletePhotos(from: identifiers)
+                    owner.photoKitService.removePhotos(from: identifiers)
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in
                             if isSuccess {
@@ -242,7 +242,7 @@ extension ExcludeRecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .toggleFavorite(media):
-                    owner.photoKitService.toggleFavorite(
+                    owner.photoKitService.toggleMediaFavorite(
                         from: [media.id],
                         isFavorite: owner.shouldBeFavorite(from: [media])
                     )
@@ -319,7 +319,7 @@ extension ExcludeRecordViewModel {
     
     /// 제외된 사진을 반환합니다.
     private func fetchExcludePhotos() -> Observable<[Media]> {
-        photoKitService.fetchMedias(
+        photoKitService.fetchMediaListWithThumbnail(
             from: Array(output.album.value.excludeMediaList),
             option: .normal
         )

@@ -60,6 +60,74 @@ struct CollectionViewLayout {
     }
 }
 
+// MARK: - New
+
+extension CollectionViewLayout {
+    
+    /// 3단 레이아웃 섹션을 반환합니다.
+    static var threeStageSection: NSCollectionLayoutSection {
+        
+        // 1. 기본값 변수 저장
+        let numberOfRows: CGFloat = 3
+        let itemInset: CGFloat = 3
+        
+        // 2. 아이템(Cell) 설정
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalHeight(1),
+            heightDimension: .fractionalHeight(1)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: itemInset)
+        
+        let lastItem = NSCollectionLayoutItem(layoutSize: itemSize)
+        lastItem.contentInsets = .init(top: 0, leading: 0, bottom: itemInset, trailing: 0)
+        
+        // 3. 그룹 설정
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalWidth(1 / numberOfRows)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(
+            layoutSize: groupSize,
+            subitems: [item, item, lastItem]
+        )
+        
+        // 4. 섹션 설정
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = .init(top: 8, leading: 16, bottom: 32, trailing: 16)
+        
+        return section
+    }
+    
+    /// 제목 Header
+    static var titleHeader: NSCollectionLayoutBoundarySupplementaryItem {
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(64)
+            ),
+            elementKind: CollectionViewLayout.mainHeaderKind,
+            alignment: .top
+        )
+        header.zIndex = 0
+        return header
+    }
+    
+    /// 날짜 Header
+    static var dateHeader: NSCollectionLayoutBoundarySupplementaryItem {
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(36)
+            ),
+            elementKind: CollectionViewLayout.subHeaderKind,
+            alignment: .top
+        )
+        header.pinToVisibleBounds = true
+        return header
+    }
+}
+
 // MARK: - Helper
 
 extension CollectionViewLayout {

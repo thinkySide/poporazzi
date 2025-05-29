@@ -57,7 +57,7 @@ extension AlbumOptionInputViewModel {
     
     enum Navigation {
         case pop
-        case startRecord(Album)
+        case startRecord(Record)
     }
     
     enum Delegate {
@@ -154,9 +154,8 @@ extension AlbumOptionInputViewModel {
     
     /// 기록을 시작합니다.
     private func startRecord() {
-        let album = Album(
+        let album = Record(
             title: output.titleText.value,
-            albumType: .creating,
             mediaFetchOption: output.mediaFetchOption.value,
             mediaFilterOption: output.mediaFilterOption.value
         )

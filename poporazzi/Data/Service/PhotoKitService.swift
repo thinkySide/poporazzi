@@ -14,19 +14,23 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     
     /// PhotoKit에서 발생할 수 있는 에러
     enum PhotoKitError: Error {
+        
+        /// 권한 없음
         case noPermission
-        case emptyAssets
     }
     
-    /// 기본 PH 요청 옵션
-    private var defaultFetchOptions: PHFetchOptions = {
+    /// 기본 Fetch 옵션
+    private let defaultFetchOptions: PHFetchOptions = {
         let fetchOptions = PHFetchOptions()
-        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        fetchOptions.sortDescriptors = [NSSortDescriptor(
+            key: "creationDate",
+            ascending: true
+        )]
         return fetchOptions
     }()
     
     /// 기본 이미지 요청 옵션
-    private var defaultImageRequestOptions: PHImageRequestOptions = {
+    private let defaultImageRequestOptions: PHImageRequestOptions = {
         let requestOptions = PHImageRequestOptions()
         requestOptions.isSynchronous = false
         requestOptions.deliveryMode = .highQualityFormat
@@ -48,29 +52,34 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     }
 }
 
-// MARK: - UseCase
+// MARK: - Observer
 
 extension PhotoKitService {
     
     /// PhotoLibrayChangeRelay를 Signal로 반환
-    var photoLibraryAssetChange: Signal<Void> {
+    public var photoLibraryAssetChange: Signal<Void> {
         photoLibraryAssetChangeRelay.asSignal(onErrorJustReturn: ())
     }
     
     /// PhotoLibrayChangeRelay를 Signal로 반환
-    var photoLibraryCollectionChange: Signal<Void> {
+    public var photoLibraryCollectionChange: Signal<Void> {
         photoLibraryCollectionChangeRelay.asSignal(onErrorJustReturn: ())
     }
+}
+
+// MARK: - Permission
+
+extension PhotoKitService {
     
     /// PhotoLibrary 권한을 요청합니다.
-    func checkPermission() -> PHAuthorizationStatus {
+    public func checkPermission() -> PHAuthorizationStatus {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
         if status == .authorized { PHPhotoLibrary.shared().register(self) }
         return status
     }
     
     /// PhotoLibrary 사용 권한을 요청합니다.
-    func requestPermission() -> RxSwift.Observable<PHAuthorizationStatus> {
+    public func requestPermission() -> Observable<PHAuthorizationStatus> {
         Observable.create { observer in
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 observer.onNext(status)
@@ -79,14 +88,25 @@ extension PhotoKitService {
             return Disposables.create()
         }
     }
+}
+
+// MARK: - Album List
+
+extension PhotoKitService {
     
-    /// 썸네일 없이 앨범 리스트를 반환합니다.
-    func fetchAlbumListWithNoThumbnail() throws -> [Album] {
-        if checkPermission() != .authorized { throw PhotoKitError.noPermission }
+    /// 앨범 리스트를 반환합니다.
+    public func fetchAllAlbumList() throws -> [Album] {
         
+        // 권한 확인
+        guard checkPermission() == .authorized else { throw PhotoKitError.noPermission }
+        
+        // 최상위 Collection 패치
         let collectionFetchResult = PHAssetCollection.fetchTopLevelUserCollections(with: nil)
+        
+        // Observer 감지를 위한 전역 변수 업데이트
         self.collectionFetchResult = collectionFetchResult
         
+        // 앨범 리스트 패치
         var albumList = [Album]()
         collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
             guard let self else { return }
@@ -96,14 +116,9 @@ extension PhotoKitService {
                 let album = Album(
                     id: album.localIdentifier,
                     title: album.localizedTitle ?? "",
-                    startDate: album.startDate ?? .now,
-                    endDate: nil,
-                    thumbnail: nil,
-                    albumType: .album,
+                    creationDate: album.startDate ?? .now,
                     estimateCount: album.estimatedAssetCount,
-                    excludeMediaList: [],
-                    mediaFetchOption: .all,
-                    mediaFilterOption: .init()
+                    albumType: .album
                 )
                 albumList.append(album)
             }
@@ -113,22 +128,20 @@ extension PhotoKitService {
                 let album = Album(
                     id: collection.localIdentifier,
                     title: collection.localizedTitle ?? "",
-                    startDate: .now,
-                    endDate: nil,
-                    albumType: .folder,
+                    creationDate: folderCreationDate(in: collection),
                     estimateCount: estimateAlbumCount(in: collection),
-                    excludeMediaList: [],
-                    mediaFetchOption: .all,
-                    mediaFilterOption: .init()
+                    albumType: .folder
                 )
                 albumList.append(album)
             }
         }
-        return albumList.sorted { $0.startDate > $1.startDate }
+        
+        // 최신순으로 정렬 후 반환
+        return albumList.sorted { $0.creationDate > $1.creationDate }
     }
     
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
-    func fetchAlbumList(from albumList: [Album]) -> Observable<[Album]> {
+    public func fetchAlbumListWithThumbnail(from albumList: [Album]) -> Observable<[Album]> {
         Observable.create { [weak self] observer in
             Task {
                 guard let self else {
@@ -164,19 +177,53 @@ extension PhotoKitService {
             return Disposables.create()
         }
     }
+}
+
+// MARK: - UseCase
+
+extension PhotoKitService {
     
-    /// 썸네일 없이 기록을 반환합니다.
-    func fetchMediaListWithNoThumbnail(from album: Album) throws -> [Media] {
+    /// 앨범으로 미디어 리스트를 반환합니다.
+    func fetchMediaList(from album: Album) -> [Media] {
+        var mediaList = [Media]()
+        
+        switch album.albumType {
+        case .album:
+            if let phAlbum = fetchAlbum(from: album.id) {
+                let fetchResult = PHAsset.fetchAssets(in: phAlbum, options: nil)
+                self.assetFetchResult = fetchResult
+                fetchResult.enumerateObjects { [weak self] asset, _, _ in
+                    guard let self else { return }
+                    let media = Media(
+                        id: asset.localIdentifier,
+                        creationDate: asset.creationDate,
+                        mediaType: self.mediaType(from: asset),
+                        thumbnail: nil,
+                        isFavorite: asset.isFavorite
+                    )
+                    mediaList.append(media)
+                }
+            }
+            
+        case .folder:
+            let phFolder = fetchFolder(from: album.id)
+        }
+        
+        return mediaList
+    }
+    
+    /// 기록으로 미디어 리스트를 반환합니다.
+    func fetchMediaList(from record: Record) throws -> [Media] {
         if checkPermission() != .authorized { throw PhotoKitError.noPermission }
         
-        let fetchResult = fetchAssetResult(from: album)
+        let fetchResult = fetchAssetResult(from: record)
         self.assetFetchResult = fetchResult
         
         var mediaList = [Media]()
         fetchResult.enumerateObjects { [weak self] asset, _, _ in
             guard let self else { return }
             let mediaType = self.mediaType(from: asset)
-            let option = album.mediaFilterOption
+            let option = record.mediaFilterOption
             
             switch mediaType {
             case let .photo(type, _):
@@ -190,7 +237,6 @@ extension PhotoKitService {
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
                         thumbnail: nil,
-                        originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                         isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
@@ -206,7 +252,6 @@ extension PhotoKitService {
                         creationDate: asset.creationDate,
                         mediaType: mediaType,
                         thumbnail: nil,
-                        originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                         isFavorite: asset.isFavorite
                     )
                     mediaList.append(media)
@@ -218,7 +263,7 @@ extension PhotoKitService {
     }
     
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
-    func fetchMedias(from assetIdentifiers: [String], option: MediaQualityOption) -> Observable<[Media]> {
+    func fetchMediaListWithThumbnail(from assetIdentifiers: [String], option: MediaQualityOption) -> Observable<[Media]> {
         Observable.create { [weak self] observer in
             Task {
                 guard let self else {
@@ -243,7 +288,6 @@ extension PhotoKitService {
                                 creationDate: asset.creationDate,
                                 mediaType: self.mediaType(from: asset),
                                 thumbnail: image,
-                                originalMediaSize: .init(width: asset.pixelWidth, height: asset.pixelHeight),
                                 isFavorite: asset.isFavorite
                             )
                         }
@@ -262,7 +306,7 @@ extension PhotoKitService {
     }
     
     /// 즐겨찾기 상태를 전환합니다.
-    func toggleFavorite(from assetIdentifiers: [String], isFavorite: Bool) {
+    func toggleMediaFavorite(from assetIdentifiers: [String], isFavorite: Bool) {
         let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
         PHPhotoLibrary.shared().performChanges {
             assets.enumerateObjects { asset, _, _ in
@@ -353,7 +397,7 @@ extension PhotoKitService {
     }
     
     /// 주어진 ID의 사진을 삭제합니다.
-    func deletePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
+    func removePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
         Observable.create { observer in
             let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
             PHPhotoLibrary.shared().performChanges {
@@ -362,6 +406,29 @@ extension PhotoKitService {
                 observer.onNext(isSuccess)
                 observer.onCompleted()
             }
+            return Disposables.create()
+        }
+    }
+    
+    /// 앨범에서 에셋일 제외합니다.
+    public func excludePhotos(from album: Album, to assetIdentifiers: [String]) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self,
+                  let phAlbum = fetchAlbum(from: album.id)
+            else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            PHPhotoLibrary.shared().performChanges {
+                let assetResult = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+                let changeRequest = PHAssetCollectionChangeRequest(for: phAlbum)
+                changeRequest?.removeAssets(assetResult as NSFastEnumeration)
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            
             return Disposables.create()
         }
     }
@@ -513,6 +580,15 @@ extension PhotoKitService {
         .firstObject
     }
     
+    /// 폴더 생성일을 반환합니다.
+    ///
+    /// - 폴더 내 첫 번째 앨범의 생성일 기준
+    private func folderCreationDate(in collection: PHCollection) -> Date {
+        guard let collectionList = collection as? PHCollectionList else { return .now }
+        let album = fetchAlbum(from: collectionList)
+        return album?.startDate ?? .now
+    }
+    
     /// 폴더 내 예상되는 앨범의 개수를 반환합니다.
     private func estimateAlbumCount(in collection: PHCollection) -> Int {
         guard let collectionList = collection as? PHCollectionList else { return 0 }
@@ -563,7 +639,7 @@ extension PhotoKitService {
     }
     
     /// PHFetchResult를 날짜에 맞게 반환합니다.
-    private func fetchAssetResult(from album: Album) -> PHFetchResult<PHAsset> {
+    private func fetchAssetResult(from album: Record) -> PHFetchResult<PHAsset> {
         let fetchOptions = PHFetchOptions()
         fetchOptions.predicate = makePredicate(from: album)
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
@@ -571,7 +647,7 @@ extension PhotoKitService {
     }
     
     /// 미디어 패치를 위한 Predicate 객체를 생성합니다.
-    private func makePredicate(from album: Album) -> NSPredicate {
+    private func makePredicate(from album: Record) -> NSPredicate {
         var format = ""
         var arguments = [CVarArg]()
         

@@ -29,10 +29,10 @@ final class Coordinator: NSObject {
         
         let albumId = UserDefaultsService.trackingAlbumId
         let selectedTab: Tab = albumId.isEmpty ? .albumList : .record(isTracking: true)
-        var recordVMOutput = RecordViewModel.Output(album: .init(value: .initialValue))
+        var recordVMOutput = RecordViewModel.Output(record: .init(value: .initialValue))
         if !albumId.isEmpty {
             let album = persistenceService.readAlbum(fromId: albumId)
-            recordVMOutput = .init(album: .init(value: album))
+            recordVMOutput = .init(record: .init(value: album))
         }
         
         let recordVM = RecordViewModel(output: recordVMOutput)
@@ -79,6 +79,9 @@ final class Coordinator: NSObject {
                 switch path {
                 case .presentPermissionRequestModal:
                     owner.presentPermissionRequestModal(albumListVM)
+                    
+                case let .pushMyAlbum(album):
+                    owner.pushMyAlbum(album)
                 }
             }
             .disposed(by: mainVC.disposeBag)
@@ -118,8 +121,8 @@ final class Coordinator: NSObject {
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
                     
-                case let .pushDetail(album, initialImage, mediaList, selectedRow):
-                    owner.presentDetail(recordVM, album, initialImage, mediaList, selectedRow)
+                case let .pushDetail(record, initialImage, mediaList, selectedRow):
+                    owner.presentDetail(recordVM, .record(record), initialImage, mediaList, selectedRow)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -214,7 +217,7 @@ extension Coordinator {
     /// 앨범 수정 화면을 Push 합니다.
     private func pushAlbumEdit(
         _ recordVM: RecordViewModel?,
-        _ album: Album
+        _ album: Record
     ) {
         let editVM = AlbumEditViewModel(
             output: .init(
@@ -251,7 +254,7 @@ extension Coordinator {
     }
     
     /// 제외된 기록 화면을 Push 합니다.
-    private func pushExcludeRecord(_ recordVM: RecordViewModel?, _ album: Album) {
+    private func pushExcludeRecord(_ recordVM: RecordViewModel?, _ album: Record) {
         let excludeRecordVM = ExcludeRecordViewModel(output: .init(album: .init(value: album)))
         let excludeRecordVC = ExcludeRecordViewController(viewModel: excludeRecordVM)
         self.navigationController.pushViewController(excludeRecordVC, animated: true)
@@ -284,7 +287,7 @@ extension Coordinator {
     }
     
     /// 기록 종료 모달을 Present 합니다.
-    private func presentFinishModal(_ recordVM: RecordViewModel?, album: Album, sectionMediaList: SectionMediaList) {
+    private func presentFinishModal(_ recordVM: RecordViewModel?, album: Record, sectionMediaList: SectionMediaList) {
         let finishVM = FinishConfirmModalViewModel(
             output: .init(
                 album: .init(value: album),
@@ -315,14 +318,14 @@ extension Coordinator {
     /// 상세보기 화면으로 Present 합니다.
     private func presentDetail(
         _ recordVM: RecordViewModel?,
-        _ album: Album,
+        _ dataType: DataType,
         _ initialImage: UIImage?,
         _ mediaList: [Media],
         _ selectedRow: Int
     ) {
         let detailVM = DetailViewModel(
             output: .init(
-                album: .init(value: album),
+                dataType: .init(value: dataType),
                 initialImage: .init(value: initialImage),
                 initialRow: .init(value: selectedRow),
                 currentRow: .init(value: selectedRow),
@@ -348,10 +351,42 @@ extension Coordinator {
                         activityItems: shareItemList,
                         applicationActivities: nil
                     )
-                    owner.navigationController.present(activityController, animated: true)
+                    detailVC.present(activityController, animated: true)
                 }
             }
             .disposed(by: detailVC.disposeBag)
+    }
+}
+
+// MARK: - AlbumList Flow
+
+extension Coordinator {
+    
+    /// MyAlbum 화면으로 Push 합니다.
+    private func pushMyAlbum(_ album: Album) {
+        let myAlbumVM = MyAlbumViewModel(output: .init(album: .init(value: album)))
+        let myAlbumVC = MyAlbumViewController(viewModel: myAlbumVM)
+        navigationController.pushViewController(myAlbumVC, animated: true)
+        
+        myAlbumVM.navigation
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case let .presentDetail(album, image, mediaList, selectedIndex):
+                    owner.presentDetail(nil, .album(album), image, mediaList, selectedIndex)
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    myAlbumVC.present(activityController, animated: true)
+                }
+            }
+            .disposed(by: myAlbumVC.disposeBag)
     }
 }
 

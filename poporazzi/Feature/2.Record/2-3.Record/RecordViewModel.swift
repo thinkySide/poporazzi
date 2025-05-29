@@ -62,7 +62,7 @@ extension RecordViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Album>
+        let record: BehaviorRelay<Record>
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
@@ -85,19 +85,19 @@ extension RecordViewModel {
     
     enum Navigation {
         case finishRecord
-        case pushAlbumEdit(Album)
-        case presentExcludeRecord(Album)
-        case presentFinishModal(Album, SectionMediaList)
+        case pushAlbumEdit(Record)
+        case presentExcludeRecord(Record)
+        case presentFinishModal(Record, SectionMediaList)
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
-        case pushDetail(Album, UIImage?, [Media], Int)
+        case pushDetail(Record, UIImage?, [Media], Int)
     }
     
     enum Delegate {
-        case startRecord(Album)
-        case albumDidEdited(Album)
-        case updateExcludeRecord(Album)
+        case startRecord(Record)
+        case albumDidEdited(Record)
+        case updateExcludeRecord(Record)
         case completeSharing
     }
     
@@ -225,9 +225,10 @@ extension RecordViewModel {
         
         output.mediaList
             .bind(with: self) { owner, mediaList in
-                owner.output.sectionMediaList.accept(owner.dayCountSections(from: mediaList))
+                let sectionMediaList = mediaList.toSectionMediaList(startDate: owner.record.startDate)
+                owner.output.sectionMediaList.accept(sectionMediaList)
                 owner.liveActivityService.update(
-                    to: owner.output.album.value,
+                    to: owner.output.record.value,
                     totalCount: mediaList.count
                 )
             }
@@ -236,7 +237,7 @@ extension RecordViewModel {
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.switchSelectMode.accept(true)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
                 owner.navigation.accept(.toggleTabBar(false))
                 NameSpace.isSelectionMode = true
                 HapticManager.impact(style: .light)
@@ -258,13 +259,13 @@ extension RecordViewModel {
                     var currentCells = owner.output.selectedRecordCells.value
                     currentCells.append(indexPath)
                     owner.output.selectedRecordCells.accept(currentCells)
-                    owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                    owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
                     
                 case false:
                     let initialImage = owner.output.updateRecordCells.value[indexPath.row].thumbnail
                     owner.navigation.accept(
                         .pushDetail(
-                            owner.output.album.value,
+                            owner.output.record.value,
                             initialImage,
                             owner.output.mediaList.value,
                             owner.index(from: indexPath)
@@ -279,7 +280,7 @@ extension RecordViewModel {
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
+                owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
             }
             .disposed(by: disposeBag)
         
@@ -293,9 +294,9 @@ extension RecordViewModel {
         
         input.favoriteToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.photoKitService.toggleFavorite(
+                owner.photoKitService.toggleMediaFavorite(
                     from: owner.selectedAssetIdentifiers(),
-                    isFavorite: owner.shouldBeFavorite(from: owner.selectedMediaList())
+                    isFavorite: owner.selectedMediaList().shouldBeFavorite
                 )
                 owner.cancelSelectMode()
             }
@@ -326,7 +327,7 @@ extension RecordViewModel {
                     HapticManager.notification(type: .warning)
                 } else {
                     owner.navigation.accept(.presentFinishModal(
-                        owner.output.album.value,
+                        owner.output.record.value,
                         owner.output.sectionMediaList.value
                     ))
                 }
@@ -348,9 +349,9 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .exclude(mediaList):
-                    var album = owner.output.album.value
+                    var album = owner.output.record.value
                     album.excludeMediaList.formUnion(mediaList.map(\.id))
-                    owner.output.album.accept(album)
+                    owner.output.record.accept(album)
                     
                     owner.persistenceService.updateAlbumExcludeMediaList(to: album)
                     
@@ -359,7 +360,7 @@ extension RecordViewModel {
                     
                 case let .remove(mediaList):
                     owner.output.toggleLoading.accept(true)
-                    owner.photoKitService.deletePhotos(from: mediaList.map(\.id))
+                    owner.photoKitService.removePhotos(from: mediaList.map(\.id))
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in
                             if isSuccess {
@@ -378,10 +379,10 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    owner.navigation.accept(.pushAlbumEdit(owner.output.album.value))
+                    owner.navigation.accept(.pushAlbumEdit(owner.output.record.value))
                     
                 case .excludeRecord:
-                    let album = owner.output.album.value
+                    let album = owner.output.record.value
                     owner.navigation.accept(.presentExcludeRecord(album))
                     
                 case .noSave:
@@ -402,9 +403,9 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .toggleFavorite(media):
-                    owner.photoKitService.toggleFavorite(
+                    owner.photoKitService.toggleMediaFavorite(
                         from: [media.id],
-                        isFavorite: owner.shouldBeFavorite(from: [media])
+                        isFavorite: [media].shouldBeFavorite
                     )
                     
                 case let .share(media):
@@ -429,15 +430,15 @@ extension RecordViewModel {
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case let .startRecord(album):
-                    owner.output.album.accept(album)
+                    owner.output.record.accept(album)
                     owner.output.viewDidRefresh.accept(())
                     
                 case let .albumDidEdited(album):
-                    owner.output.album.accept(album)
+                    owner.output.record.accept(album)
                     owner.output.viewDidRefresh.accept(())
                     
                 case let .updateExcludeRecord(album):
-                    owner.output.album.accept(album)
+                    owner.output.record.accept(album)
                     owner.output.viewDidRefresh.accept(())
                     
                 case .completeSharing:
@@ -447,6 +448,15 @@ extension RecordViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Syntax Sugar
+
+extension RecordViewModel {
+    
+    private var record: Record {
+        output.record.value
     }
 }
 
@@ -464,35 +474,6 @@ extension RecordViewModel {
     /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
     private func selectedAssetIdentifiers() -> [String] {
         selectedMediaList().map(\.id)
-    }
-    
-    /// 시작날짜를 기준으로 생성일이 몇일차인지 반환합니다.
-    private func days(from creationDate: Date) -> Int {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents(
-            [.day],
-            from: calendar.startOfDay(for: output.album.value.startDate),
-            to: calendar.startOfDay(for: creationDate)
-        )
-        return (components.day ?? 0) + 1
-    }
-    
-    /// 날짜 별로 MediaList를 분리해 반환합니다.
-    private func dayCountSections(from allMediaList: [Media]) -> SectionMediaList {
-        var dic = [RecordSection: [Media]]()
-        
-        for media in allMediaList.sortedByCreationDate {
-            guard let creationDate = media.creationDate else { continue }
-            let days = days(from: creationDate)
-            dic[.day(
-                order: days,
-                date: Calendar.current.startOfDay(for: creationDate)
-            ), default: []].append(media)
-        }
-        
-        return dic.keys
-            .sorted(by: <)
-            .map { ($0, dic[$0] ?? []) }
     }
     
     /// IndexPath의 Section과 Row를 기준으로 몇번째 인덱스인지 반환합니다.
@@ -518,17 +499,6 @@ extension RecordViewModel {
         return count
     }
     
-    /// 선택한 Media의 다음 즐겨찾기 값을 계산합니다.
-    private func shouldBeFavorite(from mediaList: [Media]) -> Bool {
-        let isFavoriteSet = Set(mediaList.map(\.isFavorite))
-        
-        if isFavoriteSet.count > 1 {
-            return isFavoriteSet.contains(true)
-        } else {
-            return !(isFavoriteSet.first ?? false)
-        }
-    }
-    
     /// 선택 모드를 취소합니다.
     private func cancelSelectMode() {
         output.selectedRecordCells.accept([])
@@ -546,14 +516,14 @@ extension RecordViewModel {
     /// - 제외된 사진을 필터링합니다.
     /// - 스크린샷이 제외되었을 때 필터링합니다.
     private func fetchAllMediaListWithNoThumbnail() throws -> [Media] {
-        let album = output.album.value
-        return try photoKitService.fetchMediaListWithNoThumbnail(from: album)
-            .filter { !Set(output.album.value.excludeMediaList).contains($0.id) }
+        let album = output.record.value
+        return try photoKitService.fetchMediaList(from: album)
+            .filter { !Set(output.record.value.excludeMediaList).contains($0.id) }
     }
     
     /// 전체 Media 리스트를 반환합니다.
     private func fetchAllMediaList(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        photoKitService.fetchMedias(
+        photoKitService.fetchMediaListWithThumbnail(
             from: assetIdentifiers,
             option: .normal
         )
@@ -604,7 +574,7 @@ extension RecordViewModel {
     
     /// 앨범 제외 Action Sheet
     private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
-        let title = output.album.value.title
+        let title = output.record.value.title
         return ActionSheetModel(
             message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
             buttons: [

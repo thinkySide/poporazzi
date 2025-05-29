@@ -5,7 +5,7 @@
 //  Created by 김민준 on 5/23/25.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 
@@ -34,6 +34,7 @@ extension AlbumListViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        let albumCellSelected: Signal<IndexPath>
     }
     
     struct Output {
@@ -44,6 +45,7 @@ extension AlbumListViewModel {
     
     enum Navigation {
         case presentPermissionRequestModal
+        case pushMyAlbum(Album)
     }
     
     enum Delegate {
@@ -56,21 +58,33 @@ extension AlbumListViewModel {
 extension AlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
-        Signal.merge(input.viewDidLoad, output.viewDidRefresh.asSignal(), photoKitService.photoLibraryCollectionChange)
-            .emit(with: self) { owner, _ in
-                do {
-                    let albumList = try owner.photoKitService.fetchAlbumListWithNoThumbnail()
-                    owner.output.albumList.accept(albumList)
-                    
-                    owner.photoKitService.fetchAlbumList(from: albumList)
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind { albumList in
-                            owner.output.updateThumbnail.accept(albumList)
-                        }
-                        .disposed(by: owner.disposeBag)
-                } catch {
-                    owner.navigation.accept(.presentPermissionRequestModal)
-                }
+        Signal.merge(
+            input.viewDidLoad,
+            output.viewDidRefresh.asSignal(),
+            photoKitService.photoLibraryCollectionChange
+        )
+        .emit(with: self) { owner, _ in
+            do {
+                let albumList = try owner.photoKitService.fetchAllAlbumList()
+                owner.output.albumList.accept(albumList)
+            } catch {
+                owner.navigation.accept(.presentPermissionRequestModal)
+            }
+        }
+        .disposed(by: disposeBag)
+        
+        output.albumList
+            .withUnretained(self)
+            .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
+            .bind(with: self) { owner, albumList in
+                owner.output.updateThumbnail.accept(albumList)
+            }
+            .disposed(by: disposeBag)
+        
+        input.albumCellSelected
+            .emit(with: self) { owner, indexPath in
+                let album = owner.output.albumList.value[indexPath.row]
+                owner.navigation.accept(.pushMyAlbum(album))
             }
             .disposed(by: disposeBag)
         

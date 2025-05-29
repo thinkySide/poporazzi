@@ -18,7 +18,7 @@ final class PersistenceService: PersistenceInterface {
 extension PersistenceService {
     
     /// 영구 저장 앨범을 생성합니다.
-    func createAlbum(from album: Album) throws {
+    func createAlbum(from album: Record) throws {
         let album = PersistenceAlbum(
             id: album.id,
             title: album.title,
@@ -35,7 +35,7 @@ extension PersistenceService {
     }
     
     /// ID를 기반으로 앨범을 반환합니다.
-    func readAlbum(fromId: String) -> Album {
+    func readAlbum(fromId: String) -> Record {
         if let persistenceAlbum = readPersistenceAlbum(fromId: fromId) {
             return toEntity(from: persistenceAlbum)
         } else {
@@ -44,7 +44,7 @@ extension PersistenceService {
     }
     
     /// 앨범을 업데이트합니다.
-    func updateAlbum(to newAlbum: Album) {
+    func updateAlbum(to newAlbum: Record) {
         guard let persistenceAlbum = readPersistenceAlbum(fromId: newAlbum.id) else { return }
         do {
             try realm?.write {
@@ -61,7 +61,7 @@ extension PersistenceService {
     }
     
     /// 제외할 미디어 목록을 업데이트합니다.
-    func updateAlbumExcludeMediaList(to album: Album) {
+    func updateAlbumExcludeMediaList(to album: Record) {
         guard let persistenceAlbum = readPersistenceAlbum(fromId: album.id) else {
             print("\(#function): 영구 저장 앨범 찾기 실패")
             return
@@ -108,13 +108,12 @@ extension PersistenceService {
         )
     }
     
-    private func toEntity(from album: PersistenceAlbum) -> Album {
+    private func toEntity(from album: PersistenceAlbum) -> Record {
         .init(
             id: album.id,
             title: album.title,
             startDate: album.startDate,
             endDate: album.endDate,
-            albumType: .creating,
             excludeMediaList: Set(album.excludeMediaList),
             mediaFetchOption: toEntity(from: album.mediaFetchOption),
             mediaFilterOption: toEntity(from: album.mediaFilterOption)

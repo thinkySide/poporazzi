@@ -89,7 +89,8 @@ extension AlbumListViewController {
         }
         
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems(albumList)
+        let validList = albumList.filter { snapshot.itemIdentifiers.contains($0) }
+        snapshot.reloadItems(validList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
@@ -100,7 +101,8 @@ extension AlbumListViewController {
     
     func bind() {
         let input = AlbumListViewModel.Input(
-            viewDidLoad: .just(())
+            viewDidLoad: .just(()),
+            albumCellSelected: scene.albumCollectionView.rx.itemSelected.asSignal()
         )
         let output = viewModel.transform(input)
         

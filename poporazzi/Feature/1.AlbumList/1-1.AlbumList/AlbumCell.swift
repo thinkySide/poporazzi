@@ -92,8 +92,10 @@ extension AlbumCell {
             
         case let .setAlbumInfo(album):
             titleLabel.text = album.title
-            startDateLabel.text = album.startDate.startDateFormat
+            startDateLabel.text = album.creationDate.startDateFormat
             countLabel.text = "\(album.estimateCount)"
+            [titleLabel, startDateLabel, countLabel].forEach { $0.flex.markDirty() }
+            containerView.flex.layout()
         }
     }
 }
@@ -111,7 +113,9 @@ extension AlbumCell {
         
         thumbnailContainer.flex.define { flex in
             flex.addItem(thumbnail).cornerRadius(16).grow(1)
-            flex.addItem(countLabel).paddingHorizontal(8).height(24).minWidth(28)
+            
+            flex.addItem(countLabel)
+                .paddingHorizontal(6).height(24).minWidth(28)
                 .position(.absolute).right(10).bottom(10)
                 .cornerRadius(12)
         }

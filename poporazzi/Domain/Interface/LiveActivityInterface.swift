@@ -10,10 +10,10 @@ import Foundation
 protocol LiveActivityInterface {
     
     /// Live Activity를 시작합니다.
-    func start(to album: Album)
+    func start(to album: Record)
     
     /// Live Activity를 업데이트합니다.
-    func update(to album: Album, totalCount: Int)
+    func update(to album: Record, totalCount: Int)
     
     /// Live Activity를 종료합니다.
     func stop()
