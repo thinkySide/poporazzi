@@ -410,6 +410,29 @@ extension PhotoKitService {
         }
     }
     
+    /// 앨범에서 에셋일 제외합니다.
+    public func excludePhotos(from album: Album, to assetIdentifiers: [String]) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self,
+                  let phAlbum = fetchAlbum(from: album.id)
+            else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            PHPhotoLibrary.shared().performChanges {
+                let assetResult = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+                let changeRequest = PHAssetCollectionChangeRequest(for: phAlbum)
+                changeRequest?.removeAssets(assetResult as NSFastEnumeration)
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
+        }
+    }
+    
     /// 선택한 AssetIdentifiers의 File URL을 반환합니다.
     func fetchShareItemList(from assetIdentifiers: [String]) -> Observable<[Any]> {
         Observable.create { [weak self] observer in

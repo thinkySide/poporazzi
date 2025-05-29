@@ -220,7 +220,10 @@ extension MyAlbumViewModel {
         
         input.excludeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                
+                let selectedMediaList = owner.selectedMediaList
+                let actionSheet = owner.excludeActionSheet(from: selectedMediaList)
+                owner.output.actionSheetPresented.accept(actionSheet)
+                HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
         
@@ -257,7 +260,15 @@ extension MyAlbumViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .exclude(mediaList):
-                    break
+                    owner.photoKitService.excludePhotos(
+                        from: owner.album,
+                        to: mediaList.map(\.id)
+                    )
+                    .observe(on: MainScheduler.asyncInstance)
+                    .bind(with: self) { owner, isSuccess in
+                        owner.cancelSelectMode()
+                    }
+                    .disposed(by: owner.disposeBag)
                     
                 case let .remove(mediaList):
                     owner.output.toggleLoading.accept(true)

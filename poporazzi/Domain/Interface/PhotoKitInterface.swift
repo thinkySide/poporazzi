@@ -68,6 +68,11 @@ protocol PhotoKitInterface {
         sectionMediaList: SectionMediaList
     ) -> Observable<Void>
     
+    /// 앨범에서 에셋을 제외합니다.
+    func excludePhotos(
+        from album: Album,
+        to assetIdentifiers: [String]
+    ) -> Observable<Bool>
     
     // MARK: - Media Remote
     
