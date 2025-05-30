@@ -1,5 +1,5 @@
 //
-//  DetailViewController.swift
+//  MediaDetailViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/26/25.
@@ -9,14 +9,14 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class DetailViewController: ViewController {
+final class MediaDetailViewController: ViewController {
     
     enum Section {
         case main
     }
     
-    private let scene = DetailView()
-    private let viewModel: DetailViewModel
+    private let scene = MediaDetailView()
+    private let viewModel: MediaDetailViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
     private var selectedRow = 0
@@ -30,7 +30,7 @@ final class DetailViewController: ViewController {
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: DetailViewModel) {
+    init(viewModel: MediaDetailViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -57,15 +57,15 @@ final class DetailViewController: ViewController {
 
 // MARK: - UICollectionViewDiffableDataSource
 
-extension DetailViewController {
+extension MediaDetailViewController {
     
     /// CollectionView를 세팅합니다.
     private func setupCollectionView() {
         scene.mediaCollectionView.collectionViewLayout = mediaCollectionViewLayout
         scene.mediaCollectionView.isPagingEnabled = true
         scene.mediaCollectionView.register(
-            DetailCell.self,
-            forCellWithReuseIdentifier: DetailCell.identifier
+            MediaDetailCell.self,
+            forCellWithReuseIdentifier: MediaDetailCell.identifier
         )
     }
     
@@ -74,9 +74,9 @@ extension DetailViewController {
         dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.mediaCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: DetailCell.identifier,
+                withReuseIdentifier: MediaDetailCell.identifier,
                 for: indexPath
-            ) as? DetailCell else { return nil }
+            ) as? MediaDetailCell else { return nil }
             
             if let cacheImgae = self.imageCache[media.id] {
                 cell.action(.setImage(cacheImgae))
@@ -119,7 +119,7 @@ extension DetailViewController {
 
 // MARK: - CollectionView Layout
 
-extension DetailViewController {
+extension MediaDetailViewController {
     
     /// 레이아웃을 반환합니다.
     var mediaCollectionViewLayout: UICollectionViewCompositionalLayout {
@@ -157,10 +157,10 @@ extension DetailViewController {
 
 // MARK: - Binding
 
-extension DetailViewController {
+extension MediaDetailViewController {
     
     func bind() {
-        let input = DetailViewModel.Input(
+        let input = MediaDetailViewModel.Input(
             viewDidLoad: .just(()),
             currentIndex: currentIndexRelay.asSignal(),
             currentScrollOffset: currentScrollOffsetRelay.asSignal(),

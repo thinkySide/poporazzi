@@ -326,7 +326,7 @@ extension Coordinator {
         _ mediaList: [Media],
         _ selectedRow: Int
     ) {
-        let detailVM = DetailViewModel(
+        let detailVM = MediaDetailViewModel(
             output: .init(
                 dataType: .init(value: dataType),
                 initialImage: .init(value: initialImage),
@@ -335,7 +335,7 @@ extension Coordinator {
                 mediaList: .init(value: mediaList)
             )
         )
-        let detailVC = DetailViewController(viewModel: detailVM)
+        let detailVC = MediaDetailViewController(viewModel: detailVM)
         detailVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(detailVC, animated: true)
         

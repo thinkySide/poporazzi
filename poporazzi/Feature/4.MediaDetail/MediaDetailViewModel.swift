@@ -1,5 +1,5 @@
 //
-//  DetailViewModel.swift
+//  MediaDetailViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/26/25.
@@ -9,7 +9,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class DetailViewModel: ViewModel {
+final class MediaDetailViewModel: ViewModel {
     
     @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.photoKitService) private var photoKitService
@@ -35,7 +35,7 @@ final class DetailViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -85,7 +85,7 @@ extension DetailViewModel {
 
 // MARK: - Transform
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     func transform(_ input: Input) -> Output {
         input.viewDidLoad
@@ -101,7 +101,6 @@ extension DetailViewModel {
             photoKitService.photoLibraryAssetChange
         )
         .asObservable()
-        .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
         .bind(with: self) { owner, _ in
             do {
                 let index = owner.output.currentRow.value
@@ -271,7 +270,7 @@ extension DetailViewModel {
 
 // MARK: - Syntax Sugar
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     var dataType: DataType {
         output.dataType.value
@@ -284,7 +283,7 @@ extension DetailViewModel {
 
 // MARK: - Helper
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 시작날짜를 기준으로 생성일이 몇일차인지 반환합니다.
     private func days(from creationDate: Date) -> Int {
@@ -359,7 +358,7 @@ extension DetailViewModel {
 
 // MARK: - Alert
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 기록 삭제 실패 Alert
     private var removeFailedAlert: AlertModel {
@@ -373,7 +372,7 @@ extension DetailViewModel {
 
 // MARK: - Action Sheet
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 앨범 제외 Action Sheet
     private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
@@ -410,7 +409,7 @@ extension DetailViewModel {
 
 // MARK: - Menu
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 더보기 툴바 버튼 Menu
     private var seemoreToolbarMenu: [MenuModel] {
