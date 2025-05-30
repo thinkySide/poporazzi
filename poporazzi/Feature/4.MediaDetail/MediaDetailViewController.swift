@@ -20,18 +20,16 @@ final class MediaDetailViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
     private var selectedRow = 0
-    private var imageCache = [String: UIImage?]()
     
-    /// 현재 바라보고 있는 CollectionView Index
-    private let currentIndexRelay = PublishRelay<Int>()
-
-    /// 현재 스크롤 Offset
-    private let currentScrollOffsetRelay = PublishRelay<CGPoint>()
+    private let event = Event()
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: MediaDetailViewModel) {
+    private var initialImage: UIImage?
+    
+    init(viewModel: MediaDetailViewModel, initialImage: UIImage?) {
         self.viewModel = viewModel
+        self.initialImage = initialImage
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -52,6 +50,16 @@ final class MediaDetailViewController: ViewController {
     
     deinit {
         Log.print(#file, .deinit)
+    }
+}
+
+// MARK: - Event
+
+extension MediaDetailViewController {
+    
+    struct Event {
+        let currentIndex = PublishRelay<Int>()
+        let currentScrollOffset = PublishRelay<CGPoint>()
     }
 }
 
@@ -78,9 +86,17 @@ extension MediaDetailViewController {
                 for: indexPath
             ) as? MediaDetailCell else { return nil }
             
-            if let cacheImgae = self.imageCache[media.id] {
-                cell.action(.setImage(cacheImgae))
+            var thumbnail: UIImage?
+            if let initialImage {
+                thumbnail = initialImage
+                self.initialImage = nil
             }
+            
+            if let loadImage = self.viewModel.thumbnailList[media] {
+                thumbnail = loadImage
+            }
+            
+            cell.action(.setImage(thumbnail))
             
             return cell
         }
@@ -105,15 +121,9 @@ extension MediaDetailViewController {
     /// 페이지네이션 된 DataSource를 업데이트합니다.
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
-        
-        for media in mediaList {
-            imageCache.updateValue(media.thumbnail, forKey: media.id)
-        }
-        
         var snapshot = dataSource.snapshot()
-        let validList = mediaList.filter { snapshot.itemIdentifiers.contains($0) }
-        snapshot.reloadItems(validList)
-        dataSource.apply(snapshot, animatingDifferences: true)
+        snapshot.reconfigureItems(mediaList)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
 
@@ -146,9 +156,9 @@ extension MediaDetailViewController {
                 abs($0.frame.midX - centerX) < abs($1.frame.midX - centerX)
             }
             if let closestItem = sortedItems.first {
-                self?.currentIndexRelay.accept(closestItem.indexPath.item)
+                self?.event.currentIndex.accept(closestItem.indexPath.item)
             }
-            self?.currentScrollOffsetRelay.accept(point)
+            self?.event.currentScrollOffset.accept(point)
         }
         
         return UICollectionViewCompositionalLayout(section: section)
@@ -162,8 +172,8 @@ extension MediaDetailViewController {
     func bind() {
         let input = MediaDetailViewModel.Input(
             viewDidLoad: .just(()),
-            currentIndex: currentIndexRelay.asSignal(),
-            currentScrollOffset: currentScrollOffsetRelay.asSignal(),
+            currentIndex: event.currentIndex.asSignal(),
+            currentScrollOffset: event.currentScrollOffset.asSignal(),
             favoriteButtonTapped: scene.favoriteButton.button.rx.tap.asSignal(),
             excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap
@@ -179,14 +189,15 @@ extension MediaDetailViewController {
             }
             .disposed(by: disposeBag)
         
-        output.updateMediaList
+        output.thumbnailList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, mediaList in
+            .bind(with: self) { owner, thumbnailList in
+                let mediaList = thumbnailList.map(\.key)
                 owner.updatePaginationDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)
         
-        output.initialRow
+        output.currentIndex
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, selectedRow in
                 owner.selectedRow = selectedRow

@@ -139,7 +139,6 @@ extension Media {
     
     static func == (lhs: Media, rhs: Media) -> Bool {
         lhs.id == rhs.id
-        && lhs.thumbnail != rhs.thumbnail
     }
 }
 

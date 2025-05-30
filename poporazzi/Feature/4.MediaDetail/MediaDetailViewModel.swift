@@ -14,9 +14,9 @@ final class MediaDetailViewModel: ViewModel {
     @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.photoKitService) private var photoKitService
     
-    private let disposeBag = DisposeBag()
     private let output: Output
     
+    let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
     let menuAction = PublishRelay<MenuAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
@@ -49,13 +49,12 @@ extension MediaDetailViewModel {
     
     struct Output {
         let dataType: BehaviorRelay<DataType>
-        let initialImage: BehaviorRelay<UIImage?>
-        let initialRow: BehaviorRelay<Int>
-        let currentRow: BehaviorRelay<Int>
+        let initialIndex: BehaviorRelay<Int>
+        let currentIndex: BehaviorRelay<Int>
         
         let mediaList: BehaviorRelay<[Media]>
+        let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
-        let updateMediaList = BehaviorRelay<[Media]>(value: [])
         let updateMediaInfo = BehaviorRelay<(Media, dayCount: Int, Date)>(value: (.initialValue, 0, .now))
         let updateCountInfo = BehaviorRelay<(currentIndex: Int, totalCount: Int)>(value: (0, 0))
         
@@ -103,54 +102,50 @@ extension MediaDetailViewModel {
         .asObservable()
         .bind(with: self) { owner, _ in
             do {
-                let index = owner.output.currentRow.value
-                owner.output.initialRow.accept(index)
-                owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
-                owner.output.updateCountInfo.accept((index, owner.mediaList.count))
-                
+                let index = owner.output.initialIndex.value
                 let media = owner.mediaList[index]
                 let creationDate = media.creationDate ?? .now
                 let dayCount = owner.days(from: creationDate)
                 owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
-                
-                let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
-                owner.mediaListWithImage(from: fetchMediaList)
-                    .observe(on: MainScheduler.asyncInstance)
-                    .bind(to: owner.output.updateMediaList)
-                    .disposed(by: owner.disposeBag)
+                owner.output.updateCountInfo.accept((index, owner.mediaList.count))
+                owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
             } catch {
                 print(error)
             }
         }
         .disposed(by: disposeBag)
         
+        output.mediaList
+            .withUnretained(self)
+            .flatMap { owner, _ in
+                let index = owner.output.initialIndex.value
+                let mediaList = owner.calcForFetchMediaList(displayRow: index)
+                return owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: mediaList.map(\.id),
+                    option: .high
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                var thumbnailList = owner.thumbnailList
+                for media in mediaList {
+                    thumbnailList.updateValue(media.thumbnail, forKey: media)
+                }
+                owner.output.thumbnailList.accept(thumbnailList)
+            }
+            .disposed(by: disposeBag)
+        
         input.currentIndex
             .asObservable()
             .distinctUntilChanged()
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            // .skip(1)
             .bind(with: self) { owner, index in
-                let mediaList = owner.output.mediaList.value
-                var media = mediaList[index]
                 
-                owner.output.currentRow.accept(index)
-                owner.output.updateCountInfo.accept((index, mediaList.count))
+            }
+            .disposed(by: disposeBag)
+        
+        output.mediaList
+            .bind(with: self) { owner, mediaList in
                 
-                // 첫 번째 화면 진입 시 기존 이미지 사용으로 반응성 높이기
-                if let image = owner.output.initialImage.value {
-                    media.thumbnail = image
-                    owner.output.updateMediaList.accept([media])
-                    owner.output.initialImage.accept(nil)
-                }
-                
-                let creationDate = media.creationDate ?? .now
-                let dayCount = owner.days(from: creationDate)
-                owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
-                
-                let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
-                owner.mediaListWithImage(from: fetchMediaList)
-                    .observe(on: MainScheduler.asyncInstance)
-                    .bind(to: owner.output.updateMediaList)
-                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
         
@@ -174,7 +169,7 @@ extension MediaDetailViewModel {
         
         input.excludeButtonTapped
             .emit(with: self) { owner, _ in
-                let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                let media = owner.output.mediaList.value[owner.output.currentIndex.value]
                 let actionSheet = owner.excludeActionSheet(from: [media])
                 owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
@@ -183,7 +178,7 @@ extension MediaDetailViewModel {
         
         input.removeButtonTapped
             .emit(with: self) { owner, _ in
-                let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                let media = owner.output.mediaList.value[owner.output.currentIndex.value]
                 let actionSheet = owner.removeActionSheet(from: [media])
                 owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
@@ -200,7 +195,7 @@ extension MediaDetailViewModel {
             .bind(with: self) { owner , action in
                 switch action {
                 case .share:
-                    let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                    let media = owner.output.mediaList.value[owner.output.currentIndex.value]
                     owner.photoKitService.fetchShareItemList(from: [media.id])
                         .bind { shareItemList in
                             owner.navigation.accept(.presentMediaShareSheet(shareItemList))
@@ -221,7 +216,7 @@ extension MediaDetailViewModel {
                             to: mediaList.map(\.id)
                         )
                         .observe(on: MainScheduler.asyncInstance)
-                        .bind(with: self) { owner, isSucess in
+                        .bind { isSucess in
                             
                         }
                         .disposed(by: owner.disposeBag)
@@ -278,6 +273,10 @@ extension MediaDetailViewModel {
     
     var mediaList: [Media] {
         output.mediaList.value
+    }
+    
+    var thumbnailList: [Media: UIImage?] {
+        output.thumbnailList.value
     }
 }
 

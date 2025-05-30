@@ -193,16 +193,10 @@ extension AlbumDetailViewModel {
                     owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
                     
                 case false:
-                    let media = owner.mediaList[indexPath.row]
+                    let index = owner.index(from: owner.sectionMediaList, indexPath: indexPath)
+                    let media = owner.mediaList[index]
                     let image = owner.thumbnailList[media] ?? .init()
-                    owner.navigation.accept(
-                        .presentDetail(
-                            owner.album,
-                            image,
-                            owner.mediaList,
-                            owner.index(from: owner.sectionMediaList, indexPath: indexPath)
-                        )
-                    )
+                    owner.navigation.accept(.presentDetail(owner.album, image, owner.mediaList, index))
                 }
             }
             .disposed(by: disposeBag)
