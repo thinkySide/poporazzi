@@ -16,8 +16,6 @@ final class AlbumListViewController: ViewController {
     
     private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
     
-    private var imageCache = [String: UIImage?]()
-    
     let disposeBag = DisposeBag()
     
     init(viewModel: AlbumListViewModel) {
@@ -63,11 +61,11 @@ extension AlbumListViewController {
                 for: indexPath
             ) as? AlbumCell else { return nil }
             
-            if let cacheThumbnail = self.imageCache[album.id] {
-                cell.action(.setThumbnail(cacheThumbnail))
+            if let thumbnailList = self.viewModel.thumbnailList[album.id] {
+                cell.action(.setAlbum(album, thumbnailList))
+            } else {
+                cell.action(.setAlbum(album, []))
             }
-            
-            cell.action(.setAlbumInfo(album))
             
             return cell
         }
@@ -81,15 +79,10 @@ extension AlbumListViewController {
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    private func updatePaginationDataSource(to albumList: [Album]) {
-        guard !albumList.isEmpty else { return }
-        
-        for album in albumList {
-            imageCache.updateValue(album.thumbnail, forKey: album.id)
-        }
-        
+    private func updatePaginationDataSource(to updateList: [String]) {
+        guard !updateList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
-        let validList = albumList.filter { snapshot.itemIdentifiers.contains($0) }
+        let validList = snapshot.itemIdentifiers.filter { updateList.contains($0.id) }
         snapshot.reloadItems(validList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
@@ -115,8 +108,8 @@ extension AlbumListViewController {
         
         output.updateThumbnail
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, albumList in
-                owner.updatePaginationDataSource(to: albumList)
+            .bind(with: self) { owner, updateList in
+                owner.updatePaginationDataSource(to: updateList)
             }
             .disposed(by: disposeBag)
     }

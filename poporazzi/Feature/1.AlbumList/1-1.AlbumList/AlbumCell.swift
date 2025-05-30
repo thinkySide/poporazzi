@@ -15,15 +15,26 @@ final class AlbumCell: UICollectionViewCell {
     
     var containerView = UIView()
     
-    private let thumbnailContainer = UIView()
-    
-    /// 미디어 썸네일
-    private let thumbnail: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        return imageView
+    private let thumbnailContainer: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        return view
     }()
+    
+    /// 앨범 썸네일
+    private let albumThumbnail = UIImageView()
+    
+    /// 첫 번째 폴더 썸네일
+    private let folderThumbnailFirst = UIImageView()
+    
+    /// 두 번째 폴더 썸네일
+    private let folderThumbnailSecond = UIImageView()
+    
+    /// 세 번째 폴더 썸네일
+    private let folderThumbnailThird = UIImageView()
+    
+    /// 네 번째 폴더 썸네일
+    private let folderThumbnailFourth = UIImageView()
     
     /// 제목 라벨
     private let titleLabel = UILabel(size: 15, color: .mainLabel)
@@ -44,6 +55,13 @@ final class AlbumCell: UICollectionViewCell {
         super.init(frame: frame)
         contentView.addSubview(containerView)
         configLayout()
+        [albumThumbnail,
+         folderThumbnailFirst, folderThumbnailSecond,
+         folderThumbnailThird, folderThumbnailFourth]
+            .forEach {
+                $0.contentMode = .scaleAspectFill
+                $0.clipsToBounds = true
+            }
     }
     
     override func layoutSubviews() {
@@ -54,7 +72,10 @@ final class AlbumCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        thumbnail.image = nil
+        [albumThumbnail,
+         folderThumbnailFirst, folderThumbnailSecond,
+         folderThumbnailThird, folderThumbnailFourth]
+            .forEach { $0.image = nil }
     }
     
     override var isSelected: Bool {
@@ -77,20 +98,40 @@ final class AlbumCell: UICollectionViewCell {
 extension AlbumCell {
     
     enum Action {
-        case setThumbnail(UIImage?)
-        case setAlbumInfo(Album)
+        case setAlbum(Album, [UIImage?])
     }
     
     func action(_ action: Action) {
         switch action {
-        case let .setThumbnail(image):
-            if let image {
-                self.thumbnail.image = image
-            } else {
-                self.thumbnail.backgroundColor = .brandTertiary
+        case let .setAlbum(album, thumbnailList):
+            let isHidden = album.albumType == .folder
+            albumThumbnail.isHidden = isHidden
+            [folderThumbnailFirst, folderThumbnailSecond,
+             folderThumbnailThird, folderThumbnailFourth].forEach {
+                $0.isHidden = !isHidden
+                $0.backgroundColor = .brandTertiary
             }
             
-        case let .setAlbumInfo(album):
+            switch album.albumType {
+            case .album:
+                if let thumbnail = thumbnailList.first {
+                    self.albumThumbnail.image = thumbnail
+                } else {
+                    self.albumThumbnail.backgroundColor = .brandTertiary
+                }
+                
+            case .folder:
+                for i in thumbnailList.indices {
+                    switch i {
+                    case 0: folderThumbnailFirst.image = thumbnailList[0]
+                    case 1: folderThumbnailSecond.image = thumbnailList[1]
+                    case 2: folderThumbnailThird.image = thumbnailList[2]
+                    case 3: folderThumbnailFourth.image = thumbnailList[3]
+                    default: break
+                    }
+                }
+            }
+            
             titleLabel.text = album.title
             startDateLabel.text = album.creationDate.startDateFormat
             countLabel.text = "\(album.estimateCount)"
@@ -111,8 +152,25 @@ extension AlbumCell {
             flex.addItem(startDateLabel).marginTop(4).horizontally(2)
         }
         
-        thumbnailContainer.flex.define { flex in
-            flex.addItem(thumbnail).cornerRadius(16).grow(1)
+        thumbnailContainer.flex.cornerRadius(16).define { flex in
+            flex.addItem(albumThumbnail).grow(1)
+                .position(.absolute)
+                .vertically(0).horizontally(0)
+            
+            let spacing: CGFloat = 4
+            flex.addItem().direction(.column).justifyContent(.spaceBetween).alignItems(.stretch).define { flex in
+                flex.addItem().direction(.row).justifyContent(.spaceBetween).define { flex in
+                    flex.addItem(folderThumbnailFirst).width(50%).aspectRatio(1)
+                    flex.addItem().width(spacing)
+                    flex.addItem(folderThumbnailSecond).width(50%).aspectRatio(1)
+                }
+                
+                flex.addItem().direction(.row).justifyContent(.spaceBetween).marginTop(spacing).define { flex in
+                    flex.addItem(folderThumbnailThird).width(50%).aspectRatio(1)
+                    flex.addItem().width(spacing)
+                    flex.addItem(folderThumbnailFourth).width(50%).aspectRatio(1)
+                }
+            }
             
             flex.addItem(countLabel)
                 .paddingHorizontal(6).height(24).minWidth(28)

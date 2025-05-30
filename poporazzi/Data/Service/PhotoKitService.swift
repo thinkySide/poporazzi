@@ -117,6 +117,7 @@ extension PhotoKitService {
                     id: album.localIdentifier,
                     title: album.localizedTitle ?? "",
                     creationDate: album.startDate ?? .now,
+                    thumbnailList: [],
                     estimateCount: album.estimatedAssetCount,
                     albumType: .album
                 )
@@ -129,6 +130,7 @@ extension PhotoKitService {
                     id: collection.localIdentifier,
                     title: collection.localizedTitle ?? "",
                     creationDate: folderCreationDate(in: collection),
+                    thumbnailList: [],
                     estimateCount: estimateAlbumCount(in: collection),
                     albumType: .folder
                 )
@@ -157,16 +159,34 @@ extension PhotoKitService {
                         guard let assetCollection = self.fetchAlbum(from: album.id) else { return }
                         let assetResult = self.assetResult(from: assetCollection)
                         let thumbnail = await self.thumbnail(from: assetResult)
-                        albumList[index].thumbnail = thumbnail
+                        albumList[index].thumbnailList = [thumbnail]
                     }
                     
                     // 폴더의 경우
                     else if album.albumType == .folder {
-                        guard let collection = self.fetchFolder(from: album.id),
-                              let assetCollection = self.fetchAlbum(from: collection) else { return }
-                        let assetResult = self.assetResult(from: assetCollection)
-                        let thumbnail = await self.thumbnail(from: assetResult)
-                        albumList[index].thumbnail = thumbnail
+                        guard let collection = self.fetchFolder(from: album.id) else { return }
+                        let assetCollectionList = self.fetchAlbumList(from: collection)
+                        
+                        // 폴더 썸네일 최대 4개 패치
+                        let thumbnailList: [UIImage?] = await withTaskGroup(of: (Int, UIImage?).self) { group in
+                            for (index, assetCollection) in assetCollectionList.enumerated() {
+                                group.addTask {
+                                    let assetResult = self.assetResult(from: assetCollection)
+                                    let thumbnail = await self.thumbnail(from: assetResult)
+                                    return (index, thumbnail)
+                                }
+                            }
+                            
+                            var result = [(Int, UIImage?)]()
+                            for await item in group {
+                                guard result.count <= 4 else { break }
+                                result.append(item)
+                            }
+                            
+                            return result.sorted { $0.0 < $1.0 }.map(\.1)
+                        }
+                        
+                        albumList[index].thumbnailList = thumbnailList
                     }
                 }
                 
@@ -550,6 +570,17 @@ extension PhotoKitService {
     /// 앨범을 반환합니다.
     private func fetchAlbum(from collection: PHCollectionList) -> PHAssetCollection? {
         PHCollection.fetchCollections(in: collection, options: nil).firstObject as? PHAssetCollection
+    }
+    
+    /// 앨범 리스트를 반환합니다.
+    private func fetchAlbumList(from collection: PHCollectionList) -> [PHAssetCollection] {
+        var assetCollections = [PHAssetCollection]()
+        PHCollection.fetchCollections(in: collection, options: nil).enumerateObjects { collection, _, _ in
+            if let album = collection as? PHAssetCollection {
+                assetCollections.append(album)
+            }
+        }
+        return assetCollections
     }
 }
 

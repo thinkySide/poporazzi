@@ -39,7 +39,9 @@ extension AlbumListViewModel {
     
     struct Output {
         let albumList = BehaviorRelay<[Album]>(value: [])
-        let updateThumbnail = BehaviorRelay<[Album]>(value: [])
+        let thumbnailList = BehaviorRelay<[String: [UIImage?]]>(value: [:])
+        
+        let updateThumbnail = PublishRelay<[String]>()
         let viewDidRefresh = PublishRelay<Void>()
     }
     
@@ -77,7 +79,11 @@ extension AlbumListViewModel {
             .withUnretained(self)
             .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
             .bind(with: self) { owner, albumList in
-                owner.output.updateThumbnail.accept(albumList)
+                let thumbnailList = Dictionary(uniqueKeysWithValues: albumList.map {
+                    ($0.id, $0.thumbnailList)
+                })
+                owner.output.thumbnailList.accept(thumbnailList)
+                owner.output.updateThumbnail.accept(albumList.map(\.id))
             }
             .disposed(by: disposeBag)
         
@@ -98,5 +104,14 @@ extension AlbumListViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Syntax Sugar
+
+extension AlbumListViewModel {
+    
+    var thumbnailList: [String: [UIImage?]] {
+        output.thumbnailList.value
     }
 }
