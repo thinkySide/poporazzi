@@ -15,7 +15,7 @@ final class MyAlbumViewModel: ViewModel {
     
     private let paginationManager = PaginationManager(pageSize: 100, threshold: 10)
     
-    private let disposeBag = DisposeBag()
+    let disposeBag = DisposeBag()
     private let output: Output
     
     
@@ -305,7 +305,7 @@ extension MyAlbumViewModel {
                         to: mediaList.map(\.id)
                     )
                     .observe(on: MainScheduler.asyncInstance)
-                    .bind(with: self) { owner, isSuccess in
+                    .bind { isSuccess in
                         owner.cancelSelectMode()
                     }
                     .disposed(by: owner.disposeBag)

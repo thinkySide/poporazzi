@@ -370,7 +370,7 @@ extension Coordinator {
         
         myAlbumVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak myAlbumVC] owner, path in
                 switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
@@ -383,10 +383,10 @@ extension Coordinator {
                         activityItems: shareItemList,
                         applicationActivities: nil
                     )
-                    myAlbumVC.present(activityController, animated: true)
+                    myAlbumVC?.present(activityController, animated: true)
                 }
             }
-            .disposed(by: myAlbumVC.disposeBag)
+            .disposed(by: myAlbumVM.disposeBag)
     }
 }
 

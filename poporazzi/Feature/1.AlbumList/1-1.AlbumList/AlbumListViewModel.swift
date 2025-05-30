@@ -89,7 +89,7 @@ extension AlbumListViewModel {
         
         input.albumCellSelected
             .emit(with: self) { owner, indexPath in
-                let album = owner.output.albumList.value[indexPath.row]
+                let album = owner.albumList[indexPath.row]
                 owner.navigation.accept(.pushMyAlbum(album))
             }
             .disposed(by: disposeBag)
@@ -110,6 +110,10 @@ extension AlbumListViewModel {
 // MARK: - Syntax Sugar
 
 extension AlbumListViewModel {
+    
+    var albumList: [Album] {
+        output.albumList.value
+    }
     
     var thumbnailList: [String: [UIImage?]] {
         output.thumbnailList.value

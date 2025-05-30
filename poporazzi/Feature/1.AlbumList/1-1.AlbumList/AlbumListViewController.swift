@@ -13,10 +13,9 @@ final class AlbumListViewController: ViewController {
     
     private let scene = AlbumListView()
     private let viewModel: AlbumListViewModel
+    let disposeBag = DisposeBag()
     
     private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
-    
-    let disposeBag = DisposeBag()
     
     init(viewModel: AlbumListViewModel) {
         self.viewModel = viewModel
