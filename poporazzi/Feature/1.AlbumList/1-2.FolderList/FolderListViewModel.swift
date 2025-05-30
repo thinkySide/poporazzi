@@ -59,7 +59,7 @@ extension FolderListViewModel {
     func transform(_ input: Input) -> Output {
         Signal.merge(
             input.viewDidLoad,
-            photoKitService.photoLibraryAssetChange
+            photoKitService.photoLibraryCollectionChange
         )
         .emit(with: self) { owner, _ in
             let albumList = owner.photoKitService.fetchAlbumList(from: owner.folder)
