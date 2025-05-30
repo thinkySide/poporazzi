@@ -94,7 +94,7 @@ extension PhotoKitService {
 
 extension PhotoKitService {
     
-    /// 앨범 리스트를 반환합니다.
+    /// 전체 앨범 리스트를 반환합니다.
     public func fetchAllAlbumList() throws -> [Album] {
         
         // 권한 확인
@@ -110,36 +110,27 @@ extension PhotoKitService {
         var albumList = [Album]()
         collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
             guard let self else { return }
-            
-            // 앨범의 경우
-            if let album = collection as? PHAssetCollection {
-                let album = Album(
-                    id: album.localIdentifier,
-                    title: album.localizedTitle ?? "",
-                    creationDate: album.startDate ?? .now,
-                    thumbnailList: [],
-                    estimateCount: album.estimatedAssetCount,
-                    albumType: .album
-                )
-                albumList.append(album)
-            }
-            
-            // 폴더의 경우
-            else {
-                let album = Album(
-                    id: collection.localIdentifier,
-                    title: collection.localizedTitle ?? "",
-                    creationDate: folderCreationDate(in: collection),
-                    thumbnailList: [],
-                    estimateCount: estimateAlbumCount(in: collection),
-                    albumType: .folder
-                )
-                albumList.append(album)
-            }
+            let album = self.toAlbum(collection)
+            albumList.append(album)
         }
         
         // 최신순으로 정렬 후 반환
         return albumList.sorted { $0.creationDate > $1.creationDate }
+    }
+    
+    /// 폴더로 부터 앨범 리스트를 반환합니다.
+    public func fetchAlbumList(from folder: Album) -> [Album] {
+        guard let phFolder = fetchFolder(from: folder.id) else { return [] }
+        let collectionFetchResult = PHAssetCollection.fetchCollections(in: phFolder, options: nil)
+        self.collectionFetchResult = collectionFetchResult
+        
+        var albumList = [Album]()
+        collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
+            guard let self else { return }
+            let album = self.toAlbum(collection)
+            albumList.append(album)
+        }
+        return albumList
     }
     
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
@@ -503,6 +494,36 @@ extension PhotoKitService {
         }
         
         return assetIdentifiers.compactMap { assetMap[$0]}
+    }
+    
+    /// PHCollection 타입을 Album으로 변환합니다.
+    private func toAlbum(_ collection: PHCollection) -> Album {
+        
+        // 앨범의 경우
+        if let album = collection as? PHAssetCollection {
+            let album = Album(
+                id: album.localIdentifier,
+                title: album.localizedTitle ?? "",
+                creationDate: album.startDate ?? .now,
+                thumbnailList: [],
+                estimateCount: album.estimatedAssetCount,
+                albumType: .album
+            )
+            return album
+        }
+        
+        // 폴더의 경우
+        else {
+            let folder = Album(
+                id: collection.localIdentifier,
+                title: collection.localizedTitle ?? "",
+                creationDate: folderCreationDate(in: collection),
+                thumbnailList: [],
+                estimateCount: estimateAlbumCount(in: collection),
+                albumType: .folder
+            )
+            return folder
+        }
     }
     
     /// PHAsset을 URL? 타입으로 비동기 반환합니다.

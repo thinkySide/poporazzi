@@ -53,6 +53,22 @@ final class NavigationBar: CodeBaseUI {
     }
 }
 
+extension NavigationBar {
+    
+    enum Action {
+        case updateTitle(String)
+    }
+    
+    func action(_ action: Action) {
+        switch action {
+        case let .updateTitle(title):
+            titleLabel.text = title
+            titleLabel.flex.markDirty()
+            containerView.flex.layout()
+        }
+    }
+}
+
 // MARK: - Layout
 
 extension NavigationBar {

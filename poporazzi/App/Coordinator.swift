@@ -80,7 +80,10 @@ final class Coordinator: NSObject {
                 case .presentPermissionRequestModal:
                     owner.presentPermissionRequestModal(myAlbumListVM)
                     
-                case let .pushMyAlbum(album):
+                case let .pushFolderList(album):
+                    owner.pushFolderList(album)
+                    
+                case let .pushAlbumDetail(album):
                     owner.pushAlbumDetail(album)
                 }
             }
@@ -387,6 +390,22 @@ extension Coordinator {
                 }
             }
             .disposed(by: albumDetailVM.disposeBag)
+    }
+    
+    /// 폴더 리스트 화면으로 Push 합니다.
+    private func pushFolderList(_ album: Album) {
+        let folderListVM = FolderListViewModel(output: .init(folder: .init(value: album)))
+        let folderListVC = FolderListViewController(viewModel: folderListVM)
+        navigationController.pushViewController(folderListVC, animated: true)
+        
+        folderListVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                }
+            }
+            .disposed(by: folderListVM.disposeBag)
     }
 }
 

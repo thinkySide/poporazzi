@@ -47,7 +47,8 @@ extension MyAlbumListViewModel {
     
     enum Navigation {
         case presentPermissionRequestModal
-        case pushMyAlbum(Album)
+        case pushFolderList(Album)
+        case pushAlbumDetail(Album)
     }
     
     enum Delegate {
@@ -90,7 +91,10 @@ extension MyAlbumListViewModel {
         input.albumCellSelected
             .emit(with: self) { owner, indexPath in
                 let album = owner.albumList[indexPath.row]
-                owner.navigation.accept(.pushMyAlbum(album))
+                switch album.albumType {
+                case .album: owner.navigation.accept(.pushAlbumDetail(album))
+                case .folder: owner.navigation.accept(.pushFolderList(album))
+                }
             }
             .disposed(by: disposeBag)
         

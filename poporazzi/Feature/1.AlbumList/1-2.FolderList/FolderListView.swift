@@ -14,7 +14,9 @@ final class FolderListView: CodeBaseUI {
     var containerView = UIView()
     
     /// NavigationBar
-    private lazy var navigationBar = NavigationBar()
+    private lazy var navigationBar = NavigationBar(leading: backButton)
+    
+    let backButton = NavigationButton(buttonType: .back)
     
     let albumCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
@@ -40,7 +42,7 @@ final class FolderListView: CodeBaseUI {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        containerView.pin.all(pin.safeArea)
+        containerView.pin.top(pin.safeArea).horizontally().bottom()
         containerView.flex.layout()
     }
 }
@@ -50,11 +52,14 @@ final class FolderListView: CodeBaseUI {
 extension FolderListView {
     
     enum Action {
-        
+        case setTitle(String)
     }
     
     func action(_ action: Action) {
-        
+        switch action {
+        case let .setTitle(title):
+            navigationBar.action(.updateTitle(title))
+        }
     }
 }
 
@@ -66,8 +71,8 @@ extension FolderListView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem().grow(1).define { flex in
-                flex.addItem(albumCollectionView).position(.absolute).top(0).horizontally(0).bottom(38)
+            flex.addItem().grow(1).marginTop(16).define { flex in
+                flex.addItem(albumCollectionView).position(.absolute).all(0)
             }
         }
     }
