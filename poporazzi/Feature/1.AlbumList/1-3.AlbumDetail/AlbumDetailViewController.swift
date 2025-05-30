@@ -184,9 +184,8 @@ extension AlbumDetailViewController {
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
-        let validList = mediaList.filter { snapshot.itemIdentifiers.contains($0) }
-        snapshot.reloadItems(validList)
-        dataSource.apply(snapshot, animatingDifferences: true)
+        snapshot.reconfigureItems(mediaList)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
 

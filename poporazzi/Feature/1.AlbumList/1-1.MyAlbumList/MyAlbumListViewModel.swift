@@ -66,7 +66,9 @@ extension MyAlbumListViewModel {
             output.viewDidRefresh.asSignal(),
             photoKitService.photoLibraryCollectionChange
         )
-        .emit(with: self) { owner, _ in
+        .asObservable()
+        .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+        .bind(with: self) { owner, _ in
             do {
                 let albumList = try owner.photoKitService.fetchAllAlbumList()
                 owner.output.albumList.accept(albumList)
@@ -78,6 +80,7 @@ extension MyAlbumListViewModel {
         
         output.albumList
             .withUnretained(self)
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
             .bind(with: self) { owner, albumList in
                 let thumbnailList = Dictionary(uniqueKeysWithValues: albumList.map {

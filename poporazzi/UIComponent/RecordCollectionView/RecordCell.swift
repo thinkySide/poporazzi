@@ -78,6 +78,7 @@ final class RecordCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        containerView.clipsToBounds = true
         contentView.addSubview(containerView)
         contentView.addSubview(defaultoverlay)
         contentView.addSubview(selectOverlay)
@@ -136,7 +137,7 @@ extension RecordCell {
             if let image {
                 self.thumbnail.image = image
             } else {
-                self.backgroundColor = .brandTertiary
+                containerView.backgroundColor = .brandTertiary
             }
             
             switch media.mediaType {
@@ -162,7 +163,7 @@ extension RecordCell {
     
     func configLayout() {
         let cornerRadius: CGFloat = 8
-        containerView.flex.define { flex in
+        containerView.flex.cornerRadius(cornerRadius).define { flex in
             flex.addItem(thumbnail).cornerRadius(cornerRadius).grow(1)
             flex.addItem(checkIcon).position(.absolute).top(8).left(8)
         }

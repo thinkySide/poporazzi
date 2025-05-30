@@ -71,9 +71,10 @@ extension FolderListViewModel {
             .withUnretained(self)
             .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
             .bind(with: self) { owner, albumList in
-                let thumbnailList = Dictionary(uniqueKeysWithValues: albumList.map {
-                    ($0.id, $0.thumbnailList)
-                })
+                var thumbnailList = owner.thumbnailList
+                for album in albumList {
+                    thumbnailList.updateValue(album.thumbnailList, forKey: album.id)
+                }
                 owner.output.thumbnailList.accept(thumbnailList)
                 owner.output.updateThumbnail.accept(albumList.map(\.id))
             }

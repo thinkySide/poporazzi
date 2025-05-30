@@ -105,8 +105,32 @@ extension AlbumDetailViewModel {
     
     func transform(_ input: Input) -> Output {
         
-        // 이미지 불러오기(페이지네이션)
+        // 기본 이미지 불러오기
+        output.viewDidRefresh
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .withUnretained(self)
+            .map { owner, _ in
+                owner.paginationManager.reset()
+                return (owner, owner.paginationManager.paginationList(from: owner.mediaList))
+            }
+            .flatMap { owner, paginationList in
+                owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: paginationList.map(\.id),
+                    option: .normal
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                var thumbnailList = owner.thumbnailList
+                for media in mediaList {
+                    thumbnailList.updateValue(media.thumbnail, forKey: media)
+                }
+                owner.output.thumbnailList.accept(thumbnailList)
+            }
+            .disposed(by: disposeBag)
+        
+        // 페이지네이션 이미지 불러오기
         output.pagination
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .map { owner, _ in
                 (owner, owner.paginationManager.paginationList(from: owner.mediaList))
@@ -118,33 +142,29 @@ extension AlbumDetailViewModel {
                 )
             }
             .bind(with: self) { owner, mediaList in
-                let thumbnailList = Dictionary(uniqueKeysWithValues: mediaList.map {
-                    ($0, $0.thumbnail)
-                })
-                var lastThumnailList = owner.thumbnailList
-                lastThumnailList.merge(thumbnailList) { $1 }
-                owner.output.thumbnailList.accept(lastThumnailList)
+                var thumbnailList = owner.thumbnailList
+                for media in mediaList {
+                    thumbnailList.updateValue(media.thumbnail, forKey: media)
+                }
+                owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
         
         // 미디어 리스트 정보만 불러오기
-        Signal.merge(
-            input.viewDidLoad,
-            output.viewDidRefresh.asSignal(),
-            photoKitService.photoLibraryAssetChange
-        )
-        .emit(with: self) { owner, _ in
-            let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
-            owner.output.mediaList.accept(mediaList)
-            
-            let startDate = owner.album.creationDate
-            let sectionMediaList = mediaList.toSectionMediaList(startDate: startDate)
-            owner.output.sectionMediaList.accept(sectionMediaList)
-            
-            owner.paginationManager.reset()
-            owner.output.pagination.accept(())
-        }
-        .disposed(by: disposeBag)
+        photoKitService.photoLibraryAssetChange
+            .asObservable()
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, _ in
+                let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
+                owner.output.mediaList.accept(mediaList)
+                
+                let startDate = owner.album.creationDate
+                let sectionMediaList = mediaList.toSectionMediaList(startDate: startDate)
+                owner.output.sectionMediaList.accept(sectionMediaList)
+                
+                owner.output.viewDidRefresh.accept(())
+            }
+            .disposed(by: disposeBag)
         
         // 현재 보이는 IndexPath를 기준으로 페이지네이션 여부 결정
         input.willDisplayIndexPath

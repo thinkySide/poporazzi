@@ -96,34 +96,39 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
-        output.viewDidRefresh
-            .bind(with: self) { owner, _ in
-                do {
-                    let index = owner.output.currentRow.value
-                    owner.output.initialRow.accept(index)
-                    owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
-                    owner.output.updateCountInfo.accept((index, owner.mediaList.count))
-                    
-                    let media = owner.mediaList[index]
-                    let creationDate = media.creationDate ?? .now
-                    let dayCount = owner.days(from: creationDate)
-                    owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
-                    
-                    let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
-                    owner.mediaListWithImage(from: fetchMediaList)
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind(to: owner.output.updateMediaList)
-                        .disposed(by: owner.disposeBag)
-                } catch {
-                    print(error)
-                }
+        Signal.merge(
+            output.viewDidRefresh.asSignal(),
+            photoKitService.photoLibraryAssetChange
+        )
+        .asObservable()
+        .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+        .bind(with: self) { owner, _ in
+            do {
+                let index = owner.output.currentRow.value
+                owner.output.initialRow.accept(index)
+                owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
+                owner.output.updateCountInfo.accept((index, owner.mediaList.count))
+                
+                let media = owner.mediaList[index]
+                let creationDate = media.creationDate ?? .now
+                let dayCount = owner.days(from: creationDate)
+                owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
+                
+                let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
+                owner.mediaListWithImage(from: fetchMediaList)
+                    .observe(on: MainScheduler.asyncInstance)
+                    .bind(to: owner.output.updateMediaList)
+                    .disposed(by: owner.disposeBag)
+            } catch {
+                print(error)
             }
-            .disposed(by: disposeBag)
+        }
+        .disposed(by: disposeBag)
         
         input.currentIndex
             .asObservable()
             .distinctUntilChanged()
-            .observe(on: MainScheduler.asyncInstance)
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, index in
                 let mediaList = owner.output.mediaList.value
                 var media = mediaList[index]
@@ -155,13 +160,6 @@ extension DetailViewModel {
             .distinctUntilChanged()
             .emit(with: self) { owner, point in
                 owner.navigation.accept(.dismiss)
-            }
-            .disposed(by: disposeBag)
-        
-        photoKitService.photoLibraryAssetChange
-            .asObservable()
-            .bind(with: self) { owner, _ in
-                owner.output.viewDidRefresh.accept(())
             }
             .disposed(by: disposeBag)
         
