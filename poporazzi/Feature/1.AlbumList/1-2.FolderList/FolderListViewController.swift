@@ -50,9 +50,9 @@ extension FolderListViewController {
         dataSource = UICollectionViewDiffableDataSource<AlbumSection, Album>(collectionView: scene.albumCollectionView) {
             [weak self] (collectionView, indexPath, album) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: MyAlbumListCell.identifier,
+                withReuseIdentifier: FolderListCell.identifier,
                 for: indexPath
-            ) as? MyAlbumListCell else { return nil }
+            ) as? FolderListCell else { return nil }
             
             if let thumbnailList = self.viewModel.thumbnailList[album.id] {
                 cell.action(.setAlbum(album, thumbnailList))

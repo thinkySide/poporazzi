@@ -21,12 +21,12 @@ final class FolderListView: CodeBaseUI {
     let albumCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: CollectionViewLayout.albumTwoColumns
+            collectionViewLayout: CollectionViewLayout.folderListLayout
         )
         collectionView.backgroundColor = .white
         collectionView.register(
-            MyAlbumListCell.self,
-            forCellWithReuseIdentifier: MyAlbumListCell.identifier
+            FolderListCell.self,
+            forCellWithReuseIdentifier: FolderListCell.identifier
         )
         return collectionView
     }()
@@ -71,7 +71,7 @@ extension FolderListView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem().grow(1).marginTop(16).define { flex in
+            flex.addItem().grow(1).marginTop(8).define { flex in
                 flex.addItem(albumCollectionView).position(.absolute).all(0)
             }
         }

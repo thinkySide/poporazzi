@@ -21,7 +21,7 @@ final class MyAlbumListView: CodeBaseUI {
     let albumCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: CollectionViewLayout.albumTwoColumns
+            collectionViewLayout: CollectionViewLayout.myAlbumListLayout
         )
         collectionView.backgroundColor = .white
         collectionView.register(
