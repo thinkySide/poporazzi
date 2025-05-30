@@ -1,5 +1,5 @@
 //
-//  MyAlbumView.swift
+//  AlbumDetailView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/27/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class MyAlbumView: CodeBaseUI {
+final class AlbumDetailView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -89,7 +89,7 @@ final class MyAlbumView: CodeBaseUI {
 
 // MARK: - Action
 
-extension MyAlbumView {
+extension AlbumDetailView {
     
     enum Action {
         case toggleSelectMode(Bool)
@@ -138,7 +138,7 @@ extension MyAlbumView {
 
 // MARK: - Layout
 
-extension MyAlbumView {
+extension AlbumDetailView {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in

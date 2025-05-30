@@ -1,5 +1,5 @@
 //
-//  AlbumListViewModel.swift
+//  MyAlbumListViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/23/25.
@@ -9,7 +9,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class AlbumListViewModel: ViewModel {
+final class MyAlbumListViewModel: ViewModel {
     
     @Dependency(\.photoKitService) var photoKitService
     
@@ -30,7 +30,7 @@ final class AlbumListViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension AlbumListViewModel {
+extension MyAlbumListViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -57,7 +57,7 @@ extension AlbumListViewModel {
 
 // MARK: - Transform
 
-extension AlbumListViewModel {
+extension MyAlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
         Signal.merge(
@@ -109,7 +109,7 @@ extension AlbumListViewModel {
 
 // MARK: - Syntax Sugar
 
-extension AlbumListViewModel {
+extension MyAlbumListViewModel {
     
     var albumList: [Album] {
         output.albumList.value

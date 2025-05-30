@@ -1,5 +1,5 @@
 //
-//  AlbumListViewController.swift
+//  MyAlbumListViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/23/25.
@@ -9,15 +9,15 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class AlbumListViewController: ViewController {
+final class MyAlbumListViewController: ViewController {
     
-    private let scene = AlbumListView()
-    private let viewModel: AlbumListViewModel
+    private let scene = MyAlbumListView()
+    private let viewModel: MyAlbumListViewModel
     let disposeBag = DisposeBag()
     
     private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
     
-    init(viewModel: AlbumListViewModel) {
+    init(viewModel: MyAlbumListViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -49,16 +49,16 @@ enum AlbumSection: Hashable, Comparable {
 
 // MARK: - UICollectionViewDiffableDataSource
 
-extension AlbumListViewController {
+extension MyAlbumListViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<AlbumSection, Album>(collectionView: scene.albumCollectionView) {
             [weak self] (collectionView, indexPath, album) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: AlbumCell.identifier,
+                withReuseIdentifier: MyAlbumListCell.identifier,
                 for: indexPath
-            ) as? AlbumCell else { return nil }
+            ) as? MyAlbumListCell else { return nil }
             
             if let thumbnailList = self.viewModel.thumbnailList[album.id] {
                 cell.action(.setAlbum(album, thumbnailList))
@@ -89,10 +89,10 @@ extension AlbumListViewController {
 
 // MARK: - Binding
 
-extension AlbumListViewController {
+extension MyAlbumListViewController {
     
     func bind() {
-        let input = AlbumListViewModel.Input(
+        let input = MyAlbumListViewModel.Input(
             viewDidLoad: .just(()),
             albumCellSelected: scene.albumCollectionView.rx.itemSelected.asSignal()
         )

@@ -1,5 +1,5 @@
 //
-//  AlbumCell.swift
+//  MyAlbumListCell.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/23/25.
@@ -9,9 +9,9 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class AlbumCell: UICollectionViewCell {
+final class MyAlbumListCell: UICollectionViewCell {
     
-    static let identifier = "AlbumCell"
+    static let identifier = "MyAlbumListCell"
     
     var containerView = UIView()
     
@@ -95,7 +95,7 @@ final class AlbumCell: UICollectionViewCell {
 
 // MARK: - Action
 
-extension AlbumCell {
+extension MyAlbumListCell {
     
     enum Action {
         case setAlbum(Album, [UIImage?])
@@ -143,7 +143,7 @@ extension AlbumCell {
 
 // MARK: - Layout
 
-extension AlbumCell {
+extension MyAlbumListCell {
     
     func configLayout() {
         containerView.flex.define { flex in
