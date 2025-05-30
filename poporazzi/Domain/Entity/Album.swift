@@ -19,8 +19,11 @@ struct Album: Hashable, Equatable {
     /// 생성일
     var creationDate: Date
     
-    /// 썸네일
-    var thumbnail: UIImage?
+    /// 썸네일 리스트
+    ///
+    /// - 앨범의 경우 1개
+    /// - 폴더의 경우 최대 4개
+    var thumbnailList: [UIImage?]
     
     /// 추정 개수
     ///
@@ -52,6 +55,5 @@ extension Album {
     
     static func == (lhs: Album, rhs: Album) -> Bool {
         lhs.id == rhs.id
-        && lhs.thumbnail != rhs.thumbnail
     }
 }

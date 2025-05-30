@@ -1,5 +1,5 @@
 //
-//  MyAlbumViewController.swift
+//  AlbumDetailViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/27/25.
@@ -9,17 +9,17 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class MyAlbumViewController: ViewController {
+final class AlbumDetailViewController: ViewController {
     
-    private let scene = MyAlbumView()
-    private let viewModel: MyAlbumViewModel
+    private let scene = AlbumDetailView()
+    private let viewModel: AlbumDetailViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
     
     let event = Event()
     let disposeBag = DisposeBag()
     
-    init(viewModel: MyAlbumViewModel) {
+    init(viewModel: AlbumDetailViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -48,7 +48,7 @@ final class MyAlbumViewController: ViewController {
 
 // MARK: - Event
 
-extension MyAlbumViewController {
+extension AlbumDetailViewController {
     
     struct Event {
         let willDisplayIndexPath = PublishRelay<IndexPath>()
@@ -58,7 +58,7 @@ extension MyAlbumViewController {
 
 // MARK: - UICollectionView
 
-extension MyAlbumViewController {
+extension AlbumDetailViewController {
     
     /// CollectionView를 세팅합니다.
     private func setupCollectionView() {
@@ -105,7 +105,7 @@ extension MyAlbumViewController {
 
 // MARK: - UICollectionViewDiffableDataSource
 
-extension MyAlbumViewController {
+extension AlbumDetailViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
@@ -192,7 +192,7 @@ extension MyAlbumViewController {
 
 // MARK: - UICollectionViewDelegate
 
-extension MyAlbumViewController: UICollectionViewDelegate {
+extension AlbumDetailViewController: UICollectionViewDelegate {
     
     /// 선택된 IndexPath의 Context Menu를 설정합니다.
     func collectionView(
@@ -213,10 +213,10 @@ extension MyAlbumViewController: UICollectionViewDelegate {
 
 // MARK: - Binding
 
-extension MyAlbumViewController {
+extension AlbumDetailViewController {
     
     func bind() {
-        let input = MyAlbumViewModel.Input(
+        let input = AlbumDetailViewModel.Input(
             viewDidLoad: .just(()),
             willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
             cellSelected: scene.mediaCollectionView.rx.itemSelected.asSignal(),

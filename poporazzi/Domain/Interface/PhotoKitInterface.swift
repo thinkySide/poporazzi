@@ -35,6 +35,9 @@ protocol PhotoKitInterface {
     /// 앨범 리스트를 반환합니다.
     func fetchAllAlbumList() throws -> [Album]
     
+    /// 폴더로 부터 앨범 리스트를 반환합니다.
+    func fetchAlbumList(from folder: Album) -> [Album]
+    
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
     func fetchAlbumListWithThumbnail(from albumList: [Album]) -> Observable<[Album]>
     

@@ -94,7 +94,7 @@ extension PhotoKitService {
 
 extension PhotoKitService {
     
-    /// 앨범 리스트를 반환합니다.
+    /// 전체 앨범 리스트를 반환합니다.
     public func fetchAllAlbumList() throws -> [Album] {
         
         // 권한 확인
@@ -110,34 +110,27 @@ extension PhotoKitService {
         var albumList = [Album]()
         collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
             guard let self else { return }
-            
-            // 앨범의 경우
-            if let album = collection as? PHAssetCollection {
-                let album = Album(
-                    id: album.localIdentifier,
-                    title: album.localizedTitle ?? "",
-                    creationDate: album.startDate ?? .now,
-                    estimateCount: album.estimatedAssetCount,
-                    albumType: .album
-                )
-                albumList.append(album)
-            }
-            
-            // 폴더의 경우
-            else {
-                let album = Album(
-                    id: collection.localIdentifier,
-                    title: collection.localizedTitle ?? "",
-                    creationDate: folderCreationDate(in: collection),
-                    estimateCount: estimateAlbumCount(in: collection),
-                    albumType: .folder
-                )
-                albumList.append(album)
-            }
+            let album = self.toAlbum(collection)
+            albumList.append(album)
         }
         
         // 최신순으로 정렬 후 반환
         return albumList.sorted { $0.creationDate > $1.creationDate }
+    }
+    
+    /// 폴더로 부터 앨범 리스트를 반환합니다.
+    public func fetchAlbumList(from folder: Album) -> [Album] {
+        guard let phFolder = fetchFolder(from: folder.id) else { return [] }
+        let collectionFetchResult = PHAssetCollection.fetchCollections(in: phFolder, options: nil)
+        self.collectionFetchResult = collectionFetchResult
+        
+        var albumList = [Album]()
+        collectionFetchResult.enumerateObjects { [weak self] collection, _, _ in
+            guard let self else { return }
+            let album = self.toAlbum(collection)
+            albumList.append(album)
+        }
+        return albumList
     }
     
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
@@ -157,16 +150,34 @@ extension PhotoKitService {
                         guard let assetCollection = self.fetchAlbum(from: album.id) else { return }
                         let assetResult = self.assetResult(from: assetCollection)
                         let thumbnail = await self.thumbnail(from: assetResult)
-                        albumList[index].thumbnail = thumbnail
+                        albumList[index].thumbnailList = [thumbnail]
                     }
                     
                     // 폴더의 경우
                     else if album.albumType == .folder {
-                        guard let collection = self.fetchFolder(from: album.id),
-                              let assetCollection = self.fetchAlbum(from: collection) else { return }
-                        let assetResult = self.assetResult(from: assetCollection)
-                        let thumbnail = await self.thumbnail(from: assetResult)
-                        albumList[index].thumbnail = thumbnail
+                        guard let collection = self.fetchFolder(from: album.id) else { return }
+                        let assetCollectionList = self.fetchAlbumList(from: collection)
+                        
+                        // 폴더 썸네일 최대 4개 패치
+                        let thumbnailList: [UIImage?] = await withTaskGroup(of: (Int, UIImage?).self) { group in
+                            for (index, assetCollection) in assetCollectionList.enumerated() {
+                                group.addTask {
+                                    let assetResult = self.assetResult(from: assetCollection)
+                                    let thumbnail = await self.thumbnail(from: assetResult)
+                                    return (index, thumbnail)
+                                }
+                            }
+                            
+                            var result = [(Int, UIImage?)]()
+                            for await item in group {
+                                guard result.count <= 4 else { break }
+                                result.append(item)
+                            }
+                            
+                            return result.sorted { $0.0 < $1.0 }.map(\.1)
+                        }
+                        
+                        albumList[index].thumbnailList = thumbnailList
                     }
                 }
                 
@@ -485,6 +496,36 @@ extension PhotoKitService {
         return assetIdentifiers.compactMap { assetMap[$0]}
     }
     
+    /// PHCollection 타입을 Album으로 변환합니다.
+    private func toAlbum(_ collection: PHCollection) -> Album {
+        
+        // 앨범의 경우
+        if let album = collection as? PHAssetCollection {
+            let album = Album(
+                id: album.localIdentifier,
+                title: album.localizedTitle ?? "",
+                creationDate: album.startDate ?? .now,
+                thumbnailList: [],
+                estimateCount: album.estimatedAssetCount,
+                albumType: .album
+            )
+            return album
+        }
+        
+        // 폴더의 경우
+        else {
+            let folder = Album(
+                id: collection.localIdentifier,
+                title: collection.localizedTitle ?? "",
+                creationDate: folderCreationDate(in: collection),
+                thumbnailList: [],
+                estimateCount: estimateAlbumCount(in: collection),
+                albumType: .folder
+            )
+            return folder
+        }
+    }
+    
     /// PHAsset을 URL? 타입으로 비동기 반환합니다.
     private func toShareItem(from asset: PHAsset) async -> Any? {
         
@@ -550,6 +591,17 @@ extension PhotoKitService {
     /// 앨범을 반환합니다.
     private func fetchAlbum(from collection: PHCollectionList) -> PHAssetCollection? {
         PHCollection.fetchCollections(in: collection, options: nil).firstObject as? PHAssetCollection
+    }
+    
+    /// 앨범 리스트를 반환합니다.
+    private func fetchAlbumList(from collection: PHCollectionList) -> [PHAssetCollection] {
+        var assetCollections = [PHAssetCollection]()
+        PHCollection.fetchCollections(in: collection, options: nil).enumerateObjects { collection, _, _ in
+            if let album = collection as? PHAssetCollection {
+                assetCollections.append(album)
+            }
+        }
+        return assetCollections
     }
 }
 

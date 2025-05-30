@@ -24,8 +24,8 @@ final class Coordinator: NSObject {
     
     /// 진입 화면을 설정합니다.
     func start() {
-        let albumListVM = AlbumListViewModel(output: .init())
-        let albumListVC = AlbumListViewController(viewModel: albumListVM)
+        let myAlbumListVM = MyAlbumListViewModel(output: .init())
+        let myAlbumListVC = MyAlbumListViewController(viewModel: myAlbumListVM)
         
         let albumId = UserDefaultsService.trackingAlbumId
         let selectedTab: Tab = albumId.isEmpty ? .albumList : .record(isTracking: true)
@@ -51,7 +51,7 @@ final class Coordinator: NSObject {
         guard let mainViewModel else { return }
         
         let mainVC = MainViewController(
-            viewControllers: [albumListVC, recordVC, settingsVC],
+            viewControllers: [myAlbumListVC, recordVC, settingsVC],
             selectedTab: selectedTab,
             viewModel: mainViewModel
         )
@@ -62,26 +62,29 @@ final class Coordinator: NSObject {
         navigationController.interactivePopGestureRecognizer?.delegate = self
         
         mainViewModel.navigation
-            .bind(with: self) { [weak albumListVM, weak recordVM] owner, path in
+            .bind(with: self) { [weak myAlbumListVM, weak recordVM] owner, path in
                 switch path {
                 case .presentTitleInput:
                     owner.presentTitleInput(recordVM)
                     
                 case .presentAuthRequestModal:
-                    owner.presentPermissionRequestModal(albumListVM)
+                    owner.presentPermissionRequestModal(myAlbumListVM)
                 }
             }
             .disposed(by: mainVC.disposeBag)
         
-        albumListVM.navigation
+        myAlbumListVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { [weak albumListVM] owner, path in
+            .bind(with: self) { [weak myAlbumListVM] owner, path in
                 switch path {
                 case .presentPermissionRequestModal:
-                    owner.presentPermissionRequestModal(albumListVM)
+                    owner.presentPermissionRequestModal(myAlbumListVM)
                     
-                case let .pushMyAlbum(album):
-                    owner.pushMyAlbum(album)
+                case let .pushFolderList(album):
+                    owner.pushFolderList(album)
+                    
+                case let .pushAlbumDetail(album):
+                    owner.pushAlbumDetail(album)
                 }
             }
             .disposed(by: mainVC.disposeBag)
@@ -358,19 +361,19 @@ extension Coordinator {
     }
 }
 
-// MARK: - AlbumList Flow
+// MARK: - My Album List Flow
 
 extension Coordinator {
     
-    /// MyAlbum 화면으로 Push 합니다.
-    private func pushMyAlbum(_ album: Album) {
-        let myAlbumVM = MyAlbumViewModel(output: .init(album: .init(value: album)))
-        let myAlbumVC = MyAlbumViewController(viewModel: myAlbumVM)
-        navigationController.pushViewController(myAlbumVC, animated: true)
+    /// 앨범 상세보기 화면으로 Push 합니다.
+    private func pushAlbumDetail(_ album: Album) {
+        let albumDetailVM = AlbumDetailViewModel(output: .init(album: .init(value: album)))
+        let albumDetailVC = AlbumDetailViewController(viewModel: albumDetailVM)
+        navigationController.pushViewController(albumDetailVC, animated: true)
         
-        myAlbumVM.navigation
+        albumDetailVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak albumDetailVC] owner, path in
                 switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
@@ -383,10 +386,32 @@ extension Coordinator {
                         activityItems: shareItemList,
                         applicationActivities: nil
                     )
-                    myAlbumVC.present(activityController, animated: true)
+                    albumDetailVC?.present(activityController, animated: true)
                 }
             }
-            .disposed(by: myAlbumVC.disposeBag)
+            .disposed(by: albumDetailVM.disposeBag)
+    }
+    
+    /// 폴더 리스트 화면으로 Push 합니다.
+    private func pushFolderList(_ album: Album) {
+        let folderListVM = FolderListViewModel(output: .init(folder: .init(value: album)))
+        let folderListVC = FolderListViewController(viewModel: folderListVM)
+        navigationController.pushViewController(folderListVC, animated: true)
+        
+        folderListVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case let .pushFolderList(album):
+                    owner.pushFolderList(album)
+                    
+                case let .pushAlbumDetail(album):
+                    owner.pushAlbumDetail(album)
+                }
+            }
+            .disposed(by: folderListVM.disposeBag)
     }
 }
 
@@ -395,7 +420,7 @@ extension Coordinator {
 extension Coordinator {
     
     /// 사진 보관함 권한 요청 모달을 Present합니다.
-    private func presentPermissionRequestModal(_ albumListVM: AlbumListViewModel?) {
+    private func presentPermissionRequestModal(_ myAlbumListVM: MyAlbumListViewModel?) {
         let permissionRequestVM = PermissionRequestModalViewModel(output: .init())
         let permissionRequestVC = PermissionRequestModalViewController(viewModel: permissionRequestVM)
         permissionRequestVC.isModalInPresentation = true
@@ -409,7 +434,7 @@ extension Coordinator {
                 switch path {
                 case .dismiss:
                     owner.navigationController.dismiss(animated: true)
-                    albumListVM?.delegate.accept(.permissionAuthorized)
+                    myAlbumListVM?.delegate.accept(.permissionAuthorized)
                 }
             }
             .disposed(by: permissionRequestVC.disposeBag)

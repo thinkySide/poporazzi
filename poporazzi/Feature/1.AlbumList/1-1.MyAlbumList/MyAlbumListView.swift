@@ -1,5 +1,5 @@
 //
-//  AlbumListView.swift
+//  MyAlbumListView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/23/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class AlbumListView: CodeBaseUI {
+final class MyAlbumListView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -21,12 +21,12 @@ final class AlbumListView: CodeBaseUI {
     let albumCollectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: CollectionViewLayout.albumTwoColumns
+            collectionViewLayout: CollectionViewLayout.myAlbumListLayout
         )
         collectionView.backgroundColor = .white
         collectionView.register(
-            AlbumCell.self,
-            forCellWithReuseIdentifier: AlbumCell.identifier
+            MyAlbumListCell.self,
+            forCellWithReuseIdentifier: MyAlbumListCell.identifier
         )
         return collectionView
     }()
@@ -49,7 +49,7 @@ final class AlbumListView: CodeBaseUI {
 
 // MARK: - Action
 
-extension AlbumListView {
+extension MyAlbumListView {
     
     enum Action {
         
@@ -62,7 +62,7 @@ extension AlbumListView {
 
 // MARK: - Layout
 
-extension AlbumListView {
+extension MyAlbumListView {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in

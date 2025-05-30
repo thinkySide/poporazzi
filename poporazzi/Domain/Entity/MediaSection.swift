@@ -16,7 +16,7 @@ enum MediaSection: Hashable, Comparable {
     var dateFormat: String {
         switch self {
         case let .day(order, date):
-            "\(order)일차 - \(date.albumFormat)"
+            "\(order)일차"
         }
     }
     

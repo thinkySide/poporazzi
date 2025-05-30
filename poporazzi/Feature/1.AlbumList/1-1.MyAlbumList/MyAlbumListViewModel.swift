@@ -1,5 +1,5 @@
 //
-//  AlbumListViewModel.swift
+//  MyAlbumListViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/23/25.
@@ -9,7 +9,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class AlbumListViewModel: ViewModel {
+final class MyAlbumListViewModel: ViewModel {
     
     @Dependency(\.photoKitService) var photoKitService
     
@@ -30,7 +30,7 @@ final class AlbumListViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension AlbumListViewModel {
+extension MyAlbumListViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -39,13 +39,16 @@ extension AlbumListViewModel {
     
     struct Output {
         let albumList = BehaviorRelay<[Album]>(value: [])
-        let updateThumbnail = BehaviorRelay<[Album]>(value: [])
+        let thumbnailList = BehaviorRelay<[String: [UIImage?]]>(value: [:])
+        
+        let updateThumbnail = PublishRelay<[String]>()
         let viewDidRefresh = PublishRelay<Void>()
     }
     
     enum Navigation {
         case presentPermissionRequestModal
-        case pushMyAlbum(Album)
+        case pushFolderList(Album)
+        case pushAlbumDetail(Album)
     }
     
     enum Delegate {
@@ -55,7 +58,7 @@ extension AlbumListViewModel {
 
 // MARK: - Transform
 
-extension AlbumListViewModel {
+extension MyAlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
         Signal.merge(
@@ -77,14 +80,21 @@ extension AlbumListViewModel {
             .withUnretained(self)
             .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
             .bind(with: self) { owner, albumList in
-                owner.output.updateThumbnail.accept(albumList)
+                let thumbnailList = Dictionary(uniqueKeysWithValues: albumList.map {
+                    ($0.id, $0.thumbnailList)
+                })
+                owner.output.thumbnailList.accept(thumbnailList)
+                owner.output.updateThumbnail.accept(albumList.map(\.id))
             }
             .disposed(by: disposeBag)
         
         input.albumCellSelected
             .emit(with: self) { owner, indexPath in
-                let album = owner.output.albumList.value[indexPath.row]
-                owner.navigation.accept(.pushMyAlbum(album))
+                let album = owner.albumList[indexPath.row]
+                switch album.albumType {
+                case .album: owner.navigation.accept(.pushAlbumDetail(album))
+                case .folder: owner.navigation.accept(.pushFolderList(album))
+                }
             }
             .disposed(by: disposeBag)
         
@@ -98,5 +108,18 @@ extension AlbumListViewModel {
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Syntax Sugar
+
+extension MyAlbumListViewModel {
+    
+    var albumList: [Album] {
+        output.albumList.value
+    }
+    
+    var thumbnailList: [String: [UIImage?]] {
+        output.thumbnailList.value
     }
 }

@@ -1,5 +1,5 @@
 //
-//  MyAlbumViewModel.swift
+//  AlbumDetailViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/27/25.
@@ -9,13 +9,13 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class MyAlbumViewModel: ViewModel {
+final class AlbumDetailViewModel: ViewModel {
     
     @Dependency(\.photoKitService) private var photoKitService
     
     private let paginationManager = PaginationManager(pageSize: 100, threshold: 10)
     
-    private let disposeBag = DisposeBag()
+    let disposeBag = DisposeBag()
     private let output: Output
     
     
@@ -35,7 +35,7 @@ final class MyAlbumViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension MyAlbumViewModel {
+extension AlbumDetailViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -101,7 +101,7 @@ extension MyAlbumViewModel {
 
 // MARK: - Transform
 
-extension MyAlbumViewModel {
+extension AlbumDetailViewModel {
     
     func transform(_ input: Input) -> Output {
         
@@ -305,7 +305,7 @@ extension MyAlbumViewModel {
                         to: mediaList.map(\.id)
                     )
                     .observe(on: MainScheduler.asyncInstance)
-                    .bind(with: self) { owner, isSuccess in
+                    .bind { isSuccess in
                         owner.cancelSelectMode()
                     }
                     .disposed(by: owner.disposeBag)
@@ -333,7 +333,7 @@ extension MyAlbumViewModel {
 
 // MARK: - Syntax Sugar
 
-extension MyAlbumViewModel {
+extension AlbumDetailViewModel {
     
     var album: Album {
         output.album.value
@@ -368,7 +368,7 @@ extension MyAlbumViewModel {
 
 // MARK: - Helper
 
-extension MyAlbumViewModel {
+extension AlbumDetailViewModel {
     
     /// Section MediaList에서 해당 IndexPath가 몇번째 인덱스인지 반환합니다.
     private func index(
@@ -397,7 +397,7 @@ extension MyAlbumViewModel {
 
 // MARK: - Alert
 
-extension MyAlbumViewModel {
+extension AlbumDetailViewModel {
     
     /// 기록 삭제 실패 Alert
     private var removeFailedAlert: AlertModel {
@@ -411,7 +411,7 @@ extension MyAlbumViewModel {
 
 // MARK: - Menu
 
-extension MyAlbumViewModel {
+extension AlbumDetailViewModel {
     
     /// 더보기 Menu
     var seemoreMenu: [MenuModel] {
@@ -457,7 +457,7 @@ extension MyAlbumViewModel {
 
 // MARK: - Action Sheet
 
-extension MyAlbumViewModel {
+extension AlbumDetailViewModel {
     
     /// 앨범 제외 Action Sheet
     private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {

@@ -1,5 +1,5 @@
 //
-//  AlbumListViewController.swift
+//  MyAlbumListViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/23/25.
@@ -9,18 +9,15 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class AlbumListViewController: ViewController {
+final class MyAlbumListViewController: ViewController {
     
-    private let scene = AlbumListView()
-    private let viewModel: AlbumListViewModel
+    private let scene = MyAlbumListView()
+    private let viewModel: MyAlbumListViewModel
+    let disposeBag = DisposeBag()
     
     private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
     
-    private var imageCache = [String: UIImage?]()
-    
-    let disposeBag = DisposeBag()
-    
-    init(viewModel: AlbumListViewModel) {
+    init(viewModel: MyAlbumListViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -52,22 +49,22 @@ enum AlbumSection: Hashable, Comparable {
 
 // MARK: - UICollectionViewDiffableDataSource
 
-extension AlbumListViewController {
+extension MyAlbumListViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<AlbumSection, Album>(collectionView: scene.albumCollectionView) {
             [weak self] (collectionView, indexPath, album) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: AlbumCell.identifier,
+                withReuseIdentifier: MyAlbumListCell.identifier,
                 for: indexPath
-            ) as? AlbumCell else { return nil }
+            ) as? MyAlbumListCell else { return nil }
             
-            if let cacheThumbnail = self.imageCache[album.id] {
-                cell.action(.setThumbnail(cacheThumbnail))
+            if let thumbnailList = self.viewModel.thumbnailList[album.id] {
+                cell.action(.setAlbum(album, thumbnailList))
+            } else {
+                cell.action(.setAlbum(album, []))
             }
-            
-            cell.action(.setAlbumInfo(album))
             
             return cell
         }
@@ -81,15 +78,10 @@ extension AlbumListViewController {
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    private func updatePaginationDataSource(to albumList: [Album]) {
-        guard !albumList.isEmpty else { return }
-        
-        for album in albumList {
-            imageCache.updateValue(album.thumbnail, forKey: album.id)
-        }
-        
+    private func updatePaginationDataSource(to updateList: [String]) {
+        guard !updateList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
-        let validList = albumList.filter { snapshot.itemIdentifiers.contains($0) }
+        let validList = snapshot.itemIdentifiers.filter { updateList.contains($0.id) }
         snapshot.reloadItems(validList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
@@ -97,10 +89,10 @@ extension AlbumListViewController {
 
 // MARK: - Binding
 
-extension AlbumListViewController {
+extension MyAlbumListViewController {
     
     func bind() {
-        let input = AlbumListViewModel.Input(
+        let input = MyAlbumListViewModel.Input(
             viewDidLoad: .just(()),
             albumCellSelected: scene.albumCollectionView.rx.itemSelected.asSignal()
         )
@@ -115,8 +107,8 @@ extension AlbumListViewController {
         
         output.updateThumbnail
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, albumList in
-                owner.updatePaginationDataSource(to: albumList)
+            .bind(with: self) { owner, updateList in
+                owner.updatePaginationDataSource(to: updateList)
             }
             .disposed(by: disposeBag)
     }
