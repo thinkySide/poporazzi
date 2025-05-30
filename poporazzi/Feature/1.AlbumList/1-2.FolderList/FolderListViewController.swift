@@ -88,6 +88,7 @@ extension FolderListViewController {
     func bind() {
         let input = FolderListViewModel.Input(
             viewDidLoad: .just(()),
+            folderCellSelected: scene.albumCollectionView.rx.itemSelected.asSignal(),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)

@@ -403,6 +403,12 @@ extension Coordinator {
                 switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
+                    
+                case let .pushFolderList(album):
+                    owner.pushFolderList(album)
+                    
+                case let .pushAlbumDetail(album):
+                    owner.pushAlbumDetail(album)
                 }
             }
             .disposed(by: folderListVM.disposeBag)
