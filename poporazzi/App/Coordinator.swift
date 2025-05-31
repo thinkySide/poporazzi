@@ -198,7 +198,7 @@ extension Coordinator {
         
         albumOptionVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak startNavigation] owner, path in
                 switch path {
                 case .pop:
                     startNavigation?.popViewController(animated: true)
