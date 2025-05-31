@@ -196,6 +196,9 @@ extension MediaDetailViewModel {
                     from: [media.id],
                     isFavorite: !media.isFavorite
                 )
+                if !media.isFavorite {
+                    HapticManager.impact(style: .soft)
+                }
             }
             .disposed(by: disposeBag)
         
@@ -324,7 +327,7 @@ extension MediaDetailViewModel {
     private func days(from creationDate: Date) -> Int {
         var startDate = Date()
         switch dataType {
-        case let .album(album): startDate = album.creationDate
+        case .album: return 0
         case let .record(record): startDate = record.startDate
         }
         

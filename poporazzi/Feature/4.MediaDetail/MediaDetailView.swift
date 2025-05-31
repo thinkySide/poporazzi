@@ -109,7 +109,13 @@ extension MediaDetailView {
             mediaCollectionView.isPagingEnabled = true
             
         case let .updateDateLabel(dayCount, date):
-            dayCountLabel.text = "\(dayCount)일차"
+            if dayCount == 0 {
+                dayCountLabel.isHidden = true
+                dateLabel.font = .setDovemayo(15)
+            } else {
+                dayCountLabel.text = "\(dayCount)일차"
+                dateLabel.font = .setDovemayo(14)
+            }
             dateLabel.text = date.detailFormat
             [dayCountLabel, dateLabel].forEach { $0.flex.markDirty() }
             containerView.flex.layout()
