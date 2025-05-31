@@ -1,5 +1,5 @@
 //
-//  DetailViewController.swift
+//  MediaDetailViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/26/25.
@@ -9,29 +9,29 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class DetailViewController: ViewController {
+final class MediaDetailViewController: ViewController {
     
     enum Section {
         case main
     }
     
-    private let scene = DetailView()
-    private let viewModel: DetailViewModel
+    private let scene = MediaDetailView()
+    private let viewModel: MediaDetailViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
-    private var selectedRow = 0
-    private var imageCache = [String: UIImage?]()
+    // private var selectedRow = 0
     
-    /// 현재 바라보고 있는 CollectionView Index
-    private let currentIndexRelay = PublishRelay<Int>()
-
-    /// 현재 스크롤 Offset
-    private let currentScrollOffsetRelay = PublishRelay<CGPoint>()
+    private let event = Event()
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: DetailViewModel) {
+    private var initialIndex: Int?
+    private var initialImage: UIImage?
+    
+    init(viewModel: MediaDetailViewModel, initialIndex: Int?, initialImage: UIImage?) {
         self.viewModel = viewModel
+        self.initialIndex = initialIndex
+        self.initialImage = initialImage
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -55,17 +55,27 @@ final class DetailViewController: ViewController {
     }
 }
 
+// MARK: - Event
+
+extension MediaDetailViewController {
+    
+    struct Event {
+        let currentIndex = PublishRelay<Int>()
+        let currentScrollOffset = PublishRelay<CGPoint>()
+    }
+}
+
 // MARK: - UICollectionViewDiffableDataSource
 
-extension DetailViewController {
+extension MediaDetailViewController {
     
     /// CollectionView를 세팅합니다.
     private func setupCollectionView() {
         scene.mediaCollectionView.collectionViewLayout = mediaCollectionViewLayout
         scene.mediaCollectionView.isPagingEnabled = true
         scene.mediaCollectionView.register(
-            DetailCell.self,
-            forCellWithReuseIdentifier: DetailCell.identifier
+            MediaDetailCell.self,
+            forCellWithReuseIdentifier: MediaDetailCell.identifier
         )
     }
     
@@ -74,13 +84,21 @@ extension DetailViewController {
         dataSource = UICollectionViewDiffableDataSource<Section, Media>(collectionView: scene.mediaCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: DetailCell.identifier,
+                withReuseIdentifier: MediaDetailCell.identifier,
                 for: indexPath
-            ) as? DetailCell else { return nil }
+            ) as? MediaDetailCell else { return nil }
             
-            if let cacheImgae = self.imageCache[media.id] {
-                cell.action(.setImage(cacheImgae))
+            var thumbnail: UIImage?
+            if let initialImage {
+                thumbnail = initialImage
+                self.initialImage = nil
             }
+            
+            if let loadImage = self.viewModel.thumbnailList[media] {
+                thumbnail = loadImage
+            }
+            
+            cell.action(.setImage(thumbnail))
             
             return cell
         }
@@ -89,37 +107,32 @@ extension DetailViewController {
     /// 기본 DataSource를 업데이트합니다.
     private func updateInitialDataSource(to mediaList: [Media]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
-        
         snapshot.appendSections([.main])
-        
-        for media in mediaList {
-            snapshot.appendItems([media], toSection: .main)
-        }
-        
+        mediaList.forEach { snapshot.appendItems([$0], toSection: .main) }
         dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
             guard let self else { return }
-            self.scene.action(.setInitialIndex(self.selectedRow))
+            
+            if let initialIndex {
+                scene.action(.setInitialIndex(initialIndex))
+                self.initialIndex = nil
+            } else {
+                scene.action(.setInitialIndex(viewModel.currentIndex))
+            }
         }
     }
     
     /// 페이지네이션 된 DataSource를 업데이트합니다.
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
-        
-        for media in mediaList {
-            imageCache.updateValue(media.thumbnail, forKey: media.id)
-        }
-        
         var snapshot = dataSource.snapshot()
-        let validList = mediaList.filter { snapshot.itemIdentifiers.contains($0) }
-        snapshot.reloadItems(validList)
+        snapshot.reconfigureItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
 // MARK: - CollectionView Layout
 
-extension DetailViewController {
+extension MediaDetailViewController {
     
     /// 레이아웃을 반환합니다.
     var mediaCollectionViewLayout: UICollectionViewCompositionalLayout {
@@ -146,9 +159,9 @@ extension DetailViewController {
                 abs($0.frame.midX - centerX) < abs($1.frame.midX - centerX)
             }
             if let closestItem = sortedItems.first {
-                self?.currentIndexRelay.accept(closestItem.indexPath.item)
+                self?.event.currentIndex.accept(closestItem.indexPath.item)
             }
-            self?.currentScrollOffsetRelay.accept(point)
+            self?.event.currentScrollOffset.accept(point)
         }
         
         return UICollectionViewCompositionalLayout(section: section)
@@ -157,13 +170,13 @@ extension DetailViewController {
 
 // MARK: - Binding
 
-extension DetailViewController {
+extension MediaDetailViewController {
     
     func bind() {
-        let input = DetailViewModel.Input(
+        let input = MediaDetailViewModel.Input(
             viewDidLoad: .just(()),
-            currentIndex: currentIndexRelay.asSignal(),
-            currentScrollOffset: currentScrollOffsetRelay.asSignal(),
+            currentIndex: event.currentIndex.asSignal(),
+            currentScrollOffset: event.currentScrollOffset.asSignal(),
             favoriteButtonTapped: scene.favoriteButton.button.rx.tap.asSignal(),
             excludeButtonTapped: scene.excludeButton.button.rx.tap.asSignal(),
             removeButtonTapped: scene.removeButton.button.rx.tap
@@ -179,19 +192,20 @@ extension DetailViewController {
             }
             .disposed(by: disposeBag)
         
-        output.updateMediaList
+        output.thumbnailList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, mediaList in
+            .bind(with: self) { owner, thumbnailList in
+                let mediaList = thumbnailList.map(\.key)
                 owner.updatePaginationDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)
         
-        output.initialRow
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, selectedRow in
-                owner.selectedRow = selectedRow
-            }
-            .disposed(by: disposeBag)
+//        event.currentIndex
+//            .observe(on: MainScheduler.instance)
+//            .bind(with: self) { owner, selectedRow in
+//                owner.selectedRow = selectedRow
+//            }
+//            .disposed(by: disposeBag)
         
         output.updateMediaInfo
             .observe(on: MainScheduler.instance)

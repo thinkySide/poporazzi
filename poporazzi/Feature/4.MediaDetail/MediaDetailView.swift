@@ -1,5 +1,5 @@
 //
-//  DetailView.swift
+//  MediaDetailView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/26/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class DetailView: CodeBaseUI {
+final class MediaDetailView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -86,7 +86,7 @@ final class DetailView: CodeBaseUI {
 
 // MARK: - Action
 
-extension DetailView {
+extension MediaDetailView {
     
     enum Action {
         case setInitialIndex(Int)
@@ -109,7 +109,13 @@ extension DetailView {
             mediaCollectionView.isPagingEnabled = true
             
         case let .updateDateLabel(dayCount, date):
-            dayCountLabel.text = "\(dayCount)일차"
+            if dayCount == 0 {
+                dayCountLabel.isHidden = true
+                dateLabel.font = .setDovemayo(15)
+            } else {
+                dayCountLabel.text = "\(dayCount)일차"
+                dateLabel.font = .setDovemayo(14)
+            }
             dateLabel.text = date.detailFormat
             [dayCountLabel, dateLabel].forEach { $0.flex.markDirty() }
             containerView.flex.layout()
@@ -134,7 +140,7 @@ extension DetailView {
 
 // MARK: - Layout
 
-extension DetailView {
+extension MediaDetailView {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in

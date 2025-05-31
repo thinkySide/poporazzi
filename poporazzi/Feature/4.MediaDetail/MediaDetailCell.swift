@@ -1,5 +1,5 @@
 //
-//  DetailCell.swift
+//  MediaDetailCell.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/27/25.
@@ -9,9 +9,9 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class DetailCell: UICollectionViewCell {
+final class MediaDetailCell: UICollectionViewCell {
     
-    static let identifier = "DetailCell"
+    static let identifier = "MediaDetailCell"
     
     var containerView = UIView()
     
@@ -59,7 +59,7 @@ final class DetailCell: UICollectionViewCell {
 
 // MARK: - Action
 
-extension DetailCell {
+extension MediaDetailCell {
     
     enum Action {
         case setImage(UIImage?)
@@ -70,8 +70,6 @@ extension DetailCell {
         case let .setImage(image):
             if let image {
                 mediaImage.image = image
-            } else {
-                mediaImage.backgroundColor = .brandTertiary
             }
         }
     }
@@ -79,7 +77,7 @@ extension DetailCell {
 
 // MARK: - Layout
 
-extension DetailCell {
+extension MediaDetailCell {
     
     func configLayout() {
         containerView.flex.define { flex in

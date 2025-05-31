@@ -67,13 +67,11 @@ extension RecordTitleHeader {
 extension RecordTitleHeader {
     
     func configLayout() {
-        containerView.flex.direction(.row).backgroundColor(.white)
+        containerView.flex.direction(.column).backgroundColor(.white)
             .paddingHorizontal(4)
-            .justifyContent(.spaceBetween)
-            .alignItems(.baseline)
             .define { flex in
-                flex.addItem(albumTitleLabel).shrink(1).marginRight(4)
-                flex.addItem(totalRecordCountLabel)
+                flex.addItem(albumTitleLabel)
+                flex.addItem(totalRecordCountLabel).marginTop(4).marginLeft(2)
             }
     }
 }

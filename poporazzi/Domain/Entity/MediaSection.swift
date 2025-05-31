@@ -15,7 +15,7 @@ enum MediaSection: Hashable, Comparable {
     /// DateFormat을 반환합니다.
     var dateFormat: String {
         switch self {
-        case let .day(order, date):
+        case let .day(order, _):
             "\(order)일차"
         }
     }

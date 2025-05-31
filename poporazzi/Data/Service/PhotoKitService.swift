@@ -37,6 +37,15 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
         return requestOptions
     }()
     
+    /// 고사양 이미지 요청 옵션
+    private let highImageRequestOptions: PHImageRequestOptions = {
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.isSynchronous = true
+        requestOptions.deliveryMode = .highQualityFormat
+        requestOptions.isNetworkAccessAllowed = true
+        return requestOptions
+    }()
+    
     /// 감지를 위한 fetchResult
     private var assetFetchResult: PHFetchResult<PHAsset>?
     private var collectionFetchResult: PHFetchResult<PHCollection>?
@@ -136,7 +145,7 @@ extension PhotoKitService {
     /// 썸네일과 함께 앨범 리스트를 반환합니다.
     public func fetchAlbumListWithThumbnail(from albumList: [Album]) -> Observable<[Album]> {
         Observable.create { [weak self] observer in
-            Task {
+            Task.detached {
                 guard let self else {
                     observer.onCompleted()
                     return
@@ -198,26 +207,20 @@ extension PhotoKitService {
     func fetchMediaList(from album: Album) -> [Media] {
         var mediaList = [Media]()
         
-        switch album.albumType {
-        case .album:
-            if let phAlbum = fetchAlbum(from: album.id) {
-                let fetchResult = PHAsset.fetchAssets(in: phAlbum, options: nil)
-                self.assetFetchResult = fetchResult
-                fetchResult.enumerateObjects { [weak self] asset, _, _ in
-                    guard let self else { return }
-                    let media = Media(
-                        id: asset.localIdentifier,
-                        creationDate: asset.creationDate,
-                        mediaType: self.mediaType(from: asset),
-                        thumbnail: nil,
-                        isFavorite: asset.isFavorite
-                    )
-                    mediaList.append(media)
-                }
+        if let phAlbum = fetchAlbum(from: album.id) {
+            let fetchResult = PHAsset.fetchAssets(in: phAlbum, options: nil)
+            self.assetFetchResult = fetchResult
+            fetchResult.enumerateObjects { [weak self] asset, _, _ in
+                guard let self else { return }
+                let media = Media(
+                    id: asset.localIdentifier,
+                    creationDate: asset.creationDate,
+                    mediaType: self.mediaType(from: asset),
+                    thumbnail: nil,
+                    isFavorite: asset.isFavorite
+                )
+                mediaList.append(media)
             }
-            
-        case .folder:
-            let phFolder = fetchFolder(from: album.id)
         }
         
         return mediaList
@@ -276,7 +279,7 @@ extension PhotoKitService {
     /// Asset Identifier를 기준으로 Media 배열을 반환합니다.
     func fetchMediaListWithThumbnail(from assetIdentifiers: [String], option: MediaQualityOption) -> Observable<[Media]> {
         Observable.create { [weak self] observer in
-            Task {
+            Task.detached {
                 guard let self else {
                     observer.onCompleted()
                     return
@@ -752,7 +755,7 @@ extension PhotoKitService {
                 for: asset,
                 targetSize: PHImageManagerMaximumSize,
                 contentMode: .aspectFill,
-                options: self.defaultImageRequestOptions
+                options: self.highImageRequestOptions
             ) { image, _ in
                 continuation.resume(returning: image)
             }

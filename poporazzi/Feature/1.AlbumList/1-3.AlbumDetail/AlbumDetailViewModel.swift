@@ -49,6 +49,7 @@ extension AlbumDetailViewModel {
         let selectCancelButtonTapped: Signal<Void>
         
         let contextMenuPresented: Signal<IndexPath>
+        let currentScrollOffset: Signal<CGPoint>
         
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
@@ -59,9 +60,9 @@ extension AlbumDetailViewModel {
         let album: BehaviorRelay<Album>
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
+        let isNavigationTitleShown = BehaviorRelay<Bool>(value: false)
         let isSelectMode = BehaviorRelay<Bool>(value: false)
         let selectedIndexPathList = BehaviorRelay<[IndexPath]>(value: [])
         let shouldBeFavorite = BehaviorRelay<Bool>(value: false)
@@ -105,8 +106,33 @@ extension AlbumDetailViewModel {
     
     func transform(_ input: Input) -> Output {
         
-        // 이미지 불러오기(페이지네이션)
+        // 기본 이미지 불러오기
+        output.viewDidRefresh
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .withUnretained(self)
+            .map { owner, _ in
+                owner.paginationManager.reset()
+                return (owner, owner.paginationManager.paginationList(from: owner.mediaList))
+            }
+            .flatMap { owner, paginationList in
+                owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: paginationList.map(\.id),
+                    option: .normal
+                )
+            }
+            .observe(on: MainScheduler.asyncInstance)
+            .bind(with: self) { owner, mediaList in
+                let allMediaList = owner.mediaList
+                var thumbnailList = owner.thumbnailList
+                thumbnailList = thumbnailList.filter { allMediaList.contains($0.key) }
+                mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
+                owner.output.thumbnailList.accept(thumbnailList)
+            }
+            .disposed(by: disposeBag)
+        
+        // 페이지네이션 이미지 불러오기
         output.pagination
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .map { owner, _ in
                 (owner, owner.paginationManager.paginationList(from: owner.mediaList))
@@ -118,41 +144,30 @@ extension AlbumDetailViewModel {
                 )
             }
             .bind(with: self) { owner, mediaList in
-                let thumbnailList = Dictionary(uniqueKeysWithValues: mediaList.map {
-                    ($0, $0.thumbnail)
-                })
-                var lastThumnailList = owner.thumbnailList
-                lastThumnailList.merge(thumbnailList) { $1 }
-                owner.output.thumbnailList.accept(lastThumnailList)
+                var thumbnailList = owner.thumbnailList
+                for media in mediaList {
+                    thumbnailList.updateValue(media.thumbnail, forKey: media)
+                }
+                owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
         
         // 미디어 리스트 정보만 불러오기
-        Signal.merge(
-            input.viewDidLoad,
-            output.viewDidRefresh.asSignal(),
-            photoKitService.photoLibraryAssetChange
-        )
-        .emit(with: self) { owner, _ in
-            let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
-            owner.output.mediaList.accept(mediaList)
-            
-            let startDate = owner.album.creationDate
-            let sectionMediaList = mediaList.toSectionMediaList(startDate: startDate)
-            owner.output.sectionMediaList.accept(sectionMediaList)
-            
-            owner.paginationManager.reset()
-            owner.output.pagination.accept(())
-        }
-        .disposed(by: disposeBag)
+        photoKitService.photoLibraryAssetChange
+            .asObservable()
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, _ in
+                let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
+                owner.output.mediaList.accept(mediaList)
+                
+                owner.output.viewDidRefresh.accept(())
+            }
+            .disposed(by: disposeBag)
         
         // 현재 보이는 IndexPath를 기준으로 페이지네이션 여부 결정
         input.willDisplayIndexPath
             .emit(with: self) { owner, indexPath in
-                let index = owner.index(
-                    from: owner.sectionMediaList,
-                    indexPath: indexPath
-                )
+                let index = indexPath.item
                 
                 guard index <= owner.mediaList.count else { return }
                 
@@ -173,16 +188,10 @@ extension AlbumDetailViewModel {
                     owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
                     
                 case false:
-                    let media = owner.mediaList[indexPath.row]
+                    let index = indexPath.item
+                    let media = owner.mediaList[index]
                     let image = owner.thumbnailList[media] ?? .init()
-                    owner.navigation.accept(
-                        .presentDetail(
-                            owner.album,
-                            image,
-                            owner.mediaList,
-                            owner.index(from: owner.sectionMediaList, indexPath: indexPath)
-                        )
-                    )
+                    owner.navigation.accept(.presentDetail(owner.album, image, owner.mediaList, index))
                 }
             }
             .disposed(by: disposeBag)
@@ -193,6 +202,13 @@ extension AlbumDetailViewModel {
                 indexPathList.removeAll(where: { $0 == indexPath })
                 owner.output.selectedIndexPathList.accept(indexPathList)
                 owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
+            }
+            .disposed(by: disposeBag)
+        
+        input.currentScrollOffset
+            .distinctUntilChanged()
+            .emit(with: self) { owner, point in
+                owner.output.isNavigationTitleShown.accept(point.y >= 80)
             }
             .disposed(by: disposeBag)
         
@@ -343,10 +359,6 @@ extension AlbumDetailViewModel {
         output.mediaList.value
     }
     
-    var sectionMediaList: SectionMediaList {
-        output.sectionMediaList.value
-    }
-    
     var thumbnailList: [Media: UIImage?] {
         output.thumbnailList.value
     }
@@ -361,7 +373,7 @@ extension AlbumDetailViewModel {
     
     var selectedMediaList: [Media] {
         selectedIndexPathList.compactMap {
-            mediaList[index(from: sectionMediaList, indexPath: $0)]
+            mediaList[$0.item]
         }
     }
 }
@@ -434,7 +446,7 @@ extension AlbumDetailViewModel {
     
     /// Context Menu
     func contextMenu(from indexPath: IndexPath) -> [MenuModel] {
-        let index = index(from: sectionMediaList, indexPath: indexPath)
+        let index = indexPath.item
         let media = mediaList[index]
         let favorite = MenuModel(
             symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,

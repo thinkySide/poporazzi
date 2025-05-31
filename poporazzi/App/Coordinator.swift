@@ -125,7 +125,7 @@ final class Coordinator: NSObject {
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
                     
                 case let .pushDetail(record, initialImage, mediaList, selectedRow):
-                    owner.presentDetail(recordVM, .record(record), initialImage, mediaList, selectedRow)
+                    owner.presentMediaDetail(recordVM, .record(record), initialImage, mediaList, selectedRow)
                 }
             }
             .disposed(by: recordVC.disposeBag)
@@ -319,29 +319,32 @@ extension Coordinator {
     }
     
     /// 상세보기 화면으로 Present 합니다.
-    private func presentDetail(
+    private func presentMediaDetail(
         _ recordVM: RecordViewModel?,
         _ dataType: DataType,
         _ initialImage: UIImage?,
         _ mediaList: [Media],
-        _ selectedRow: Int
+        _ selectedIndex: Int
     ) {
-        let detailVM = DetailViewModel(
+        let detailVM = MediaDetailViewModel(
             output: .init(
                 dataType: .init(value: dataType),
-                initialImage: .init(value: initialImage),
-                initialRow: .init(value: selectedRow),
-                currentRow: .init(value: selectedRow),
+                initialIndex: .init(value: selectedIndex),
+                currentIndex: .init(value: selectedIndex),
                 mediaList: .init(value: mediaList)
             )
         )
-        let detailVC = DetailViewController(viewModel: detailVM)
+        let detailVC = MediaDetailViewController(
+            viewModel: detailVM,
+            initialIndex: selectedIndex,
+            initialImage: initialImage
+        )
         detailVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(detailVC, animated: true)
         
         detailVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak detailVC] owner, path in
                 switch path {
                 case .dismiss:
                     owner.navigationController.dismiss(animated: true)
@@ -354,10 +357,10 @@ extension Coordinator {
                         activityItems: shareItemList,
                         applicationActivities: nil
                     )
-                    detailVC.present(activityController, animated: true)
+                    detailVC?.present(activityController, animated: true)
                 }
             }
-            .disposed(by: detailVC.disposeBag)
+            .disposed(by: detailVM.disposeBag)
     }
 }
 
@@ -379,7 +382,7 @@ extension Coordinator {
                     owner.navigationController.popViewController(animated: true)
                     
                 case let .presentDetail(album, image, mediaList, selectedIndex):
-                    owner.presentDetail(nil, .album(album), image, mediaList, selectedIndex)
+                    owner.presentMediaDetail(nil, .album(album), image, mediaList, selectedIndex)
                     
                 case let .presentMediaShareSheet(shareItemList):
                     let activityController = UIActivityViewController(

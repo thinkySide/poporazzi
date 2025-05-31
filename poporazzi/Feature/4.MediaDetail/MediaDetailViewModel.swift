@@ -1,5 +1,5 @@
 //
-//  DetailViewModel.swift
+//  MediaDetailViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/26/25.
@@ -9,14 +9,14 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class DetailViewModel: ViewModel {
+final class MediaDetailViewModel: ViewModel {
     
     @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.photoKitService) private var photoKitService
     
-    private let disposeBag = DisposeBag()
     private let output: Output
     
+    let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
     let menuAction = PublishRelay<MenuAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
@@ -35,7 +35,7 @@ final class DetailViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -49,13 +49,12 @@ extension DetailViewModel {
     
     struct Output {
         let dataType: BehaviorRelay<DataType>
-        let initialImage: BehaviorRelay<UIImage?>
-        let initialRow: BehaviorRelay<Int>
-        let currentRow: BehaviorRelay<Int>
+        let initialIndex: BehaviorRelay<Int>
+        let currentIndex: BehaviorRelay<Int>
         
         let mediaList: BehaviorRelay<[Media]>
+        let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
-        let updateMediaList = BehaviorRelay<[Media]>(value: [])
         let updateMediaInfo = BehaviorRelay<(Media, dayCount: Int, Date)>(value: (.initialValue, 0, .now))
         let updateCountInfo = BehaviorRelay<(currentIndex: Int, totalCount: Int)>(value: (0, 0))
         
@@ -85,68 +84,100 @@ extension DetailViewModel {
 
 // MARK: - Transform
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     func transform(_ input: Input) -> Output {
         input.viewDidLoad
             .asObservable()
             .bind(with: self) { owner, _ in
-                owner.updateMarkingList = Array(repeating: false, count: owner.output.mediaList.value.count)
                 owner.output.setupSeeMoreMenu.accept(owner.seemoreToolbarMenu)
             }
             .disposed(by: disposeBag)
         
-        output.viewDidRefresh
-            .bind(with: self) { owner, _ in
-                do {
-                    let index = owner.output.currentRow.value
-                    owner.output.initialRow.accept(index)
-                    owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
-                    owner.output.updateCountInfo.accept((index, owner.mediaList.count))
-                    
-                    let media = owner.mediaList[index]
-                    let creationDate = media.creationDate ?? .now
-                    let dayCount = owner.days(from: creationDate)
-                    owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
-                    
-                    let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
-                    owner.mediaListWithImage(from: fetchMediaList)
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind(to: owner.output.updateMediaList)
-                        .disposed(by: owner.disposeBag)
-                } catch {
-                    print(error)
+        // 기본 미디어 리스트 업데이트
+        Signal.merge(
+            output.viewDidRefresh.asSignal(),
+            photoKitService.photoLibraryAssetChange
+        )
+        .asObservable()
+        .bind(with: self) { owner, _ in
+            do {
+                owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
+            } catch {
+                print(error)
+            }
+        }
+        .disposed(by: disposeBag)
+        
+        // 기본 정보 및 이미지 불러오기
+        output.mediaList
+            .withUnretained(self)
+            .flatMap { owner, mediaList in
+                var index = owner.output.initialIndex.value
+                if index >= mediaList.count { index -= 1 }
+                
+                let media = mediaList[index]
+                let creationDate = media.creationDate ?? .now
+                let dayCount = owner.days(from: creationDate)
+                
+                owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
+                owner.output.updateCountInfo.accept((index, mediaList.count))
+                owner.updateMarkingList = Array(repeating: false, count: mediaList.count)
+                
+                var updateMediaList = [Media]()
+                if index == 0 {
+                    updateMediaList = owner.calcForFetchMediaList(displayRow: index)
+                } else {
+                    owner.updateMarkingList[index] = true
+                    updateMediaList = [media]
                 }
+                return owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: updateMediaList.map(\.id),
+                    option: .high
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                let allMediaList = owner.mediaList
+                var thumbnailList = owner.thumbnailList
+                thumbnailList = thumbnailList.filter { allMediaList.contains($0.key) }
+                mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
+                owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
         
+        // 페이지네이션 이미지 불러오기
         input.currentIndex
             .asObservable()
             .distinctUntilChanged()
-            .observe(on: MainScheduler.asyncInstance)
-            .bind(with: self) { owner, index in
-                let mediaList = owner.output.mediaList.value
-                var media = mediaList[index]
-                
-                owner.output.currentRow.accept(index)
-                owner.output.updateCountInfo.accept((index, mediaList.count))
-                
-                // 첫 번째 화면 진입 시 기존 이미지 사용으로 반응성 높이기
-                if let image = owner.output.initialImage.value {
-                    media.thumbnail = image
-                    owner.output.updateMediaList.accept([media])
-                    owner.output.initialImage.accept(nil)
+            .skip(1)
+            .withUnretained(self)
+            .flatMap { owner, index in
+                owner.output.initialIndex.accept(index)
+                owner.output.currentIndex.accept(index)
+                let mediaList = owner.calcForFetchMediaList(displayRow: index)
+                return owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: mediaList.map(\.id),
+                    option: .high
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                var thumbnailList = owner.thumbnailList
+                for media in mediaList {
+                    thumbnailList.updateValue(media.thumbnail, forKey: media)
                 }
-                
+                owner.output.thumbnailList.accept(thumbnailList)
+            }
+            .disposed(by: disposeBag)
+        
+        // 페이지네이션 정보 업데이트
+        output.currentIndex
+            .skip(1)
+            .bind(with: self) { owner, index in
+                let media = owner.mediaList[index]
                 let creationDate = media.creationDate ?? .now
                 let dayCount = owner.days(from: creationDate)
                 owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
-                
-                let fetchMediaList = owner.calcForFetchMediaList(displayRow: index)
-                owner.mediaListWithImage(from: fetchMediaList)
-                    .observe(on: MainScheduler.asyncInstance)
-                    .bind(to: owner.output.updateMediaList)
-                    .disposed(by: owner.disposeBag)
+                owner.output.updateCountInfo.accept((index, owner.mediaList.count))
             }
             .disposed(by: disposeBag)
         
@@ -158,26 +189,22 @@ extension DetailViewModel {
             }
             .disposed(by: disposeBag)
         
-        photoKitService.photoLibraryAssetChange
-            .asObservable()
-            .bind(with: self) { owner, _ in
-                owner.output.viewDidRefresh.accept(())
-            }
-            .disposed(by: disposeBag)
-        
         input.favoriteButtonTapped
             .emit(with: self) { owner, _ in
-                let (media, _, _ ) = owner.output.updateMediaInfo.value
+                let media = owner.output.mediaList.value[owner.currentIndex]
                 owner.photoKitService.toggleMediaFavorite(
                     from: [media.id],
                     isFavorite: !media.isFavorite
                 )
+                if !media.isFavorite {
+                    HapticManager.impact(style: .soft)
+                }
             }
             .disposed(by: disposeBag)
         
         input.excludeButtonTapped
             .emit(with: self) { owner, _ in
-                let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                let media = owner.output.mediaList.value[owner.currentIndex]
                 let actionSheet = owner.excludeActionSheet(from: [media])
                 owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
@@ -186,7 +213,7 @@ extension DetailViewModel {
         
         input.removeButtonTapped
             .emit(with: self) { owner, _ in
-                let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                let media = owner.output.mediaList.value[owner.currentIndex]
                 let actionSheet = owner.removeActionSheet(from: [media])
                 owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
@@ -203,7 +230,7 @@ extension DetailViewModel {
             .bind(with: self) { owner , action in
                 switch action {
                 case .share:
-                    let media = owner.output.mediaList.value[owner.output.currentRow.value]
+                    let media = owner.output.mediaList.value[owner.currentIndex]
                     owner.photoKitService.fetchShareItemList(from: [media.id])
                         .bind { shareItemList in
                             owner.navigation.accept(.presentMediaShareSheet(shareItemList))
@@ -224,7 +251,7 @@ extension DetailViewModel {
                             to: mediaList.map(\.id)
                         )
                         .observe(on: MainScheduler.asyncInstance)
-                        .bind(with: self) { owner, isSucess in
+                        .bind { isSucess in
                             
                         }
                         .disposed(by: owner.disposeBag)
@@ -273,7 +300,7 @@ extension DetailViewModel {
 
 // MARK: - Syntax Sugar
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     var dataType: DataType {
         output.dataType.value
@@ -282,17 +309,25 @@ extension DetailViewModel {
     var mediaList: [Media] {
         output.mediaList.value
     }
+    
+    var thumbnailList: [Media: UIImage?] {
+        output.thumbnailList.value
+    }
+    
+    var currentIndex: Int {
+        output.currentIndex.value
+    }
 }
 
 // MARK: - Helper
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 시작날짜를 기준으로 생성일이 몇일차인지 반환합니다.
     private func days(from creationDate: Date) -> Int {
         var startDate = Date()
         switch dataType {
-        case let .album(album): startDate = album.creationDate
+        case .album: return 0
         case let .record(record): startDate = record.startDate
         }
         
@@ -361,7 +396,7 @@ extension DetailViewModel {
 
 // MARK: - Alert
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 기록 삭제 실패 Alert
     private var removeFailedAlert: AlertModel {
@@ -375,7 +410,7 @@ extension DetailViewModel {
 
 // MARK: - Action Sheet
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 앨범 제외 Action Sheet
     private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
@@ -412,7 +447,7 @@ extension DetailViewModel {
 
 // MARK: - Menu
 
-extension DetailViewModel {
+extension MediaDetailViewModel {
     
     /// 더보기 툴바 버튼 Menu
     private var seemoreToolbarMenu: [MenuModel] {
