@@ -43,18 +43,17 @@ extension RecordViewModel {
     struct Input {
         let viewDidLoad: Signal<Void>
         
-        let selectButtonTapped: Signal<Void>
-        let selectCancelButtonTapped: Signal<Void>
-        
         let willDisplayIndexPath: Signal<IndexPath>
         let cellSelected: Signal<IndexPath>
         let cellDeselected: Signal<IndexPath>
         
+        let selectButtonTapped: Signal<Void>
+        let selectCancelButtonTapped: Signal<Void>
+        let finishButtonTapped: Signal<Void>
+        
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
         let removeToolbarButtonTapped: Signal<Void>
-        
-        let finishButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -63,14 +62,13 @@ extension RecordViewModel {
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
+        let selectedIndexPathList = BehaviorRelay<[IndexPath]>(value: [])
         
-        let updateRecordCells = BehaviorRelay<[Media]>(value: [])
-        let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
-        let shoudBeFavorite = BehaviorRelay<Bool>(value: true)
+        let isSelectMode = BehaviorRelay<Bool>(value: false)
+        let shouldBeFavorite = BehaviorRelay<Bool>(value: true)
         
         let viewDidRefresh = PublishRelay<Void>()
         let pagination = PublishRelay<Void>()
-        let isSelectMode = BehaviorRelay<Bool>(value: false)
         let toggleLoading = PublishRelay<Bool>()
         
         let alertPresented = PublishRelay<AlertModel>()
@@ -85,7 +83,7 @@ extension RecordViewModel {
         case presentMediaShareSheet([Any])
         case toggleTabBar(Bool)
         case presentPermissionRequestModal
-        case pushDetail(Record, UIImage?, [Media], Int)
+        case presentDetail(Record, UIImage?, [Media], Int)
     }
     
     enum Delegate {
@@ -130,6 +128,24 @@ extension RecordViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .map { owner, _ in
+                do {
+                    let mediaList = try owner.photoKitService
+                        .fetchMediaList(from: owner.record)
+                        .filter { !Set(owner.record.excludeMediaList).contains($0.id) }
+                    
+                    let sectionMediaList = mediaList
+                        .toSectionMediaList(startDate: owner.record.startDate)
+                    
+                    owner.output.mediaList.accept(mediaList)
+                    owner.output.sectionMediaList.accept(sectionMediaList)
+                    
+                    owner.liveActivityService.update(
+                        to: owner.output.record.value,
+                        totalCount: mediaList.count
+                    )
+                } catch {
+                    owner.navigation.accept(.presentPermissionRequestModal)
+                }
                 owner.paginationManager.reset()
                 return (owner, owner.paginationManager.paginationList(from: owner.mediaList))
             }
@@ -162,11 +178,10 @@ extension RecordViewModel {
                     option: .normal
                 )
             }
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, mediaList in
                 var thumbnailList = owner.thumbnailList
-                for media in mediaList {
-                    thumbnailList.updateValue(media.thumbnail, forKey: media)
-                }
+                mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
@@ -176,24 +191,6 @@ extension RecordViewModel {
             .asObservable()
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, _ in
-                do {
-                    let mediaList = try owner.photoKitService.fetchMediaList(from: owner.record)
-                        .filter { !Set(owner.record.excludeMediaList).contains($0.id) }
-                    owner.output.mediaList.accept(mediaList)
-                    
-                    let sectionMediaList = mediaList.toSectionMediaList(startDate: owner.record.startDate)
-                    owner.output.sectionMediaList.accept(sectionMediaList)
-                    
-                    owner.output.viewDidRefresh.accept(())
-                    
-                    owner.liveActivityService.update(
-                        to: owner.output.record.value,
-                        totalCount: mediaList.count
-                    )
-                } catch {
-                    owner.navigation.accept(.presentPermissionRequestModal)
-                }
-                
                 owner.output.viewDidRefresh.accept(())
             }
             .disposed(by: disposeBag)
@@ -212,10 +209,38 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.cellSelected
+            .emit(with: self) { owner, indexPath in
+                switch owner.isSelectMode {
+                case true:
+                    var indexPathList = owner.selectedIndexPathList
+                    indexPathList.append(indexPath)
+                    owner.output.selectedIndexPathList.accept(indexPathList)
+                    owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
+                    print(indexPath)
+                    
+                case false:
+                    let index = owner.index(from: indexPath)
+                    let media = owner.mediaList[index]
+                    let image = owner.thumbnailList[media] ?? .init()
+                    owner.navigation.accept(.presentDetail(owner.record, image, owner.mediaList, index))
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        input.cellDeselected
+            .emit(with: self) { owner, indexPath in
+                var indexPathList = owner.selectedIndexPathList
+                indexPathList.removeAll(where: { $0 == indexPath })
+                owner.output.selectedIndexPathList.accept(indexPathList)
+                owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
+            }
+            .disposed(by: disposeBag)
+        
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.isSelectMode.accept(true)
-                owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
+                owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
                 owner.navigation.accept(.toggleTabBar(false))
                 NameSpace.isSelectionMode = true
                 HapticManager.impact(style: .light)
@@ -230,43 +255,12 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.cellSelected
-            .emit(with: self) { owner, indexPath in
-                switch owner.output.isSelectMode.value {
-                case true:
-                    var currentCells = owner.output.selectedRecordCells.value
-                    currentCells.append(indexPath)
-                    owner.output.selectedRecordCells.accept(currentCells)
-                    owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
-                    
-                case false:
-                    let initialImage = owner.output.updateRecordCells.value[indexPath.row].thumbnail
-                    owner.navigation.accept(
-                        .pushDetail(
-                            owner.output.record.value,
-                            initialImage,
-                            owner.output.mediaList.value,
-                            owner.index(from: indexPath)
-                        )
-                    )
-                }
-            }
-            .disposed(by: disposeBag)
-        
-        input.cellDeselected
-            .emit(with: self) { owner, indexPath in
-                var currentCells = owner.output.selectedRecordCells.value
-                currentCells.removeAll(where: { $0 == indexPath })
-                owner.output.selectedRecordCells.accept(currentCells)
-                owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
-            }
-            .disposed(by: disposeBag)
-        
         input.favoriteToolbarButtonTapped
             .emit(with: self) { owner, _ in
+                let selectedMediaList = owner.selectedMediaList
                 owner.photoKitService.toggleMediaFavorite(
-                    from: owner.selectedAssetIdentifiers(),
-                    isFavorite: owner.selectedMediaList().shouldBeFavorite
+                    from: selectedMediaList.map(\.id),
+                    isFavorite: selectedMediaList.shouldBeFavorite
                 )
                 owner.cancelSelectMode()
             }
@@ -274,18 +268,17 @@ extension RecordViewModel {
         
         input.excludeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.actionSheetPresented.accept(
-                    owner.excludeActionSheet(
-                        from: owner.selectedMediaList()
-                    )
-                )
+                let selectedMediaList = owner.selectedMediaList
+                let actionSheet = owner.excludeActionSheet(from: selectedMediaList)
+                owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
         
         input.removeToolbarButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.actionSheetPresented.accept(owner.removeActionSheet(from: owner.selectedMediaList()))
+                let actionSheet = owner.removeActionSheet(from: owner.selectedMediaList)
+                owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
             }
             .disposed(by: disposeBag)
@@ -319,11 +312,11 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case let .exclude(mediaList):
-                    var album = owner.output.record.value
-                    album.excludeMediaList.formUnion(mediaList.map(\.id))
-                    owner.output.record.accept(album)
+                    var record = owner.record
+                    record.excludeMediaList.formUnion(mediaList.map(\.id))
+                    owner.output.record.accept(record)
                     
-                    owner.persistenceService.updateAlbumExcludeMediaList(to: album)
+                    owner.persistenceService.updateAlbumExcludeMediaList(to: record)
                     
                     owner.output.viewDidRefresh.accept(())
                     owner.cancelSelectMode()
@@ -360,7 +353,7 @@ extension RecordViewModel {
                     HapticManager.notification(type: .warning)
                     
                 case .share:
-                    owner.photoKitService.fetchShareItemList(from: owner.selectedAssetIdentifiers())
+                    owner.photoKitService.fetchShareItemList(from: owner.selectedMediaList.map(\.id))
                         .bind { shareItemList in
                             owner.navigation.accept(.presentMediaShareSheet(shareItemList))
                         }
@@ -433,6 +426,16 @@ extension RecordViewModel {
         output.mediaList.value
     }
     
+    var selectedMediaList: [Media] {
+        output.selectedIndexPathList.value.compactMap {
+            output.mediaList.value[index(from: $0)]
+        }
+    }
+    
+    var selectedIndexPathList: [IndexPath] {
+        output.selectedIndexPathList.value
+    }
+    
     var sectionMediaList: SectionMediaList {
         output.sectionMediaList.value
     }
@@ -440,23 +443,15 @@ extension RecordViewModel {
     var thumbnailList: [Media: UIImage?] {
         output.thumbnailList.value
     }
+    
+    var isSelectMode: Bool {
+        output.isSelectMode.value
+    }
 }
 
 // MARK: - Helper
 
 extension RecordViewModel {
-    
-    /// IndexPath에 대응되는 Media를 반환합니다.
-    private func selectedMediaList() -> [Media] {
-        output.selectedRecordCells.value.compactMap {
-            output.mediaList.value[index(from: $0)]
-        }
-    }
-    
-    /// IndexPath에 대응되는 Asset Identifiers를 반환합니다.
-    private func selectedAssetIdentifiers() -> [String] {
-        selectedMediaList().map(\.id)
-    }
     
     /// IndexPath의 Section과 Row를 기준으로 몇번째 인덱스인지 반환합니다.
     private func index(from indexPath: IndexPath) -> Int {
@@ -472,33 +467,13 @@ extension RecordViewModel {
         return currentIndex
     }
     
-    /// SectionMediaList의 전체 개수를 반환합니다.
-    private func totalMediaCount() -> Int {
-        var count = 0
-        for (_, mediaList) in output.sectionMediaList.value {
-            count += mediaList.count
-        }
-        return count
-    }
-    
     /// 선택 모드를 취소합니다.
     private func cancelSelectMode() {
-        output.selectedRecordCells.accept([])
         output.isSelectMode.accept(false)
+        navigation.accept(.toggleTabBar(true))
+        output.selectedIndexPathList.accept([])
         HapticManager.impact(style: .light)
-    }
-}
-
-// MARK: - Album Logic
-
-extension RecordViewModel {
-    
-    /// 전체 Media 리스트를 반환합니다.
-    private func fetchAllMediaList(from assetIdentifiers: [String]) -> Observable<[Media]> {
-        photoKitService.fetchMediaListWithThumbnail(
-            from: assetIdentifiers,
-            option: .normal
-        )
+        NameSpace.isSelectionMode = false
     }
 }
 
@@ -600,7 +575,7 @@ extension RecordViewModel {
     
     /// Context Menu
     func contextMenu(from indexPath: IndexPath) -> [MenuModel] {
-        let media = output.mediaList.value[indexPath.item]
+        let media = output.mediaList.value[index(from: indexPath)]
         let favorite = MenuModel(
             symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
             title: media.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"

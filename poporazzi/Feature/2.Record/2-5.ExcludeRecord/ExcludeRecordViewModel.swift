@@ -131,6 +131,7 @@ extension ExcludeRecordViewModel {
                 owner.output.switchSelectMode.accept(true)
                 owner.output.shoudBeFavorite.accept(owner.shouldBeFavorite(from: owner.selectedMediaList()))
                 HapticManager.impact(style: .light)
+                NameSpace.isSelectionMode = true
             }
             .disposed(by: disposeBag)
         
@@ -310,6 +311,7 @@ extension ExcludeRecordViewModel {
         output.selectedRecordCells.accept([])
         output.switchSelectMode.accept(false)
         HapticManager.impact(style: .light)
+        NameSpace.isSelectionMode = false
     }
 }
 

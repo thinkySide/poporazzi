@@ -81,7 +81,7 @@ extension NavigationBar {
                 flex.addItem(leadingView)
                 
                 if let centerView {
-                    flex.addItem(centerView).position(.absolute).horizontally(140)
+                    flex.addItem(centerView).position(.absolute).horizontally(100)
                 } else {
                     flex.addItem(titleLabel).position(.absolute).horizontally(140)
                 }

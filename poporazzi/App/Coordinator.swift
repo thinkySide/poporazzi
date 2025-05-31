@@ -124,7 +124,7 @@ final class Coordinator: NSObject {
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
                     
-                case let .pushDetail(record, initialImage, mediaList, selectedRow):
+                case let .presentDetail(record, initialImage, mediaList, selectedRow):
                     owner.presentMediaDetail(recordVM, .record(record), initialImage, mediaList, selectedRow)
                 }
             }

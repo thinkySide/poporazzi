@@ -239,15 +239,15 @@ extension RecordViewController {
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
-            selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
-            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
             willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
             cellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             cellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
+            selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
+            selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
+            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
-            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal(),
-            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
+            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
@@ -291,17 +291,17 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.selectedRecordCells
+        output.selectedIndexPathList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, selectedMedias in
-                owner.scene.action(.updateSelectedCountLabel(selectedMedias.count))
+            .bind(with: self) { owner, indexPathList in
+                owner.scene.action(.updateSelectedCountLabel(indexPathList.count))
             }
             .disposed(by: disposeBag)
         
-        output.shoudBeFavorite
+        output.shouldBeFavorite
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, bool in
-                owner.scene.action(.toggleFavoriteMode(bool))
+            .bind(with: self) { owner, isFavorite in
+                owner.scene.action(.toggleFavoriteMode(isFavorite))
             }
             .disposed(by: disposeBag)
         

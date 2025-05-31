@@ -59,10 +59,10 @@ extension AlbumDetailViewModel {
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
+        let selectedIndexPathList = BehaviorRelay<[IndexPath]>(value: [])
         
         let isNavigationTitleShown = BehaviorRelay<Bool>(value: false)
         let isSelectMode = BehaviorRelay<Bool>(value: false)
-        let selectedIndexPathList = BehaviorRelay<[IndexPath]>(value: [])
         let shouldBeFavorite = BehaviorRelay<Bool>(value: false)
         
         let viewDidRefresh = PublishRelay<Void>()
@@ -141,11 +141,10 @@ extension AlbumDetailViewModel {
                     option: .normal
                 )
             }
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, mediaList in
                 var thumbnailList = owner.thumbnailList
-                for media in mediaList {
-                    thumbnailList.updateValue(media.thumbnail, forKey: media)
-                }
+                mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
@@ -279,36 +278,6 @@ extension AlbumDetailViewModel {
             }
             .disposed(by: disposeBag)
         
-        contextMenuAction
-            .bind(with: self) { owner, action in
-                switch action {
-                case let .toggleFavorite(media):
-                    owner.photoKitService.toggleMediaFavorite(
-                        from: [media.id],
-                        isFavorite: [media].shouldBeFavorite
-                    )
-                    
-                case let .share(media):
-                    owner.photoKitService.fetchShareItemList(from: [media.id])
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind { shareItemList in
-                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
-                        }
-                        .disposed(by: owner.disposeBag)
-                    
-                case let .exclude(media):
-                    let actionSheet = owner.excludeActionSheet(from: [media])
-                    owner.output.actionSheetPresented.accept(actionSheet)
-                    HapticManager.notification(type: .warning)
-                    
-                case let .remove(media):
-                    let actionSheet = owner.removeActionSheet(from: [media])
-                    owner.output.actionSheetPresented.accept(actionSheet)
-                    HapticManager.notification(type: .warning)
-                }
-            }
-            .disposed(by: disposeBag)
-        
         actionSheetAction
             .bind(with: self) { owner, action in
                 switch action {
@@ -336,6 +305,36 @@ extension AlbumDetailViewModel {
                             owner.output.toggleLoading.accept(false)
                         }
                         .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        contextMenuAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case let .toggleFavorite(media):
+                    owner.photoKitService.toggleMediaFavorite(
+                        from: [media.id],
+                        isFavorite: [media].shouldBeFavorite
+                    )
+                    
+                case let .share(media):
+                    owner.photoKitService.fetchShareItemList(from: [media.id])
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { shareItemList in
+                            owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                        }
+                        .disposed(by: owner.disposeBag)
+                    
+                case let .exclude(media):
+                    let actionSheet = owner.excludeActionSheet(from: [media])
+                    owner.output.actionSheetPresented.accept(actionSheet)
+                    HapticManager.notification(type: .warning)
+                    
+                case let .remove(media):
+                    let actionSheet = owner.removeActionSheet(from: [media])
+                    owner.output.actionSheetPresented.accept(actionSheet)
+                    HapticManager.notification(type: .warning)
                 }
             }
             .disposed(by: disposeBag)

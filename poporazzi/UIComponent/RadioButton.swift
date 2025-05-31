@@ -89,7 +89,7 @@ extension RadioButton {
     func action(_ action: Action) {
         switch action {
         case .updateState(let variation):
-            UIView.animate(withDuration: 0.2) { [weak self] in
+            UIView.animate(withDuration: 0.2, delay: 0, options: .allowUserInteraction) { [weak self] in
                 self?.textContainerView.backgroundColor = variation.backgroundColor
                 self?.textContainerView.layer.borderColor = variation.strokeColor.cgColor
                 self?.radioIcon.image = variation.icon
