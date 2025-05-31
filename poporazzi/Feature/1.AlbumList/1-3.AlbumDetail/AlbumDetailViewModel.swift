@@ -120,10 +120,10 @@ extension AlbumDetailViewModel {
                 )
             }
             .bind(with: self) { owner, mediaList in
-                var thumbnailList = [Media: UIImage?]()
-                for media in mediaList {
-                    thumbnailList.updateValue(media.thumbnail, forKey: media)
-                }
+                let allMediaList = owner.mediaList
+                var thumbnailList = owner.thumbnailList
+                thumbnailList = thumbnailList.filter { allMediaList.contains($0.key) }
+                mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
