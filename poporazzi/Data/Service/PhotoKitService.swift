@@ -37,6 +37,15 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
         return requestOptions
     }()
     
+    /// 고사양 이미지 요청 옵션
+    private let highImageRequestOptions: PHImageRequestOptions = {
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.isSynchronous = true
+        requestOptions.deliveryMode = .highQualityFormat
+        requestOptions.isNetworkAccessAllowed = true
+        return requestOptions
+    }()
+    
     /// 감지를 위한 fetchResult
     private var assetFetchResult: PHFetchResult<PHAsset>?
     private var collectionFetchResult: PHFetchResult<PHCollection>?
@@ -752,7 +761,7 @@ extension PhotoKitService {
                 for: asset,
                 targetSize: PHImageManagerMaximumSize,
                 contentMode: .aspectFill,
-                options: self.defaultImageRequestOptions
+                options: self.highImageRequestOptions
             ) { image, _ in
                 continuation.resume(returning: image)
             }
