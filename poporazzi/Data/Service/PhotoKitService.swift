@@ -207,26 +207,20 @@ extension PhotoKitService {
     func fetchMediaList(from album: Album) -> [Media] {
         var mediaList = [Media]()
         
-        switch album.albumType {
-        case .album:
-            if let phAlbum = fetchAlbum(from: album.id) {
-                let fetchResult = PHAsset.fetchAssets(in: phAlbum, options: nil)
-                self.assetFetchResult = fetchResult
-                fetchResult.enumerateObjects { [weak self] asset, _, _ in
-                    guard let self else { return }
-                    let media = Media(
-                        id: asset.localIdentifier,
-                        creationDate: asset.creationDate,
-                        mediaType: self.mediaType(from: asset),
-                        thumbnail: nil,
-                        isFavorite: asset.isFavorite
-                    )
-                    mediaList.append(media)
-                }
+        if let phAlbum = fetchAlbum(from: album.id) {
+            let fetchResult = PHAsset.fetchAssets(in: phAlbum, options: nil)
+            self.assetFetchResult = fetchResult
+            fetchResult.enumerateObjects { [weak self] asset, _, _ in
+                guard let self else { return }
+                let media = Media(
+                    id: asset.localIdentifier,
+                    creationDate: asset.creationDate,
+                    mediaType: self.mediaType(from: asset),
+                    thumbnail: nil,
+                    isFavorite: asset.isFavorite
+                )
+                mediaList.append(media)
             }
-            
-        case .folder:
-            let phFolder = fetchFolder(from: album.id)
         }
         
         return mediaList

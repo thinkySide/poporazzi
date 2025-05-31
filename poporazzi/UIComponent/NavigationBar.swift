@@ -13,10 +13,8 @@ final class NavigationBar: CodeBaseUI {
     
     var containerView = UIView()
     
-    let tapGesture = UITapGestureRecognizer()
-    
     /// 네비게이션 제목 라벨
-    private let titleLabel: UILabel = {
+    let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .setDovemayo(16)
         label.textColor = .mainLabel
@@ -83,9 +81,9 @@ extension NavigationBar {
                 flex.addItem(leadingView)
                 
                 if let centerView {
-                    flex.addItem(centerView).position(.absolute).horizontally(120)
+                    flex.addItem(centerView).position(.absolute).horizontally(140)
                 } else {
-                    flex.addItem(titleLabel).position(.absolute).horizontally(120)
+                    flex.addItem(titleLabel).position(.absolute).horizontally(140)
                 }
                 
                 flex.addItem(trailingView)

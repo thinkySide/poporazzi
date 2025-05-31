@@ -93,6 +93,7 @@ extension AlbumDetailView {
     
     enum Action {
         case toggleSelectMode(Bool)
+        case updateTitle(isShown: Bool, String)
         case updateSelectedCount(Int)
         case updateShouldFavorite(Bool)
     }
@@ -110,6 +111,16 @@ extension AlbumDetailView {
                 self?.mediaCollectionView.contentInset.bottom = isSelectMode ? 80 : 24
                 self?.toolBar.transform = isSelectMode ?
                 CGAffineTransform(translationX: 0, y: -128) : .identity
+            }
+            
+        case let .updateTitle(isShown, title):
+            self.navigationBar.action(.updateTitle(title))
+            UIView.animate(withDuration: 0.2) {
+                if isShown {
+                    self.navigationBar.titleLabel.alpha = 1
+                } else {
+                    self.navigationBar.titleLabel.alpha = 0
+                }
             }
             
         case let .updateSelectedCount(count):

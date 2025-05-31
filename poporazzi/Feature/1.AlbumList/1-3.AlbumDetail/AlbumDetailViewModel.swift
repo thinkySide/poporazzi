@@ -49,6 +49,7 @@ extension AlbumDetailViewModel {
         let selectCancelButtonTapped: Signal<Void>
         
         let contextMenuPresented: Signal<IndexPath>
+        let currentScrollOffset: Signal<CGPoint>
         
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
@@ -61,6 +62,7 @@ extension AlbumDetailViewModel {
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
+        let isNavigationTitleShown = BehaviorRelay<Bool>(value: false)
         let isSelectMode = BehaviorRelay<Bool>(value: false)
         let selectedIndexPathList = BehaviorRelay<[IndexPath]>(value: [])
         let shouldBeFavorite = BehaviorRelay<Bool>(value: false)
@@ -118,6 +120,7 @@ extension AlbumDetailViewModel {
                     option: .normal
                 )
             }
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, mediaList in
                 let allMediaList = owner.mediaList
                 var thumbnailList = owner.thumbnailList
@@ -199,6 +202,13 @@ extension AlbumDetailViewModel {
                 indexPathList.removeAll(where: { $0 == indexPath })
                 owner.output.selectedIndexPathList.accept(indexPathList)
                 owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
+            }
+            .disposed(by: disposeBag)
+        
+        input.currentScrollOffset
+            .distinctUntilChanged()
+            .emit(with: self) { owner, point in
+                owner.output.isNavigationTitleShown.accept(point.y >= 80)
             }
             .disposed(by: disposeBag)
         

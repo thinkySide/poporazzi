@@ -53,6 +53,7 @@ extension AlbumDetailViewController {
     struct Event {
         let willDisplayIndexPath = PublishRelay<IndexPath>()
         let contextMenuPresented = PublishRelay<IndexPath>()
+        let currentScrollOffset = PublishRelay<CGPoint>()
     }
 }
 
@@ -86,8 +87,9 @@ extension AlbumDetailViewController {
             let section = CollectionViewLayout.threeStageSection
             section.boundarySupplementaryItems = [CollectionViewLayout.titleHeader]
             
-            section.visibleItemsInvalidationHandler = { visibleItems, _, _ in
+            section.visibleItemsInvalidationHandler = { visibleItems, point, _ in
                 guard let self else { return }
+                self.event.currentScrollOffset.accept(point)
             }
             
             return section
@@ -197,6 +199,7 @@ extension AlbumDetailViewController {
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap
                 .asSignal(),
             contextMenuPresented: event.contextMenuPresented.asSignal(),
+            currentScrollOffset: event.currentScrollOffset.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
             removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
@@ -224,6 +227,16 @@ extension AlbumDetailViewController {
             .bind(with: self) { owner, cell in
                 let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
                 owner.event.willDisplayIndexPath.accept(indexPath)
+            }
+            .disposed(by: disposeBag)
+        
+        output.isNavigationTitleShown
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isShown in
+                owner.scene.action(.updateTitle(
+                    isShown: isShown,
+                    owner.viewModel.album.title)
+                )
             }
             .disposed(by: disposeBag)
         
