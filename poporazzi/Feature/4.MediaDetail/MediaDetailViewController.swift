@@ -19,16 +19,18 @@ final class MediaDetailViewController: ViewController {
     private let viewModel: MediaDetailViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
-    private var selectedRow = 0
+    // private var selectedRow = 0
     
     private let event = Event()
     
     let disposeBag = DisposeBag()
     
+    private var initialIndex: Int?
     private var initialImage: UIImage?
     
-    init(viewModel: MediaDetailViewModel, initialImage: UIImage?) {
+    init(viewModel: MediaDetailViewModel, initialIndex: Int?, initialImage: UIImage?) {
         self.viewModel = viewModel
+        self.initialIndex = initialIndex
         self.initialImage = initialImage
         super.init(nibName: nil, bundle: nil)
     }
@@ -105,16 +107,17 @@ extension MediaDetailViewController {
     /// 기본 DataSource를 업데이트합니다.
     private func updateInitialDataSource(to mediaList: [Media]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Media>()
-        
         snapshot.appendSections([.main])
-        
-        for media in mediaList {
-            snapshot.appendItems([media], toSection: .main)
-        }
-        
+        mediaList.forEach { snapshot.appendItems([$0], toSection: .main) }
         dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
             guard let self else { return }
-            self.scene.action(.setInitialIndex(self.selectedRow))
+            
+            if let initialIndex {
+                scene.action(.setInitialIndex(initialIndex))
+                self.initialIndex = nil
+            } else {
+                scene.action(.setInitialIndex(viewModel.currentIndex))
+            }
         }
     }
     
@@ -123,7 +126,7 @@ extension MediaDetailViewController {
         guard !mediaList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(mediaList)
-        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
@@ -197,12 +200,12 @@ extension MediaDetailViewController {
             }
             .disposed(by: disposeBag)
         
-        output.currentIndex
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, selectedRow in
-                owner.selectedRow = selectedRow
-            }
-            .disposed(by: disposeBag)
+//        event.currentIndex
+//            .observe(on: MainScheduler.instance)
+//            .bind(with: self) { owner, selectedRow in
+//                owner.selectedRow = selectedRow
+//            }
+//            .disposed(by: disposeBag)
         
         output.updateMediaInfo
             .observe(on: MainScheduler.instance)

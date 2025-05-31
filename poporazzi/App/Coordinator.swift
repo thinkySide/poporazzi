@@ -324,17 +324,21 @@ extension Coordinator {
         _ dataType: DataType,
         _ initialImage: UIImage?,
         _ mediaList: [Media],
-        _ selectedRow: Int
+        _ selectedIndex: Int
     ) {
         let detailVM = MediaDetailViewModel(
             output: .init(
                 dataType: .init(value: dataType),
-                initialIndex: .init(value: selectedRow),
-                currentIndex: .init(value: selectedRow),
+                initialIndex: .init(value: selectedIndex),
+                currentIndex: .init(value: selectedIndex),
                 mediaList: .init(value: mediaList)
             )
         )
-        let detailVC = MediaDetailViewController(viewModel: detailVM, initialImage: initialImage)
+        let detailVC = MediaDetailViewController(
+            viewModel: detailVM,
+            initialIndex: selectedIndex,
+            initialImage: initialImage
+        )
         detailVC.modalPresentationStyle = .overFullScreen
         self.navigationController.present(detailVC, animated: true)
         

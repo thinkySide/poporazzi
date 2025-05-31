@@ -70,8 +70,6 @@ extension MediaDetailCell {
         case let .setImage(image):
             if let image {
                 mediaImage.image = image
-            } else {
-                mediaImage.backgroundColor = .brandTertiary
             }
         }
     }

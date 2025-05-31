@@ -90,11 +90,11 @@ extension MediaDetailViewModel {
         input.viewDidLoad
             .asObservable()
             .bind(with: self) { owner, _ in
-                owner.updateMarkingList = Array(repeating: false, count: owner.output.mediaList.value.count)
                 owner.output.setupSeeMoreMenu.accept(owner.seemoreToolbarMenu)
             }
             .disposed(by: disposeBag)
         
+        // 기본 미디어 리스트 업데이트
         Signal.merge(
             output.viewDidRefresh.asSignal(),
             photoKitService.photoLibraryAssetChange
@@ -102,12 +102,6 @@ extension MediaDetailViewModel {
         .asObservable()
         .bind(with: self) { owner, _ in
             do {
-                let index = owner.output.initialIndex.value
-                let media = owner.mediaList[index]
-                let creationDate = media.creationDate ?? .now
-                let dayCount = owner.days(from: creationDate)
-                owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
-                owner.output.updateCountInfo.accept((index, owner.mediaList.count))
                 owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
             } catch {
                 print(error)
@@ -115,10 +109,51 @@ extension MediaDetailViewModel {
         }
         .disposed(by: disposeBag)
         
+        // 기본 정보 및 이미지 불러오기
         output.mediaList
             .withUnretained(self)
-            .flatMap { owner, _ in
-                let index = owner.output.initialIndex.value
+            .flatMap { owner, mediaList in
+                var index = owner.output.initialIndex.value
+                if index >= mediaList.count { index -= 1 }
+                
+                let media = mediaList[index]
+                let creationDate = media.creationDate ?? .now
+                let dayCount = owner.days(from: creationDate)
+                
+                owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
+                owner.output.updateCountInfo.accept((index, mediaList.count))
+                owner.updateMarkingList = Array(repeating: false, count: mediaList.count)
+                
+                var updateMediaList = [Media]()
+                if index == 0 {
+                    updateMediaList = owner.calcForFetchMediaList(displayRow: index)
+                } else {
+                    owner.updateMarkingList[index] = true
+                    updateMediaList = [media]
+                }
+                return owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: updateMediaList.map(\.id),
+                    option: .high
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                var thumbnailList = [Media: UIImage?]()
+                for media in mediaList {
+                    thumbnailList.updateValue(media.thumbnail, forKey: media)
+                }
+                owner.output.thumbnailList.accept(thumbnailList)
+            }
+            .disposed(by: disposeBag)
+        
+        // 페이지네이션 이미지 불러오기
+        input.currentIndex
+            .asObservable()
+            .distinctUntilChanged()
+            .skip(1)
+            .withUnretained(self)
+            .flatMap { owner, index in
+                owner.output.initialIndex.accept(index)
+                owner.output.currentIndex.accept(index)
                 let mediaList = owner.calcForFetchMediaList(displayRow: index)
                 return owner.photoKitService.fetchMediaListWithThumbnail(
                     from: mediaList.map(\.id),
@@ -134,18 +169,15 @@ extension MediaDetailViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.currentIndex
-            .asObservable()
-            .distinctUntilChanged()
-            // .skip(1)
+        // 페이지네이션 정보 업데이트
+        output.currentIndex
+            .skip(1)
             .bind(with: self) { owner, index in
-                
-            }
-            .disposed(by: disposeBag)
-        
-        output.mediaList
-            .bind(with: self) { owner, mediaList in
-                
+                let media = owner.mediaList[index]
+                let creationDate = media.creationDate ?? .now
+                let dayCount = owner.days(from: creationDate)
+                owner.output.updateMediaInfo.accept((media, dayCount, creationDate))
+                owner.output.updateCountInfo.accept((index, owner.mediaList.count))
             }
             .disposed(by: disposeBag)
         
@@ -159,7 +191,7 @@ extension MediaDetailViewModel {
         
         input.favoriteButtonTapped
             .emit(with: self) { owner, _ in
-                let (media, _, _ ) = owner.output.updateMediaInfo.value
+                let media = owner.output.mediaList.value[owner.currentIndex]
                 owner.photoKitService.toggleMediaFavorite(
                     from: [media.id],
                     isFavorite: !media.isFavorite
@@ -169,7 +201,7 @@ extension MediaDetailViewModel {
         
         input.excludeButtonTapped
             .emit(with: self) { owner, _ in
-                let media = owner.output.mediaList.value[owner.output.currentIndex.value]
+                let media = owner.output.mediaList.value[owner.currentIndex]
                 let actionSheet = owner.excludeActionSheet(from: [media])
                 owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
@@ -178,7 +210,7 @@ extension MediaDetailViewModel {
         
         input.removeButtonTapped
             .emit(with: self) { owner, _ in
-                let media = owner.output.mediaList.value[owner.output.currentIndex.value]
+                let media = owner.output.mediaList.value[owner.currentIndex]
                 let actionSheet = owner.removeActionSheet(from: [media])
                 owner.output.actionSheetPresented.accept(actionSheet)
                 HapticManager.notification(type: .warning)
@@ -195,7 +227,7 @@ extension MediaDetailViewModel {
             .bind(with: self) { owner , action in
                 switch action {
                 case .share:
-                    let media = owner.output.mediaList.value[owner.output.currentIndex.value]
+                    let media = owner.output.mediaList.value[owner.currentIndex]
                     owner.photoKitService.fetchShareItemList(from: [media.id])
                         .bind { shareItemList in
                             owner.navigation.accept(.presentMediaShareSheet(shareItemList))
@@ -277,6 +309,10 @@ extension MediaDetailViewModel {
     
     var thumbnailList: [Media: UIImage?] {
         output.thumbnailList.value
+    }
+    
+    var currentIndex: Int {
+        output.currentIndex.value
     }
 }
 

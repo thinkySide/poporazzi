@@ -120,7 +120,7 @@ extension AlbumDetailViewModel {
                 )
             }
             .bind(with: self) { owner, mediaList in
-                var thumbnailList = owner.thumbnailList
+                var thumbnailList = [Media: UIImage?]()
                 for media in mediaList {
                     thumbnailList.updateValue(media.thumbnail, forKey: media)
                 }
