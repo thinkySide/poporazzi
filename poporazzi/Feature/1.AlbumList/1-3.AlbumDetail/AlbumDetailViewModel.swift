@@ -157,7 +157,6 @@ extension AlbumDetailViewModel {
             .bind(with: self) { owner, _ in
                 let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
                 owner.output.mediaList.accept(mediaList)
-                
                 owner.output.viewDidRefresh.accept(())
             }
             .disposed(by: disposeBag)

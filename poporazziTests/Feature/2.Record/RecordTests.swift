@@ -123,7 +123,7 @@ extension RecordTests {
         
         input.selectButtonTapped.accept(())
         
-        output.switchSelectMode
+        output.isSelectMode
             .subscribe(onNext: { bool in
                 XCTAssertTrue(bool)
             })
@@ -136,7 +136,7 @@ extension RecordTests {
         
         input.selectCancelButtonTapped.accept(())
         
-        output.switchSelectMode
+        output.isSelectMode
             .subscribe(onNext: { bool in
                 XCTAssertFalse(bool)
             })

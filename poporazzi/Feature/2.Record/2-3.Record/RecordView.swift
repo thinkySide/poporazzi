@@ -114,28 +114,10 @@ final class RecordView: CodeBaseUI {
         tintColor: .brandPrimary
     )
     
-    /// 기록 컬렉션 뷰
+    /// 미디어 컬렉션 뷰
     let recordCollectionView: UICollectionView = {
-        let collectionView = UICollectionView(
-            frame: .zero,
-            collectionViewLayout: CollectionViewLayout.recordHeaderSection
-        )
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: .init())
         collectionView.backgroundColor = .white
-        collectionView.contentInset.bottom = 24
-        collectionView.register(
-            RecordCell.self,
-            forCellWithReuseIdentifier: RecordCell.identifier
-        )
-        collectionView.register(
-            RecordTitleHeader.self,
-            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
-            withReuseIdentifier: RecordTitleHeader.identifier
-        )
-        collectionView.register(
-            RecordDateHeader.self,
-            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
-            withReuseIdentifier: RecordDateHeader.identifier
-        )
         return collectionView
     }()
     

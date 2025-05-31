@@ -15,10 +15,9 @@ final class RecordViewModel: ViewModel {
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
     
-    private let output: Output
+    private let paginationManager = PaginationManager(pageSize: 100, threshold: 10)
     
-    private var currentChunk = 0
-    private let chunkSize = 100
+    private let output: Output
     
     let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
@@ -47,8 +46,7 @@ extension RecordViewModel {
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
         
-        let recentIndexPath: BehaviorRelay<IndexPath>
-        
+        let willDisplayIndexPath: Signal<IndexPath>
         let cellSelected: Signal<IndexPath>
         let cellDeselected: Signal<IndexPath>
         
@@ -64,21 +62,19 @@ extension RecordViewModel {
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
         let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
+        let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
         let updateRecordCells = BehaviorRelay<[Media]>(value: [])
         let selectedRecordCells = BehaviorRelay<[IndexPath]>(value: [])
         let shoudBeFavorite = BehaviorRelay<Bool>(value: true)
         
         let viewDidRefresh = PublishRelay<Void>()
+        let pagination = PublishRelay<Void>()
+        let isSelectMode = BehaviorRelay<Bool>(value: false)
+        let toggleLoading = PublishRelay<Bool>()
         
-        let setupSeeMoreMenu = BehaviorRelay<[MenuModel]>(value: [])
-        let setupSeeMoreToolbarMenu = BehaviorRelay<[MenuModel]>(value: [])
-        let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
-        
-        let switchSelectMode = BehaviorRelay<Bool>(value: false)
         let alertPresented = PublishRelay<AlertModel>()
         let actionSheetPresented = PublishRelay<ActionSheetModel>()
-        let toggleLoading = PublishRelay<Bool>()
     }
     
     enum Navigation {
@@ -123,118 +119,102 @@ extension RecordViewModel {
     }
 }
 
-// MARK: - Chunk
-
-extension RecordViewModel {
-    
-    /// 현재 청크를 기준으로 에셋 ID 배열을 반환합니다.
-    private var chunkAssetIdentifiers: [String] {
-        let chunkStart = min(currentChunk, output.mediaList.value.count)
-        let chunkEnd = min(chunkSize + chunkStart, output.mediaList.value.count)
-        return output.mediaList.value[chunkStart..<chunkEnd].map { $0.id }
-    }
-    
-    /// 다음 청크로 업데이트합니다.
-    private func updateChunk() {
-        currentChunk += chunkSize
-    }
-    
-    /// 청크를 초기화합니다.
-    private func resetChunk() {
-        currentChunk = 0
-        output.updateRecordCells.accept([])
-    }
-}
-
 // MARK: - Transform
 
 extension RecordViewModel {
     
     func transform(_ input: Input) -> Output {
-        input.viewDidLoad
-            .emit(with: self) { owner, _ in
-                owner.output.setupSeeMoreMenu.accept(owner.seemoreMenu)
-                owner.output.setupSeeMoreToolbarMenu.accept(owner.seemoreToolbarMenu)
-            }
-            .disposed(by: disposeBag)
         
-        input.viewDidLoad
-            .asObservable()
-            .observe(on: MainScheduler.asyncInstance)
-            .bind(with: self) { owner, _ in
-                do {
-                    owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
-                    
-                    let assetIdentifiers = owner.chunkAssetIdentifiers
-                    owner.fetchAllMediaList(from: assetIdentifiers)
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind { mediaList in
-                            owner.output.updateRecordCells.accept(mediaList)
-                        }
-                        .disposed(by: owner.disposeBag)
-                } catch {
-                    owner.navigation.accept(.presentPermissionRequestModal)
-                }
-            }
-            .disposed(by: disposeBag)
-        
-        input.recentIndexPath
-            .filter { !$0.isEmpty }
+        // 기본 이미지 불러오기
+        output.viewDidRefresh
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .bind(with: self) { owner, indexPath in
-                
-                let currentIndex = owner.index(from: indexPath)
-                guard currentIndex <= owner.output.mediaList.value.count else { return }
-                
-                // 마지막 셀이 나타나기 전에 업데이트
-                if currentIndex >= (owner.currentChunk + owner.chunkSize - 10) {
-                    owner.updateChunk()
-                    let assetIdentifiers = owner.chunkAssetIdentifiers
-                    
-                    owner.fetchAllMediaList(from: assetIdentifiers)
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind { mediaList in
-                            owner.output.updateRecordCells.accept(mediaList)
-                        }
-                        .disposed(by: owner.disposeBag)
-                }
+            .withUnretained(self)
+            .map { owner, _ in
+                owner.paginationManager.reset()
+                return (owner, owner.paginationManager.paginationList(from: owner.mediaList))
+            }
+            .flatMap { owner, paginationList in
+                owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: paginationList.map(\.id),
+                    option: .normal
+                )
+            }
+            .observe(on: MainScheduler.asyncInstance)
+            .bind(with: self) { owner, mediaList in
+                let allMediaList = owner.mediaList
+                var thumbnailList = owner.thumbnailList
+                thumbnailList = thumbnailList.filter { allMediaList.contains($0.key) }
+                mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
+                owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
         
-        Signal.merge(output.viewDidRefresh.asSignal(), photoKitService.photoLibraryAssetChange)
+        // 페이지네이션 이미지 불러오기
+        output.pagination
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .withUnretained(self)
+            .map { owner, _ in
+                (owner, owner.paginationManager.paginationList(from: owner.mediaList))
+            }
+            .flatMap { owner, paginationList in
+                owner.photoKitService.fetchMediaListWithThumbnail(
+                    from: paginationList.map(\.id),
+                    option: .normal
+                )
+            }
+            .bind(with: self) { owner, mediaList in
+                var thumbnailList = owner.thumbnailList
+                for media in mediaList {
+                    thumbnailList.updateValue(media.thumbnail, forKey: media)
+                }
+                owner.output.thumbnailList.accept(thumbnailList)
+            }
+            .disposed(by: disposeBag)
+        
+        // 미디어 리스트 정보만 불러오기
+        photoKitService.photoLibraryAssetChange
             .asObservable()
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .bind(with: self) { owner, _ in
                 do {
-                    owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
-                    owner.resetChunk()
+                    let mediaList = try owner.photoKitService.fetchMediaList(from: owner.record)
+                        .filter { !Set(owner.record.excludeMediaList).contains($0.id) }
+                    owner.output.mediaList.accept(mediaList)
                     
-                    let assetIdentifiers = owner.chunkAssetIdentifiers
-                    owner.fetchAllMediaList(from: assetIdentifiers)
-                        .observe(on: MainScheduler.asyncInstance)
-                        .bind { mediaList in
-                            owner.output.updateRecordCells.accept(mediaList)
-                        }
-                        .disposed(by: owner.disposeBag)
+                    let sectionMediaList = mediaList.toSectionMediaList(startDate: owner.record.startDate)
+                    owner.output.sectionMediaList.accept(sectionMediaList)
+                    
+                    owner.output.viewDidRefresh.accept(())
+                    
+                    owner.liveActivityService.update(
+                        to: owner.output.record.value,
+                        totalCount: mediaList.count
+                    )
                 } catch {
                     owner.navigation.accept(.presentPermissionRequestModal)
                 }
+                
+                owner.output.viewDidRefresh.accept(())
             }
             .disposed(by: disposeBag)
         
-        output.mediaList
-            .bind(with: self) { owner, mediaList in
-                let sectionMediaList = mediaList.toSectionMediaList(startDate: owner.record.startDate)
-                owner.output.sectionMediaList.accept(sectionMediaList)
-                owner.liveActivityService.update(
-                    to: owner.output.record.value,
-                    totalCount: mediaList.count
-                )
+        // 현재 보이는 IndexPath를 기준으로 페이지네이션 여부 결정
+        input.willDisplayIndexPath
+            .emit(with: self) { owner, indexPath in
+                let index = owner.index(from: indexPath)
+                
+                guard index <= owner.mediaList.count else { return }
+                
+                if owner.paginationManager.isPagination(to: index) {
+                    owner.paginationManager.updateForNextPagination()
+                    owner.output.pagination.accept(())
+                }
             }
             .disposed(by: disposeBag)
         
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
-                owner.output.switchSelectMode.accept(true)
+                owner.output.isSelectMode.accept(true)
                 owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
                 owner.navigation.accept(.toggleTabBar(false))
                 NameSpace.isSelectionMode = true
@@ -252,7 +232,7 @@ extension RecordViewModel {
         
         input.cellSelected
             .emit(with: self) { owner, indexPath in
-                switch owner.output.switchSelectMode.value {
+                switch owner.output.isSelectMode.value {
                 case true:
                     var currentCells = owner.output.selectedRecordCells.value
                     currentCells.append(indexPath)
@@ -445,8 +425,20 @@ extension RecordViewModel {
 
 extension RecordViewModel {
     
-    private var record: Record {
+    var record: Record {
         output.record.value
+    }
+    
+    var mediaList: [Media] {
+        output.mediaList.value
+    }
+    
+    var sectionMediaList: SectionMediaList {
+        output.sectionMediaList.value
+    }
+    
+    var thumbnailList: [Media: UIImage?] {
+        output.thumbnailList.value
     }
 }
 
@@ -492,7 +484,7 @@ extension RecordViewModel {
     /// 선택 모드를 취소합니다.
     private func cancelSelectMode() {
         output.selectedRecordCells.accept([])
-        output.switchSelectMode.accept(false)
+        output.isSelectMode.accept(false)
         HapticManager.impact(style: .light)
     }
 }
@@ -500,16 +492,6 @@ extension RecordViewModel {
 // MARK: - Album Logic
 
 extension RecordViewModel {
-    
-    /// 썸네일 없이 전체 Media 리스트를 반환합니다.
-    ///
-    /// - 제외된 사진을 필터링합니다.
-    /// - 스크린샷이 제외되었을 때 필터링합니다.
-    private func fetchAllMediaListWithNoThumbnail() throws -> [Media] {
-        let album = output.record.value
-        return try photoKitService.fetchMediaList(from: album)
-            .filter { !Set(output.record.value.excludeMediaList).contains($0.id) }
-    }
     
     /// 전체 Media 리스트를 반환합니다.
     private func fetchAllMediaList(from assetIdentifiers: [String]) -> Observable<[Media]> {

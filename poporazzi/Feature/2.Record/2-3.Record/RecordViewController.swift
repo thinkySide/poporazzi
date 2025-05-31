@@ -13,12 +13,11 @@ final class RecordViewController: ViewController {
     
     private let scene = RecordView()
     private let viewModel: RecordViewModel
+    private let event = Event()
     
     private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
-    private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
     private var albumCache = Record.initialValue
     private var totalCount = 0
-    private var imageCache = [String: UIImage?]()
     
     private let contextMenuPresented = PublishRelay<IndexPath>()
     
@@ -39,6 +38,7 @@ final class RecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupCollectionView()
         setupDataSource()
         bind()
         setupMenu()
@@ -54,7 +54,73 @@ final class RecordViewController: ViewController {
 extension RecordViewController {
     
     struct Event {
-        
+        let willDisplayIndexPath = PublishRelay<IndexPath>()
+    }
+}
+
+// MARK: - UICollectionView
+
+extension RecordViewController {
+    
+    /// CollectionView를 세팅합니다.
+    private func setupCollectionView() {
+        let collectionView = scene.recordCollectionView
+        collectionView.delegate = self
+        collectionView.collectionViewLayout = collectionViewLayout
+        collectionView.register(
+            RecordCell.self,
+            forCellWithReuseIdentifier: RecordCell.identifier
+        )
+        collectionView.register(
+            RecordTitleHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
+            withReuseIdentifier: RecordTitleHeader.identifier
+        )
+        collectionView.register(
+            RecordDateHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
+            withReuseIdentifier: RecordDateHeader.identifier
+        )
+    }
+    
+    /// CollectionViewLayout을 반환합니다.
+    private var collectionViewLayout: UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+            let section = CollectionViewLayout.recordLayout
+            var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
+            
+            let subHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1),
+                    heightDimension: .absolute(36)
+                ),
+                elementKind: CollectionViewLayout.subHeaderKind,
+                alignment: .top
+            )
+            subHeader.pinToVisibleBounds = true
+            
+            if sectionIndex == 0 {
+                let mainHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1),
+                        heightDimension: .absolute(64)
+                    ),
+                    elementKind: CollectionViewLayout.mainHeaderKind,
+                    alignment: .top
+                )
+                mainHeader.zIndex = 0
+                supplementaryItems = [mainHeader, subHeader]
+            } else {
+                supplementaryItems = [subHeader]
+            }
+            section.boundarySupplementaryItems = supplementaryItems
+            
+            section.visibleItemsInvalidationHandler = { visibleItems, point, _ in
+                
+            }
+            
+            return section
+        }
     }
 }
 
@@ -64,8 +130,6 @@ extension RecordViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        scene.recordCollectionView.delegate = self
-        
         dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
@@ -73,8 +137,8 @@ extension RecordViewController {
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            if let cacheThumbnail = self.imageCache[media.id] {
-                cell.action(.setMedia(media, cacheThumbnail))
+            if let thumbnail = self.viewModel.thumbnailList[media] {
+                cell.action(.setMedia(media, thumbnail))
             } else {
                 cell.action(.setMedia(media, nil))
             }
@@ -141,11 +205,6 @@ extension RecordViewController {
     /// 페이지네이션 된 DataSource를 업데이트합니다.
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
-        
-        for media in mediaList {
-            imageCache.updateValue(media.thumbnail, forKey: media.id)
-        }
-        
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
@@ -182,7 +241,7 @@ extension RecordViewController {
             viewDidLoad: .just(()),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
-            recentIndexPath: recentIndexPath,
+            willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
             cellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
             cellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
@@ -191,13 +250,6 @@ extension RecordViewController {
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
-        
-        scene.recordCollectionView.rx.willDisplayCell
-            .bind(with: self) { owner, cell in
-                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
-                owner.recentIndexPath.accept(indexPath)
-            }
-            .disposed(by: disposeBag)
         
         output.record
             .bind(with: self) { owner, album in
@@ -223,10 +275,19 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.updateRecordCells
+        output.thumbnailList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, mediaList in
+            .bind(with: self) { owner, thumbnailList in
+                let mediaList = thumbnailList.map(\.key)
                 owner.updatePaginationDataSource(to: mediaList)
+            }
+            .disposed(by: disposeBag)
+        
+        scene.recordCollectionView.rx.willDisplayCell
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, cell in
+                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
+                owner.event.willDisplayIndexPath.accept(indexPath)
             }
             .disposed(by: disposeBag)
         
@@ -244,7 +305,7 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.switchSelectMode
+        output.isSelectMode
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, bool in
                 owner.scene.action(.toggleSelectMode(bool))
