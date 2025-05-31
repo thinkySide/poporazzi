@@ -14,7 +14,7 @@ final class AlbumDetailViewController: ViewController {
     private let scene = AlbumDetailView()
     private let viewModel: AlbumDetailViewModel
     
-    private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
+    private var dataSource: UICollectionViewDiffableDataSource<AlbumDetailSection, Media>!
     
     let event = Event()
     let disposeBag = DisposeBag()
@@ -56,6 +56,10 @@ extension AlbumDetailViewController {
     }
 }
 
+enum AlbumDetailSection: Hashable, Comparable {
+    case main
+}
+
 // MARK: - UICollectionView
 
 extension AlbumDetailViewController {
@@ -74,25 +78,13 @@ extension AlbumDetailViewController {
             forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
             withReuseIdentifier: RecordTitleHeader.identifier
         )
-        collectionView.register(
-            RecordDateHeader.self,
-            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
-            withReuseIdentifier: RecordDateHeader.identifier
-        )
     }
     
     /// CollectionViewLayout을 반환합니다.
     private var collectionViewLayout: UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             let section = CollectionViewLayout.threeStageSection
-            if sectionIndex == 0 {
-                section.boundarySupplementaryItems = [
-                    CollectionViewLayout.titleHeader,
-                    CollectionViewLayout.dateHeader
-                ]
-            } else {
-                section.boundarySupplementaryItems = [CollectionViewLayout.dateHeader]
-            }
+            section.boundarySupplementaryItems = [CollectionViewLayout.titleHeader]
             
             section.visibleItemsInvalidationHandler = { visibleItems, _, _ in
                 guard let self else { return }
@@ -109,7 +101,7 @@ extension AlbumDetailViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.mediaCollectionView) {
+        dataSource = UICollectionViewDiffableDataSource<AlbumDetailSection, Media>(collectionView: scene.mediaCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: RecordCell.identifier,
@@ -129,33 +121,16 @@ extension AlbumDetailViewController {
             [weak self] (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
             guard let self else { return nil }
             
-            if elementKind == CollectionViewLayout.mainHeaderKind && indexPath.section == 0 {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: elementKind,
-                    withReuseIdentifier: RecordTitleHeader.identifier,
-                    for: indexPath
-                ) as? RecordTitleHeader
-                
-                header?.action(.updateAlbumTitleLabel(viewModel.album.title))
-                header?.action(.updateTotalImageCountLabel(viewModel.mediaList.count))
-                
-                return header
-            } else {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: elementKind,
-                    withReuseIdentifier: RecordDateHeader.identifier,
-                    for: indexPath
-                ) as? RecordDateHeader
-                
-                if let section = dataSource.sectionIdentifier(for: indexPath.section) {
-                    switch section {
-                    case let .day(order, date):
-                        header?.action(.updateDayCountLabel(order))
-                        header?.action(.updateDateLabel(date))
-                    }
-                }
-                return header
-            }
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: elementKind,
+                withReuseIdentifier: RecordTitleHeader.identifier,
+                for: indexPath
+            ) as? RecordTitleHeader
+            
+            header?.action(.updateAlbumTitleLabel(viewModel.album.title))
+            header?.action(.updateTotalImageCountLabel(viewModel.mediaList.count))
+            
+            return header
         }
     }
     
@@ -169,14 +144,10 @@ extension AlbumDetailViewController {
     }
     
     /// 기본 DataSource를 업데이트합니다.
-    private func updateInitialDataSource(to sections: SectionMediaList) {
-        var snapshot = NSDiffableDataSourceSnapshot<MediaSection, Media>()
-        
-        for (section, medias) in sections {
-            snapshot.appendSections([section])
-            snapshot.appendItems(medias, toSection: section)
-        }
-        
+    private func updateInitialDataSource(to mediaList: [Media]) {
+        var snapshot = NSDiffableDataSourceSnapshot<AlbumDetailSection, Media>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(mediaList, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
@@ -236,13 +207,7 @@ extension AlbumDetailViewController {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, mediaList in
                 owner.updateTitleHeader()
-            }
-            .disposed(by: disposeBag)
-        
-        output.sectionMediaList
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, sectionMediaList in
-                owner.updateInitialDataSource(to: sectionMediaList)
+                owner.updateInitialDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)
         

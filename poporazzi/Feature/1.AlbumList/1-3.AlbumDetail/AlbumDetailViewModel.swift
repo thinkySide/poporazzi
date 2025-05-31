@@ -59,7 +59,6 @@ extension AlbumDetailViewModel {
         let album: BehaviorRelay<Album>
         
         let mediaList = BehaviorRelay<[Media]>(value: [])
-        let sectionMediaList = BehaviorRelay<SectionMediaList>(value: [])
         let thumbnailList = BehaviorRelay<[Media: UIImage?]>(value: [:])
         
         let isSelectMode = BehaviorRelay<Bool>(value: false)
@@ -158,10 +157,6 @@ extension AlbumDetailViewModel {
                 let mediaList = owner.photoKitService.fetchMediaList(from: owner.album)
                 owner.output.mediaList.accept(mediaList)
                 
-                let startDate = owner.album.creationDate
-                let sectionMediaList = mediaList.toSectionMediaList(startDate: startDate)
-                owner.output.sectionMediaList.accept(sectionMediaList)
-                
                 owner.output.viewDidRefresh.accept(())
             }
             .disposed(by: disposeBag)
@@ -169,10 +164,7 @@ extension AlbumDetailViewModel {
         // 현재 보이는 IndexPath를 기준으로 페이지네이션 여부 결정
         input.willDisplayIndexPath
             .emit(with: self) { owner, indexPath in
-                let index = owner.index(
-                    from: owner.sectionMediaList,
-                    indexPath: indexPath
-                )
+                let index = indexPath.item
                 
                 guard index <= owner.mediaList.count else { return }
                 
@@ -193,7 +185,7 @@ extension AlbumDetailViewModel {
                     owner.output.shouldBeFavorite.accept(owner.selectedMediaList.shouldBeFavorite)
                     
                 case false:
-                    let index = owner.index(from: owner.sectionMediaList, indexPath: indexPath)
+                    let index = indexPath.item
                     let media = owner.mediaList[index]
                     let image = owner.thumbnailList[media] ?? .init()
                     owner.navigation.accept(.presentDetail(owner.album, image, owner.mediaList, index))
@@ -357,10 +349,6 @@ extension AlbumDetailViewModel {
         output.mediaList.value
     }
     
-    var sectionMediaList: SectionMediaList {
-        output.sectionMediaList.value
-    }
-    
     var thumbnailList: [Media: UIImage?] {
         output.thumbnailList.value
     }
@@ -375,7 +363,7 @@ extension AlbumDetailViewModel {
     
     var selectedMediaList: [Media] {
         selectedIndexPathList.compactMap {
-            mediaList[index(from: sectionMediaList, indexPath: $0)]
+            mediaList[$0.item]
         }
     }
 }
@@ -448,7 +436,7 @@ extension AlbumDetailViewModel {
     
     /// Context Menu
     func contextMenu(from indexPath: IndexPath) -> [MenuModel] {
-        let index = index(from: sectionMediaList, indexPath: indexPath)
+        let index = indexPath.item
         let media = mediaList[index]
         let favorite = MenuModel(
             symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
