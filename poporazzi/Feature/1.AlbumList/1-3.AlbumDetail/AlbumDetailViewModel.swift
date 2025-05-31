@@ -15,10 +15,9 @@ final class AlbumDetailViewModel: ViewModel {
     
     private let paginationManager = PaginationManager(pageSize: 100, threshold: 10)
     
-    let disposeBag = DisposeBag()
     private let output: Output
     
-    
+    let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
     let menuAction = PublishRelay<MenuAction>()
     let contextMenuAction = PublishRelay<ContextMenuAction>()
@@ -48,7 +47,6 @@ extension AlbumDetailViewModel {
         let selectButtonTapped: Signal<Void>
         let selectCancelButtonTapped: Signal<Void>
         
-        let contextMenuPresented: Signal<IndexPath>
         let currentScrollOffset: Signal<CGPoint>
         
         let favoriteToolbarButtonTapped: Signal<Void>

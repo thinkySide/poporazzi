@@ -15,12 +15,12 @@ final class RecordViewModel: ViewModel {
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
     
-    private let disposeBag = DisposeBag()
     private let output: Output
     
     private var currentChunk = 0
     private let chunkSize = 100
     
+    let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
     let alertAction = PublishRelay<AlertAction>()
@@ -49,10 +49,8 @@ extension RecordViewModel {
         
         let recentIndexPath: BehaviorRelay<IndexPath>
         
-        let recordCellSelected: Signal<IndexPath>
-        let recordCellDeselected: Signal<IndexPath>
-        
-        let contextMenuPresented: Signal<IndexPath>
+        let cellSelected: Signal<IndexPath>
+        let cellDeselected: Signal<IndexPath>
         
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
@@ -252,7 +250,7 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.recordCellSelected
+        input.cellSelected
             .emit(with: self) { owner, indexPath in
                 switch owner.output.switchSelectMode.value {
                 case true:
@@ -275,20 +273,12 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.recordCellDeselected
+        input.cellDeselected
             .emit(with: self) { owner, indexPath in
                 var currentCells = owner.output.selectedRecordCells.value
                 currentCells.removeAll(where: { $0 == indexPath })
                 owner.output.selectedRecordCells.accept(currentCells)
                 owner.output.shoudBeFavorite.accept(owner.selectedMediaList().shouldBeFavorite)
-            }
-            .disposed(by: disposeBag)
-        
-        input.contextMenuPresented
-            .emit(with: self) { owner, indexPath in
-                let selectedMedia = owner.output.mediaList.value[owner.index(from: indexPath)]
-                let contextMenu = owner.contextMenu(from: selectedMedia)
-                owner.output.selectedContextMenu.accept(contextMenu)
             }
             .disposed(by: disposeBag)
         
@@ -605,7 +595,7 @@ extension RecordViewModel {
 extension RecordViewModel {
     
     /// 더보기 Menu
-    private var seemoreMenu: [MenuModel] {
+    var seemoreMenu: [MenuModel] {
         let editAlbum = MenuModel(symbol: .edit, title: "앨범 수정") { [weak self] in
             self?.menuAction.accept(.editAlbum)
         }
@@ -619,7 +609,7 @@ extension RecordViewModel {
     }
     
     /// 더보기 툴바 버튼 Menu
-    private var seemoreToolbarMenu: [MenuModel] {
+    var seemoreToolbarMenu: [MenuModel] {
         let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
             self?.menuAction.accept(.share)
         }
@@ -627,7 +617,8 @@ extension RecordViewModel {
     }
     
     /// Context Menu
-    private func contextMenu(from media: Media) -> [MenuModel] {
+    func contextMenu(from indexPath: IndexPath) -> [MenuModel] {
+        let media = output.mediaList.value[indexPath.item]
         let favorite = MenuModel(
             symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
             title: media.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"

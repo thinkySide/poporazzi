@@ -52,7 +52,6 @@ extension AlbumDetailViewController {
     
     struct Event {
         let willDisplayIndexPath = PublishRelay<IndexPath>()
-        let contextMenuPresented = PublishRelay<IndexPath>()
         let currentScrollOffset = PublishRelay<CGPoint>()
     }
 }
@@ -172,7 +171,6 @@ extension AlbumDetailViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        event.contextMenuPresented.accept(indexPath)
         return UIContextMenuConfiguration(
             identifier: nil,
             previewProvider: nil,
@@ -198,7 +196,6 @@ extension AlbumDetailViewController {
                 .asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap
                 .asSignal(),
-            contextMenuPresented: event.contextMenuPresented.asSignal(),
             currentScrollOffset: event.currentScrollOffset.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),

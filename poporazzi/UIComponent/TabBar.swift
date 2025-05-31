@@ -72,7 +72,7 @@ extension TabBar {
                 switch tab {
                 case .albumList:
                     albumListButton.alpha = 1
-                    recordButton.alpha = 0.3
+                    recordButton.alpha = 0.8
                     settingsButton.alpha = 0.3
                     
                 case .record:
@@ -82,17 +82,17 @@ extension TabBar {
                     
                 case .settings:
                     albumListButton.alpha = 0.3
-                    recordButton.alpha = 0.3
+                    recordButton.alpha = 0.8
                     settingsButton.alpha = 1
                 }
             }
             
         case let .updateRecordButton(isTracking):
             if isTracking {
-                let symbol = UIImage(symbol: .record, size: 22, weight: .black)
+                let symbol = UIImage(resource: .recording)
                 recordButton.setImage(symbol, for: .normal)
                 switch selectedTab {
-                case .albumList, .settings: recordButton.alpha = 0.3
+                case .albumList, .settings: recordButton.alpha = 0.8
                 case .record: recordButton.alpha = 1
                 }
                 recordButton.flex.markDirty()
