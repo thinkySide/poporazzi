@@ -30,7 +30,7 @@ final class SettingsViewModel: ViewModel {
 extension SettingsViewModel {
     
     struct Input {
-        
+        let writeAppStoreReviviewButton: Signal<Void>
     }
     
     struct Output {
@@ -47,6 +47,12 @@ extension SettingsViewModel {
 extension SettingsViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.writeAppStoreReviviewButton
+            .emit(with: self) { owner, _ in
+                print("writeAppStoreReviviewButton")
+            }
+            .disposed(by: disposeBag)
+        
         return output
     }
 }

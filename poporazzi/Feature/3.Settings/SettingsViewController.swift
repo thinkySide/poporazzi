@@ -45,7 +45,7 @@ extension SettingsViewController {
     
     func bind() {
         let input = SettingsViewModel.Input(
-            
+            writeAppStoreReviviewButton: scene.writeAppStoreReviviewButton.tapGesture.rx.event.asVoidSignal()
         )
         let output = viewModel.transform(input)
     }

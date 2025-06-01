@@ -15,8 +15,6 @@ final class RecordTitleHeader: UICollectionReusableView {
     
     var containerView = UIView()
     
-    private let messageBox = MessageBox()
-    
     /// 앨범 제목 라벨
     private let albumTitleLabel = UILabel("제목", size: 24, color: .mainLabel)
     
@@ -72,7 +70,6 @@ extension RecordTitleHeader {
         containerView.flex.direction(.column).backgroundColor(.white)
             .paddingHorizontal(4)
             .define { flex in
-                flex.addItem(messageBox)
                 flex.addItem(albumTitleLabel).marginTop(16)
                 flex.addItem(totalRecordCountLabel).marginTop(4).marginLeft(2)
             }
