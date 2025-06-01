@@ -36,17 +36,17 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 더보기 버튼
-    let seemoreButton = NavigationButton(buttonType: .seemore)
+    let seemoreButton = NavigationButton(buttonType: .seemore, variation: .tertiary)
     
     /// 선택 버튼
-    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
+    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .tertiary)
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
+        let button = NavigationButton(buttonType: .text("취소"), variation: .tertiary)
         button.isHidden = true
         return button
     }()
@@ -58,6 +58,12 @@ final class RecordView: CodeBaseUI {
     let dateLabel = UILabel(size: 16, color: .subLabel)
     
     let totalCountLabel = UILabel(size: 16, color: .subLabel)
+    
+    private let emptyView = UIView()
+    
+    let emptyFirstLabel = UILabel("📸  지금부터 촬영한 모든 기록을 저장할게요", size: 16, color: .subLabel)
+    
+    let emptySecondLabel = UILabel("👋  앨범 정리는 포포라치에게 맡기고 다녀오세요!", size: 16, color: .subLabel)
     
     /// ToolBar
     lazy var toolBar: ToolBar = {
@@ -140,6 +146,7 @@ extension RecordView {
             
         case let .updateTotalCountLabel(count):
             totalCountLabel.text = count == 0 ? "" : "총 \(count)장"
+            emptyView.isHidden = count > 0
             totalCountLabel.flex.markDirty()
             containerView.flex.layout()
             
@@ -202,6 +209,11 @@ extension RecordView {
                 flex.addItem(recordCollectionView).position(.absolute).all(0).cornerRadius(32)
             }
             
+            flex.addItem(emptyView)
+                .position(.absolute)
+                .alignSelf(.center)
+                .top(45%)
+            
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
         }
         
@@ -216,6 +228,11 @@ extension RecordView {
             flex.addItem(dateLabel).marginLeft(2)
             flex.addItem().grow(1)
             flex.addItem(totalCountLabel)
+        }
+        
+        emptyView.flex.direction(.column).alignItems(.center).define { flex in
+            flex.addItem(emptyFirstLabel)
+            flex.addItem(emptySecondLabel).marginTop(20)
         }
     }
 }
