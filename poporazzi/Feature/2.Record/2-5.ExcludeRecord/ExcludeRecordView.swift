@@ -88,7 +88,6 @@ final class ExcludeRecordView: CodeBaseUI {
             centers: [recoverToolBarButton, seemoreToolBarButton],
             trailing: removeToolBarButton
         )
-        toolBar.isHidden = true
         return toolBar
     }()
     
@@ -142,13 +141,17 @@ extension ExcludeRecordView {
             totalCountLabel.flex.markDirty()
             emptyLabel.isHidden = count > 0
             
-        case let .toggleSelectMode(bool):
-            recordCollectionView.allowsSelection = bool
-            recordCollectionView.allowsMultipleSelection = bool
-            [selectButton].forEach { $0.isHidden = bool }
-            [selectCancelButton, toolBar].forEach { $0.isHidden = !bool }
-            UIView.animate(withDuration: 0.2) { [weak self] in
-                self?.recordCollectionView.contentInset.bottom = bool ? 80 : 0
+        case let .toggleSelectMode(isSelectMode):
+            recordCollectionView.allowsSelection = false
+            recordCollectionView.allowsSelection = true
+            recordCollectionView.allowsMultipleSelection = isSelectMode
+            [selectButton].forEach { $0.isHidden = isSelectMode }
+            [selectCancelButton].forEach { $0.isHidden = !isSelectMode }
+            
+            UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut) { [weak self] in
+                self?.recordCollectionView.contentInset.bottom = isSelectMode ? 80 : 24
+                self?.toolBar.transform = isSelectMode ?
+                CGAffineTransform(translationX: 0, y: -128) : .identity
             }
             
         case let .toggleFavoriteMode(bool):
@@ -197,7 +200,9 @@ extension ExcludeRecordView {
             }
             
             flex.addItem(emptyLabel).position(.absolute).alignSelf(.center).top(45%)
-            flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
+            
+            flex.addItem(toolBar).position(.absolute)
+                .horizontally(0).bottom(-128)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
