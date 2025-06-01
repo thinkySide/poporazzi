@@ -31,7 +31,7 @@ extension SettingsViewModel {
     
     struct Input {
         let writeAppStoreReviviewButtonTapped: Signal<Void>
-        let requestFeatureAndInquiriesButtonTapped: Signal<Void>
+        let requestFeatureAndImprovementButtonTapped: Signal<Void>
         let shareWithFriendsButtonTapped: Signal<Void>
         
         let poporazziOpenChatRoomButtonTapped: Signal<Void>
@@ -59,9 +59,9 @@ extension SettingsViewModel {
             }
             .disposed(by: disposeBag)
         
-        input.requestFeatureAndInquiriesButtonTapped
+        input.requestFeatureAndImprovementButtonTapped
             .emit(with: self) { owner, _ in
-                
+                DeepLinkManager.openInquiryLink()
             }
             .disposed(by: disposeBag)
         

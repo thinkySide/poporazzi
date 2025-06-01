@@ -30,4 +30,11 @@ enum DeepLinkManager {
             UIApplication.shared.open(url)
         }
     }
+    
+    /// 문의 링크로 딥링크합니다.
+    static func openInquiryLink() {
+        if let url = URL(string: "https://open.kakao.com/o/s6CeCuzh") {
+            UIApplication.shared.open(url)
+        }
+    }
 }

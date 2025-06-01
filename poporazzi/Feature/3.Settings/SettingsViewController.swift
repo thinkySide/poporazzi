@@ -46,7 +46,7 @@ extension SettingsViewController {
     func bind() {
         let input = SettingsViewModel.Input(
             writeAppStoreReviviewButtonTapped: scene.writeAppStoreReviviewButton.tapGesture.rx.event.asVoidSignal(),
-            requestFeatureAndInquiriesButtonTapped: scene.requestFeatureAndInquiriesButton.tapGesture.rx.event.asVoidSignal(),
+            requestFeatureAndImprovementButtonTapped: scene.requestFeatureAndImprovementButton.tapGesture.rx.event.asVoidSignal(),
             shareWithFriendsButtonTapped: scene.shareWithFriendsButton.tapGesture.rx.event.asVoidSignal(),
             poporazziOpenChatRoomButtonTapped: scene.poporazziOpenChatRoomButton.tapGesture.rx.event.asVoidSignal(),
             instagramButtonTapped: scene.instagramButton.tapGesture.rx.event.asVoidSignal(),
