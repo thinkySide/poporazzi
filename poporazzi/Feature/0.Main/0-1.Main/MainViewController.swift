@@ -16,6 +16,9 @@ final class MainViewController: UITabBarController {
     
     private let viewWillAppear = PublishRelay<Void>()
     private var tabBarBottomConstraint: NSLayoutConstraint!
+    private var isTabBarTransitionAnimating = true
+    
+    private let noTransitionAnimator = NoTransitionAnimator()
     
     let disposeBag = DisposeBag()
     
@@ -42,12 +45,21 @@ final class MainViewController: UITabBarController {
     }
 }
 
+// MARK: - 내용입력
+
+extension MainViewController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        isTabBarTransitionAnimating ? nil : noTransitionAnimator
+    }
+}
+
 // MARK: - Setup
 
 extension MainViewController {
     
     /// TabBar를 세팅합니다.
     private func setupTabBar() {
+        self.delegate = self
         tabBar.isHidden = true
         view.addSubview(customTabBar)
         customTabBar.translatesAutoresizingMaskIntoConstraints = false
@@ -72,6 +84,7 @@ extension MainViewController {
         
         output.selectedTab
             .bind(with: self) { owner, tab in
+                owner.isTabBarTransitionAnimating = tab != .record(isTracking: false)
                 owner.selectedIndex = tab.index
                 owner.customTabBar.action(.updateTab(tab))
             }

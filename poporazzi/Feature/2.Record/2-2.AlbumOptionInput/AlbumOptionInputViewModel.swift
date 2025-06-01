@@ -19,7 +19,6 @@ final class AlbumOptionInputViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
-    let delegate = PublishRelay<Delegate>()
     
     init(output: Output) {
         self.output = output
@@ -58,10 +57,6 @@ extension AlbumOptionInputViewModel {
     enum Navigation {
         case pop
         case startRecord(Record)
-    }
-    
-    enum Delegate {
-        case startRecord
     }
 }
 
@@ -132,15 +127,6 @@ extension AlbumOptionInputViewModel {
         input.startButtonTapped
             .emit(with: self) { owner, _ in
                 owner.startRecord()
-            }
-            .disposed(by: disposeBag)
-        
-        delegate
-            .bind(with: self) { owner, delegate in
-                switch delegate {
-                case .startRecord:
-                    owner.startRecord()
-                }
             }
             .disposed(by: disposeBag)
         

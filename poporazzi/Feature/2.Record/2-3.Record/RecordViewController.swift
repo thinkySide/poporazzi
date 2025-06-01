@@ -13,15 +13,9 @@ final class RecordViewController: ViewController {
     
     private let scene = RecordView()
     private let viewModel: RecordViewModel
+    private let event = Event()
     
     private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
-    private let recentIndexPath = BehaviorRelay<IndexPath>(value: [])
-    private var albumCache = Record.initialValue
-    private var totalCount = 0
-    private var imageCache = [String: UIImage?]()
-    
-    private let contextMenuPresented = PublishRelay<IndexPath>()
-    private let selectedContextMenu = BehaviorRelay<[MenuModel]>(value: [])
     
     let disposeBag = DisposeBag()
     
@@ -40,12 +34,76 @@ final class RecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupCollectionView()
         setupDataSource()
         bind()
+        setupMenu()
     }
     
     deinit {
         Log.print(#file, .deinit)
+    }
+}
+
+// MARK: - Event
+
+extension RecordViewController {
+    
+    struct Event {
+        let willDisplayIndexPath = PublishRelay<IndexPath>()
+        let currentScrollOffset = PublishRelay<CGPoint>()
+    }
+}
+
+// MARK: - UICollectionView
+
+extension RecordViewController {
+    
+    /// CollectionView를 세팅합니다.
+    private func setupCollectionView() {
+        let collectionView = scene.recordCollectionView
+        collectionView.delegate = self
+        collectionView.collectionViewLayout = collectionViewLayout
+        collectionView.register(
+            RecordCell.self,
+            forCellWithReuseIdentifier: RecordCell.identifier
+        )
+        collectionView.register(
+            RecordTitleHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
+            withReuseIdentifier: RecordTitleHeader.identifier
+        )
+        collectionView.register(
+            RecordDateHeader.self,
+            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
+            withReuseIdentifier: RecordDateHeader.identifier
+        )
+    }
+    
+    /// CollectionViewLayout을 반환합니다.
+    private var collectionViewLayout: UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+            let section = CollectionViewLayout.recordLayout
+            
+            let subHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1),
+                    heightDimension: .absolute(56)
+                ),
+                elementKind: CollectionViewLayout.subHeaderKind,
+                alignment: .top
+            )
+            
+            subHeader.pinToVisibleBounds = true
+            section.boundarySupplementaryItems = [subHeader]
+            
+            section.visibleItemsInvalidationHandler = { visibleItems, point, _ in
+                guard let self else { return }
+                self.event.currentScrollOffset.accept(point)
+            }
+            
+            return section
+        }
     }
 }
 
@@ -55,8 +113,6 @@ extension RecordViewController {
     
     /// DataSource를 설정합니다.
     private func setupDataSource() {
-        scene.recordCollectionView.delegate = self
-        
         dataSource = UICollectionViewDiffableDataSource<MediaSection, Media>(collectionView: scene.recordCollectionView) {
             [weak self] (collectionView, indexPath, media) -> UICollectionViewCell? in
             guard let self, let cell = collectionView.dequeueReusableCell(
@@ -64,8 +120,8 @@ extension RecordViewController {
                 for: indexPath
             ) as? RecordCell else { return nil }
             
-            if let cacheThumbnail = self.imageCache[media.id] {
-                cell.action(.setMedia(media, cacheThumbnail))
+            if let thumbnail = self.viewModel.thumbnailList[media] {
+                cell.action(.setMedia(media, thumbnail))
             } else {
                 cell.action(.setMedia(media, nil))
             }
@@ -77,34 +133,21 @@ extension RecordViewController {
             [weak self] (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
             guard let self else { return nil }
             
-            if elementKind == CollectionViewLayout.mainHeaderKind && indexPath.section == 0 {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: elementKind,
-                    withReuseIdentifier: RecordTitleHeader.identifier,
-                    for: indexPath
-                ) as? RecordTitleHeader
-                
-                header?.action(.updateAlbumTitleLabel(albumCache.title))
-                header?.action(.updateTotalImageCountLabel(totalCount))
-                
-                return header
-            } else {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: elementKind,
-                    withReuseIdentifier: RecordDateHeader.identifier,
-                    for: indexPath
-                ) as? RecordDateHeader
-                
-                if let section = dataSource.sectionIdentifier(for: indexPath.section) {
-                    switch section {
-                    case let .day(order, date):
-                        header?.action(.updateDayCountLabel(order))
-                        header?.action(.updateDateLabel(date))
-                    }
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: elementKind,
+                withReuseIdentifier: RecordDateHeader.identifier,
+                for: indexPath
+            ) as? RecordDateHeader
+            
+            if let section = dataSource.sectionIdentifier(for: indexPath.section) {
+                switch section {
+                case let .day(order, date):
+                    header?.action(.updateDayCountLabel(order))
+                    header?.action(.updateDateLabel(date))
                 }
-                
-                return header
             }
+            
+            return header
         }
     }
     
@@ -132,13 +175,8 @@ extension RecordViewController {
     /// 페이지네이션 된 DataSource를 업데이트합니다.
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
-        
-        for media in mediaList {
-            imageCache.updateValue(media.thumbnail, forKey: media.id)
-        }
-        
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems(mediaList)
+        snapshot.reconfigureItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
@@ -153,12 +191,11 @@ extension RecordViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        contextMenuPresented.accept(indexPath)
-        return UIContextMenuConfiguration(
+        UIContextMenuConfiguration(
             identifier: nil,
             previewProvider: nil,
             actionProvider: { [weak self] _ in
-                self?.selectedContextMenu.value.toUIMenu
+                self?.viewModel.contextMenu(from: indexPath).toUIMenu
             }
         )
     }
@@ -171,40 +208,30 @@ extension RecordViewController {
     func bind() {
         let input = RecordViewModel.Input(
             viewDidLoad: .just(()),
+            willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
+            cellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
+            cellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
-            recentIndexPath: recentIndexPath,
-            recordCellSelected: scene.recordCollectionView.rx.itemSelected.asSignal(),
-            recordCellDeselected: scene.recordCollectionView.rx.itemDeselected.asSignal(),
-            contextMenuPresented: contextMenuPresented.asSignal(),
+            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal(),
+            currentScrollOffset: event.currentScrollOffset.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
-            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal(),
-            finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal()
+            removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
-        scene.recordCollectionView.rx.willDisplayCell
-            .bind(with: self) { owner, cell in
-                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
-                owner.recentIndexPath.accept(indexPath)
-            }
-            .disposed(by: disposeBag)
-        
         output.record
-            .bind(with: self) { owner, album in
-                owner.albumCache = album
-                owner.scene.action(.updateTitleLabel(album.title))
-                owner.scene.action(.updateInfoLabel(album))
+            .bind(with: self) { owner, record in
+                owner.scene.action(.updateRecordInfo(record))
             }
             .disposed(by: disposeBag)
         
         output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
-                owner.totalCount = medias.count
                 owner.updateTitleHeader()
-                owner.scene.action(.toggleEmptyLabel(medias.isEmpty))
+                owner.scene.action(.updateTotalCountLabel(medias.count))
             }
             .disposed(by: disposeBag)
         
@@ -215,48 +242,37 @@ extension RecordViewController {
             }
             .disposed(by: disposeBag)
         
-        output.updateRecordCells
+        output.thumbnailList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, mediaList in
+            .bind(with: self) { owner, thumbnailList in
+                let mediaList = thumbnailList.map(\.key)
                 owner.updatePaginationDataSource(to: mediaList)
             }
             .disposed(by: disposeBag)
         
-        output.selectedRecordCells
+        scene.recordCollectionView.rx.willDisplayCell
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, selectedMedias in
-                owner.scene.action(.updateSelectedCountLabel(selectedMedias.count))
+            .bind(with: self) { owner, cell in
+                let indexPath = IndexPath(row: cell.at.row, section: cell.at.section)
+                owner.event.willDisplayIndexPath.accept(indexPath)
             }
             .disposed(by: disposeBag)
         
-        output.setupSeeMoreMenu
-            .bind(with: self) { owner, menus in
-                owner.scene.seemoreButton.button.showsMenuAsPrimaryAction = true
-                owner.scene.seemoreButton.button.menu = menus.toUIMenu
-            }
-            .disposed(by: disposeBag)
-        
-        output.setupSeeMoreToolbarMenu
-            .bind(with: self) { owner, menus in
-                owner.scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
-                owner.scene.seemoreToolBarButton.button.menu = menus.toUIMenu
-            }
-            .disposed(by: disposeBag)
-        
-        output.selectedContextMenu
-            .bind(with: self) { owner, menus in
-                owner.selectedContextMenu.accept(menus)
-            }
-            .disposed(by: disposeBag)
-        
-        output.shoudBeFavorite
+        output.selectedIndexPathList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, bool in
-                owner.scene.action(.toggleFavoriteMode(bool))
+            .bind(with: self) { owner, indexPathList in
+                owner.scene.action(.updateSelectedCountLabel(indexPathList.count))
             }
             .disposed(by: disposeBag)
         
-        output.switchSelectMode
+        output.shouldBeFavorite
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isFavorite in
+                owner.scene.action(.toggleFavoriteMode(isFavorite))
+            }
+            .disposed(by: disposeBag)
+        
+        output.isSelectMode
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, bool in
                 owner.scene.action(.toggleSelectMode(bool))
@@ -283,5 +299,13 @@ extension RecordViewController {
                 owner.scene.action(.toggleLoading(isActive))
             }
             .disposed(by: disposeBag)
+    }
+    
+    func setupMenu() {
+        scene.seemoreButton.button.showsMenuAsPrimaryAction = true
+        scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
+        
+        scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
+        scene.seemoreToolBarButton.button.menu = viewModel.seemoreToolbarMenu.toUIMenu
     }
 }

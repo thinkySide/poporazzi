@@ -14,7 +14,7 @@ final class RecordDateHeader: UICollectionReusableView {
     static let identifier = "RecordDateHeader"
     
     var containerView = UIView()
-
+    
     /// 날짜 카운트 라벨
     private let dayCountLabel: UILabel = {
         let label = UILabel()
@@ -42,7 +42,7 @@ final class RecordDateHeader: UICollectionReusableView {
         containerView.pin.all()
         containerView.flex.layout()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -77,12 +77,12 @@ extension RecordDateHeader {
 extension RecordDateHeader {
     
     func configLayout() {
-        containerView.flex.direction(.row).backgroundColor(.white)
+        containerView.flex.direction(.row).alignItems(.end).backgroundColor(.white)
             .paddingHorizontal(4)
-            .paddingTop(8)
+            .paddingBottom(4)
             .define { flex in
-            flex.addItem(dayCountLabel)
-            flex.addItem(dateLabel).marginLeft(8)
-        }
+                flex.addItem(dayCountLabel)
+                flex.addItem(dateLabel).marginLeft(8).paddingTop(4)
+            }
     }
 }

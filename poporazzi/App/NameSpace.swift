@@ -13,7 +13,7 @@ enum NameSpace {
     static let sheetRadius: CGFloat = 40
     
     /// TabBar 사이즈
-    static let tabBarSize: CGFloat = 72
+    static let tabBarSize: CGFloat = 88
     
     /// 선택 모드 여부
     static var isSelectionMode = false

@@ -16,16 +16,17 @@ final class RecordView: CodeBaseUI {
     /// 로딩 인디케이터
     private let loadingIndicator = LoadingIndicator()
     
-    /// Header
-    let headerView = UIView()
-    
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
-        leading: titleLabel,
+        leading: recordIcon,
         trailing: navigationTrailingButtons
     )
     
-    private let titleLabel = UILabel("기록 중", size: 20, color: .mainLabel)
+    private let recordIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = .recordText
+        return imageView
+    }()
     
     /// 오른쪽 버튼들
     private let navigationTrailingButtons: UIView = {
@@ -35,20 +36,34 @@ final class RecordView: CodeBaseUI {
     }()
     
     /// 더보기 버튼
-    let seemoreButton = NavigationButton(buttonType: .seemore)
+    let seemoreButton = NavigationButton(buttonType: .seemore, variation: .tertiary)
     
     /// 선택 버튼
-    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
+    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .tertiary)
     
     /// 기록 종료 버튼
     let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
+        let button = NavigationButton(buttonType: .text("취소"), variation: .tertiary)
         button.isHidden = true
         return button
     }()
+    
+    private let headerView = UIView()
+    
+    let titleLabel = UILabel(size: 24, color: .mainLabel)
+    
+    let dateLabel = UILabel(size: 16, color: .subLabel)
+    
+    let totalCountLabel = UILabel(size: 16, color: .subLabel)
+    
+    private let emptyView = UIView()
+    
+    let emptyFirstLabel = UILabel("📸  지금부터 촬영한 모든 기록을 저장할게요", size: 16, color: .subLabel)
+    
+    let emptySecondLabel = UILabel("👋  앨범 정리는 포포라치에게 맡기고 다녀오세요!", size: 16, color: .subLabel)
     
     /// ToolBar
     lazy var toolBar: ToolBar = {
@@ -73,19 +88,6 @@ final class RecordView: CodeBaseUI {
     /// 삭제 툴 바 버튼
     let removeToolBarButton = ToolBarButton(.remove)
     
-    /// 앨범 제목 라벨
-    private let albumTitleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .setDovemayo(24)
-        label.textColor = .mainLabel
-        return label
-    }()
-    
-    /// 총 기록 개수 라벨
-    private let totalRecordCountLabel = UILabel("총 0장", size: 16, color: .subLabel)
-    
-    private let emptyView = UIView()
-    
     /// 앱 아이콘
     private let appIconImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(resource: .appIcon))
@@ -93,55 +95,17 @@ final class RecordView: CodeBaseUI {
         return imageView
     }()
     
-    /// 촬영된 사진이 없을 때 라벨
-    private let emptyLabel = UILabel("지금부터 포포라치가 기록을 시작할게요!", size: 16, color: .mainLabel)
-    
-    /// 직접 촬영 라벨
-    let selfShootingInfoLabel = SymbolLabel(
-        symbol: .check,
-        tintColor: .brandPrimary
-    )
-    
-    /// 다운로드 라벨
-    let downloadInfoLabel = SymbolLabel(
-        symbol: .check,
-        tintColor: .brandPrimary
-    )
-    
-    /// 스크린샷 라벨
-    let screenshotInfoLabel = SymbolLabel(
-        symbol: .check,
-        tintColor: .brandPrimary
-    )
-    
-    /// 기록 컬렉션 뷰
+    /// 미디어 컬렉션 뷰
     let recordCollectionView: UICollectionView = {
-        let collectionView = UICollectionView(
-            frame: .zero,
-            collectionViewLayout: CollectionViewLayout.recordHeaderSection
-        )
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: .init())
         collectionView.backgroundColor = .white
-        collectionView.contentInset.bottom = 24
-        collectionView.register(
-            RecordCell.self,
-            forCellWithReuseIdentifier: RecordCell.identifier
-        )
-        collectionView.register(
-            RecordTitleHeader.self,
-            forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
-            withReuseIdentifier: RecordTitleHeader.identifier
-        )
-        collectionView.register(
-            RecordDateHeader.self,
-            forSupplementaryViewOfKind: CollectionViewLayout.subHeaderKind,
-            withReuseIdentifier: RecordDateHeader.identifier
-        )
+        collectionView.clipsToBounds = true
         return collectionView
     }()
     
     init() {
         super.init(frame: .zero)
-        setup()
+        setup(color: .brandTertiary)
         addSubview(loadingIndicator)
     }
     
@@ -163,9 +127,8 @@ final class RecordView: CodeBaseUI {
 extension RecordView {
     
     enum Action {
-        case updateTitleLabel(String)
-        case updateInfoLabel(Record)
-        case toggleEmptyLabel(Bool)
+        case updateRecordInfo(Record)
+        case updateTotalCountLabel(Int)
         case toggleSelectMode(Bool)
         case toggleFavoriteMode(Bool)
         case updateSelectedCountLabel(Int)
@@ -175,54 +138,17 @@ extension RecordView {
     func action(_ action: Action) {
         defer { containerView.flex.layout() }
         switch action {
-        case let .updateTitleLabel(text):
-            albumTitleLabel.text = text
-            albumTitleLabel.flex.markDirty()
+        case let .updateRecordInfo(record):
+            titleLabel.text = record.title
+            dateLabel.text = record.startDate.startDateFormat
+            [titleLabel, dateLabel].forEach { $0.flex.markDirty() }
             containerView.flex.layout()
             
-        case let .updateInfoLabel(album):
-            let fetchOption = album.mediaFetchOption.title
-            
-            if album.mediaFilterOption.isContainSelfShooting {
-                selfShootingInfoLabel.action(.updateLabel("직접 촬영한 \(fetchOption)"))
-                selfShootingInfoLabel.action(.toggleSymbol(true))
-                selfShootingInfoLabel.flex.display(.flex)
-            } else {
-                selfShootingInfoLabel.action(.updateLabel(""))
-                selfShootingInfoLabel.action(.toggleSymbol(false))
-                selfShootingInfoLabel.flex.display(.none)
-            }
-            
-            if album.mediaFilterOption.isContainDownload {
-                downloadInfoLabel.action(.updateLabel("다운로드한 \(fetchOption)"))
-                downloadInfoLabel.action(.toggleSymbol(true))
-                downloadInfoLabel.flex.display(.flex)
-            } else {
-                downloadInfoLabel.action(.updateLabel(""))
-                downloadInfoLabel.action(.toggleSymbol(false))
-                downloadInfoLabel.flex.display(.none)
-            }
-            
-            if album.mediaFilterOption.isContainScreenshot && album.mediaFetchOption != .video {
-                screenshotInfoLabel.action(.updateLabel("스크린샷"))
-                screenshotInfoLabel.action(.toggleSymbol(true))
-                screenshotInfoLabel.flex.display(.flex)
-            } else {
-                screenshotInfoLabel.action(.updateLabel(""))
-                screenshotInfoLabel.action(.toggleSymbol(false))
-                screenshotInfoLabel.flex.display(.none)
-            }
-            
-        case let .toggleEmptyLabel(isEmpty):
-            let display: Flex.Display = isEmpty ? .flex : .none
-            headerView.flex.display(display)
-            emptyView.flex.display(display)
-            
-            if !isEmpty {
-                selfShootingInfoLabel.action(.toggleSymbol(false))
-                downloadInfoLabel.action(.toggleSymbol(false))
-                screenshotInfoLabel.action(.toggleSymbol(false))
-            }
+        case let .updateTotalCountLabel(count):
+            totalCountLabel.text = count == 0 ? "" : "총 \(count)장"
+            emptyView.isHidden = count > 0
+            totalCountLabel.flex.markDirty()
+            containerView.flex.layout()
             
         case let .toggleSelectMode(bool):
             recordCollectionView.allowsSelection = false
@@ -271,34 +197,24 @@ extension RecordView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem(headerView)
-                .marginTop(12)
-                .paddingHorizontal(20)
+            flex.addItem(titleLabel)
+                .marginHorizontal(20)
+                .marginTop(0)
             
-            flex.addItem().grow(1).marginTop(12).define { flex in
-                flex.addItem(recordCollectionView).position(.absolute).all(0)
+            flex.addItem(headerView)
+                .paddingHorizontal(20)
+                .marginTop(6)
+            
+            flex.addItem().grow(1).marginTop(16).define { flex in
+                flex.addItem(recordCollectionView).position(.absolute).all(0).cornerRadius(32)
             }
             
             flex.addItem(emptyView)
                 .position(.absolute)
                 .alignSelf(.center)
-                .alignItems(.center)
-                .top(35%)
+                .top(45%)
             
             flex.addItem(toolBar).position(.absolute).horizontally(0).bottom(0)
-        }
-        
-        headerView.flex.direction(.row).justifyContent(.spaceBetween).define { flex in
-            flex.addItem(albumTitleLabel).marginRight(4).shrink(1)
-            flex.addItem(totalRecordCountLabel)
-        }
-        
-        emptyView.flex.define { flex in
-            flex.addItem(appIconImageView).size(CGSize(width: 56, height: 56))
-            flex.addItem(emptyLabel).marginTop(16)
-            flex.addItem(selfShootingInfoLabel).marginTop(12)
-            flex.addItem(downloadInfoLabel).marginTop(10)
-            flex.addItem(screenshotInfoLabel).marginTop(10)
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
@@ -306,6 +222,17 @@ extension RecordView {
             flex.addItem(selectButton).marginLeft(8)
             flex.addItem(finishRecordButton).marginLeft(8)
             flex.addItem(selectCancelButton).position(.absolute).right(0)
+        }
+        
+        headerView.flex.direction(.row).define { flex in
+            flex.addItem(dateLabel).marginLeft(2)
+            flex.addItem().grow(1)
+            flex.addItem(totalCountLabel)
+        }
+        
+        emptyView.flex.direction(.column).alignItems(.center).define { flex in
+            flex.addItem(emptyFirstLabel)
+            flex.addItem(emptySecondLabel).marginTop(20)
         }
     }
 }

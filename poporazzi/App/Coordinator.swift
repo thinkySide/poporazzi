@@ -124,7 +124,7 @@ final class Coordinator: NSObject {
                 case .presentPermissionRequestModal:
                     mainViewModel?.delegate.accept(.presentAuthRequestModal)
                     
-                case let .pushDetail(record, initialImage, mediaList, selectedRow):
+                case let .presentDetail(record, initialImage, mediaList, selectedRow):
                     owner.presentMediaDetail(recordVM, .record(record), initialImage, mediaList, selectedRow)
                 }
             }
@@ -198,7 +198,7 @@ extension Coordinator {
         
         albumOptionVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak startNavigation] owner, path in
                 switch path {
                 case .pop:
                     startNavigation?.popViewController(animated: true)

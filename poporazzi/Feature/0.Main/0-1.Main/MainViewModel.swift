@@ -124,7 +124,7 @@ extension MainViewModel {
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case .startRecord:
-                    owner.output.selectedTab.accept(.record(isTracking: true))
+                    owner.output.selectedTab.accept(.record(isTracking: false))
                     owner.output.isTracking.accept(true)
                     
                 case .finishRecord:

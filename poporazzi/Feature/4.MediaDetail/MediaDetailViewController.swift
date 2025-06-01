@@ -200,13 +200,6 @@ extension MediaDetailViewController {
             }
             .disposed(by: disposeBag)
         
-//        event.currentIndex
-//            .observe(on: MainScheduler.instance)
-//            .bind(with: self) { owner, selectedRow in
-//                owner.selectedRow = selectedRow
-//            }
-//            .disposed(by: disposeBag)
-        
         output.updateMediaInfo
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, info in

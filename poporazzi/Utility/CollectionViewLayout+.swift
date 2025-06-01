@@ -14,13 +14,13 @@ struct CollectionViewLayout {
     
     /// 기본 3단 레이아웃을 반환합니다.
     static var recordThreeColumns: UICollectionViewCompositionalLayout {
-        UICollectionViewCompositionalLayout(section: recordSection)
+        UICollectionViewCompositionalLayout(section: recordLayout)
     }
     
     /// Header가 포함된 레이아웃을 반환합니다.
     static var recordHeaderSection: UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { sectionIndex, environment in
-            let section = recordSection
+            let section = recordLayout
             var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
             
             let subHeader = NSCollectionLayoutBoundarySupplementaryItem(
@@ -99,7 +99,7 @@ extension CollectionViewLayout {
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
-                heightDimension: .absolute(64)
+                heightDimension: .absolute(48)
             ),
             elementKind: CollectionViewLayout.mainHeaderKind,
             alignment: .top
@@ -128,7 +128,7 @@ extension CollectionViewLayout {
 extension CollectionViewLayout {
     
     /// 기록용 3단 레이아웃 Section을 반환합니다.
-    private static var recordSection: NSCollectionLayoutSection {
+    static var recordLayout: NSCollectionLayoutSection {
         
         // 1. 기본값 변수 저장
         let numberOfRows: CGFloat = 3
@@ -157,7 +157,7 @@ extension CollectionViewLayout {
         
         // 4. 섹션 설정
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .init(top: 8, leading: 16, bottom: 32, trailing: 16)
+        section.contentInsets = .init(top: 8, leading: 16, bottom: 24, trailing: 16)
         
         return section
     }

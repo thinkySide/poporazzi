@@ -52,7 +52,6 @@ extension AlbumDetailViewController {
     
     struct Event {
         let willDisplayIndexPath = PublishRelay<IndexPath>()
-        let contextMenuPresented = PublishRelay<IndexPath>()
         let currentScrollOffset = PublishRelay<CGPoint>()
     }
 }
@@ -75,9 +74,9 @@ extension AlbumDetailViewController {
             forCellWithReuseIdentifier: RecordCell.identifier
         )
         collectionView.register(
-            RecordTitleHeader.self,
+            AlbumDetailHeader.self,
             forSupplementaryViewOfKind: CollectionViewLayout.mainHeaderKind,
-            withReuseIdentifier: RecordTitleHeader.identifier
+            withReuseIdentifier: AlbumDetailHeader.identifier
         )
     }
     
@@ -125,9 +124,9 @@ extension AlbumDetailViewController {
             
             let header = collectionView.dequeueReusableSupplementaryView(
                 ofKind: elementKind,
-                withReuseIdentifier: RecordTitleHeader.identifier,
+                withReuseIdentifier: AlbumDetailHeader.identifier,
                 for: indexPath
-            ) as? RecordTitleHeader
+            ) as? AlbumDetailHeader
             
             header?.action(.updateAlbumTitleLabel(viewModel.album.title))
             header?.action(.updateTotalImageCountLabel(viewModel.mediaList.count))
@@ -172,7 +171,6 @@ extension AlbumDetailViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        event.contextMenuPresented.accept(indexPath)
         return UIContextMenuConfiguration(
             identifier: nil,
             previewProvider: nil,
@@ -198,7 +196,6 @@ extension AlbumDetailViewController {
                 .asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap
                 .asSignal(),
-            contextMenuPresented: event.contextMenuPresented.asSignal(),
             currentScrollOffset: event.currentScrollOffset.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
