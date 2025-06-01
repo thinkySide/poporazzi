@@ -30,7 +30,13 @@ final class SettingsViewModel: ViewModel {
 extension SettingsViewModel {
     
     struct Input {
-        let writeAppStoreReviviewButton: Signal<Void>
+        let writeAppStoreReviviewButtonTapped: Signal<Void>
+        let requestFeatureAndInquiriesButtonTapped: Signal<Void>
+        let shareWithFriendsButtonTapped: Signal<Void>
+        
+        let poporazziOpenChatRoomButtonTapped: Signal<Void>
+        let instagramButtonTapped: Signal<Void>
+        let threadButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -47,9 +53,39 @@ extension SettingsViewModel {
 extension SettingsViewModel {
     
     func transform(_ input: Input) -> Output {
-        input.writeAppStoreReviviewButton
+        input.writeAppStoreReviviewButtonTapped
             .emit(with: self) { owner, _ in
-                print("writeAppStoreReviviewButton")
+                DeepLinkManager.openAppStoreReview()
+            }
+            .disposed(by: disposeBag)
+        
+        input.requestFeatureAndInquiriesButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
+        input.shareWithFriendsButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
+        input.poporazziOpenChatRoomButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
+        input.instagramButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
+        input.threadButtonTapped
+            .emit(with: self) { owner, _ in
+                
             }
             .disposed(by: disposeBag)
         

@@ -16,14 +16,11 @@ enum VersionManager {
         case version
         case appStore
         
-        /// 포포라치 App ID
-        static let appleId = "6744402068"
-        
         /// 각 URLString을 반환합니다.
         var value: String {
             switch self {
-            case .version: "http://itunes.apple.com/lookup?id=\(URLString.appleId)"
-            case .appStore: "itms-apps://itunes.apple.com/app/apple-store/\(URLString.appleId)"
+            case .version: "http://itunes.apple.com/lookup?id=\(NameSpace.appleId)"
+            case .appStore: "itms-apps://itunes.apple.com/app/apple-store/\(NameSpace.appleId)"
             }
         }
     }

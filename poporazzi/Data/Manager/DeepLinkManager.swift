@@ -23,4 +23,11 @@ enum DeepLinkManager {
             UIApplication.shared.open(url)
         }
     }
+    
+    /// 앱스토어 리뷰 페이지로 딥링크합니다.
+    static func openAppStoreReview() {
+        if let url = URL(string: "https://apps.apple.com/app/id\(NameSpace.appleId)?action=write-review") {
+            UIApplication.shared.open(url)
+        }
+    }
 }
