@@ -26,7 +26,7 @@ extension Date {
     
     /// 시작 날짜 포맷을 반환합니다.
     var startDateFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 EEEE~"
+        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 EEEE ~"
         return Date.dateFormatter.string(from: self)
     }
     

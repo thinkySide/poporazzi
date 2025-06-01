@@ -51,6 +51,8 @@ extension RecordViewModel {
         let selectCancelButtonTapped: Signal<Void>
         let finishButtonTapped: Signal<Void>
         
+        let currentScrollOffset: Signal<CGPoint>
+        
         let favoriteToolbarButtonTapped: Signal<Void>
         let excludeToolbarButtonTapped: Signal<Void>
         let removeToolbarButtonTapped: Signal<Void>
@@ -66,6 +68,7 @@ extension RecordViewModel {
         
         let isSelectMode = BehaviorRelay<Bool>(value: false)
         let shouldBeFavorite = BehaviorRelay<Bool>(value: true)
+        let currentScrollOffset = BehaviorRelay<CGFloat>(value: 0)
         
         let viewDidRefresh = PublishRelay<Void>()
         let pagination = PublishRelay<Void>()
@@ -237,6 +240,32 @@ extension RecordViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.currentScrollOffset
+            .distinctUntilChanged()
+            .emit(with: self) { owner, point in
+                let scrollThreshold: CGFloat = 10
+                let currentY = point.y
+                
+                if currentY <= 0 {
+                    owner.navigation.accept(.toggleTabBar(true))
+                    return
+                }
+                
+                let previousY = owner.output.currentScrollOffset.value
+                let deltaY = currentY - previousY
+                
+                guard abs(deltaY) > scrollThreshold else { return }
+                
+                if deltaY > 0 {
+                    owner.navigation.accept(.toggleTabBar(false))
+                } else {
+                    owner.navigation.accept(.toggleTabBar(true))
+                }
+                
+                owner.output.currentScrollOffset.accept(currentY)
+            }
+            .disposed(by: disposeBag)
+        
         input.selectButtonTapped
             .emit(with: self) { owner, _ in
                 owner.output.isSelectMode.accept(true)
@@ -293,6 +322,7 @@ extension RecordViewModel {
                         owner.output.record.value,
                         owner.output.sectionMediaList.value
                     ))
+                    HapticManager.impact(style: .light)
                 }
             }
             .disposed(by: disposeBag)

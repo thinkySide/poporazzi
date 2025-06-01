@@ -17,8 +17,6 @@ final class NavigationButton: CodeBaseUI {
         case back
         case xmark
         case seemore
-        
-        // case systemIcon(SFSymbol, size: CGFloat, weight: UIImage.SymbolWeight)
     }
     
     enum Variation {
@@ -30,15 +28,15 @@ final class NavigationButton: CodeBaseUI {
             switch self {
             case .primary: .brandPrimary
             case .secondary: .brandSecondary
-            case .tertiary: .brandTertiary
+            case .tertiary: .subButton
             }
         }
         
         var titleColor: UIColor {
             switch self {
             case .primary: .white
-            case .secondary: .subLabel
-            case .tertiary: .subLabel
+            case .secondary: .subIcon
+            case .tertiary: .subIcon
             }
         }
     }

@@ -114,8 +114,8 @@ extension TabBar {
 extension TabBar {
     
     func configLayout() {
-        let buttonHeight: CGFloat = 48
-        containerView.flex.height(NameSpace.tabBarSize)
+        let buttonHeight: CGFloat = 64
+        containerView.flex.cornerRadius(20).height(NameSpace.tabBarSize)
             .direction(.row)
             .paddingHorizontal(20)
             .define { flex in

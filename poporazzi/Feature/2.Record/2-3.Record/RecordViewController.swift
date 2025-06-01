@@ -16,10 +16,6 @@ final class RecordViewController: ViewController {
     private let event = Event()
     
     private var dataSource: UICollectionViewDiffableDataSource<MediaSection, Media>!
-    private var albumCache = Record.initialValue
-    private var totalCount = 0
-    
-    private let contextMenuPresented = PublishRelay<IndexPath>()
     
     let disposeBag = DisposeBag()
     
@@ -55,6 +51,7 @@ extension RecordViewController {
     
     struct Event {
         let willDisplayIndexPath = PublishRelay<IndexPath>()
+        let currentScrollOffset = PublishRelay<CGPoint>()
     }
 }
 
@@ -87,36 +84,22 @@ extension RecordViewController {
     private var collectionViewLayout: UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             let section = CollectionViewLayout.recordLayout
-            var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
             
             let subHeader = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1),
-                    heightDimension: .absolute(36)
+                    heightDimension: .absolute(56)
                 ),
                 elementKind: CollectionViewLayout.subHeaderKind,
                 alignment: .top
             )
-            subHeader.pinToVisibleBounds = true
             
-            if sectionIndex == 0 {
-                let mainHeader = NSCollectionLayoutBoundarySupplementaryItem(
-                    layoutSize: NSCollectionLayoutSize(
-                        widthDimension: .fractionalWidth(1),
-                        heightDimension: .absolute(64)
-                    ),
-                    elementKind: CollectionViewLayout.mainHeaderKind,
-                    alignment: .top
-                )
-                mainHeader.zIndex = 0
-                supplementaryItems = [mainHeader, subHeader]
-            } else {
-                supplementaryItems = [subHeader]
-            }
-            section.boundarySupplementaryItems = supplementaryItems
+            subHeader.pinToVisibleBounds = true
+            section.boundarySupplementaryItems = [subHeader]
             
             section.visibleItemsInvalidationHandler = { visibleItems, point, _ in
-                
+                guard let self else { return }
+                self.event.currentScrollOffset.accept(point)
             }
             
             return section
@@ -150,34 +133,21 @@ extension RecordViewController {
             [weak self] (collectionView, elementKind, indexPath) -> UICollectionReusableView? in
             guard let self else { return nil }
             
-            if elementKind == CollectionViewLayout.mainHeaderKind && indexPath.section == 0 {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: elementKind,
-                    withReuseIdentifier: RecordTitleHeader.identifier,
-                    for: indexPath
-                ) as? RecordTitleHeader
-                
-                header?.action(.updateAlbumTitleLabel(albumCache.title))
-                header?.action(.updateTotalImageCountLabel(totalCount))
-                
-                return header
-            } else {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: elementKind,
-                    withReuseIdentifier: RecordDateHeader.identifier,
-                    for: indexPath
-                ) as? RecordDateHeader
-                
-                if let section = dataSource.sectionIdentifier(for: indexPath.section) {
-                    switch section {
-                    case let .day(order, date):
-                        header?.action(.updateDayCountLabel(order))
-                        header?.action(.updateDateLabel(date))
-                    }
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: elementKind,
+                withReuseIdentifier: RecordDateHeader.identifier,
+                for: indexPath
+            ) as? RecordDateHeader
+            
+            if let section = dataSource.sectionIdentifier(for: indexPath.section) {
+                switch section {
+                case let .day(order, date):
+                    header?.action(.updateDayCountLabel(order))
+                    header?.action(.updateDateLabel(date))
                 }
-                
-                return header
             }
+            
+            return header
         }
     }
     
@@ -221,8 +191,7 @@ extension RecordViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        contextMenuPresented.accept(indexPath)
-        return UIContextMenuConfiguration(
+        UIContextMenuConfiguration(
             identifier: nil,
             previewProvider: nil,
             actionProvider: { [weak self] _ in
@@ -245,6 +214,7 @@ extension RecordViewController {
             selectButtonTapped: scene.selectButton.button.rx.tap.asSignal(),
             selectCancelButtonTapped: scene.selectCancelButton.button.rx.tap.asSignal(),
             finishButtonTapped: scene.finishRecordButton.button.rx.tap.asSignal(),
+            currentScrollOffset: event.currentScrollOffset.asSignal(),
             favoriteToolbarButtonTapped: scene.favoriteToolBarButton.button.rx.tap.asSignal(),
             excludeToolbarButtonTapped: scene.excludeToolBarButton.button.rx.tap.asSignal(),
             removeToolbarButtonTapped: scene.removeToolBarButton.button.rx.tap.asSignal()
@@ -252,19 +222,16 @@ extension RecordViewController {
         let output = viewModel.transform(input)
         
         output.record
-            .bind(with: self) { owner, album in
-                owner.albumCache = album
-                owner.scene.action(.updateTitleLabel(album.title))
-                owner.scene.action(.updateInfoLabel(album))
+            .bind(with: self) { owner, record in
+                owner.scene.action(.updateRecordInfo(record))
             }
             .disposed(by: disposeBag)
         
         output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, medias in
-                owner.totalCount = medias.count
                 owner.updateTitleHeader()
-                owner.scene.action(.toggleEmptyLabel(medias.isEmpty))
+                owner.scene.action(.updateTotalCountLabel(medias.count))
             }
             .disposed(by: disposeBag)
         
@@ -337,7 +304,7 @@ extension RecordViewController {
     func setupMenu() {
         scene.seemoreButton.button.showsMenuAsPrimaryAction = true
         scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
-
+        
         scene.seemoreToolBarButton.button.showsMenuAsPrimaryAction = true
         scene.seemoreToolBarButton.button.menu = viewModel.seemoreToolbarMenu.toUIMenu
     }
