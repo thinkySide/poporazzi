@@ -11,9 +11,9 @@ import RxCocoa
 
 final class SettingsViewModel: ViewModel {
     
-    private let disposeBag = DisposeBag()
     private let output: Output
     
+    let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
     
     init(output: Output) {
@@ -44,7 +44,7 @@ extension SettingsViewModel {
     }
     
     enum Navigation {
-        
+        case presentAppStoreLinkShareSheet(String, URL)
     }
 }
 
@@ -67,7 +67,19 @@ extension SettingsViewModel {
         
         input.shareWithFriendsButtonTapped
             .emit(with: self) { owner, _ in
-                
+                let appStoreLink = DeepLinkManager.appStoreLink
+                if let url = URL(string: appStoreLink) {
+                    owner.navigation.accept(.presentAppStoreLinkShareSheet(
+                        """
+                        사진, 앨범 정리하는게 힘들 땐 포포라치를 사용해보세요!
+                        
+                        1. 여행이나 데이트 전 기록 시작하기 버튼 꾹 눌러놓기
+                        2. 내 맘대로 즐기며 마음껏 사진 찍기
+                        3. 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기
+                        """,
+                        url
+                    ))
+                }
             }
             .disposed(by: disposeBag)
         

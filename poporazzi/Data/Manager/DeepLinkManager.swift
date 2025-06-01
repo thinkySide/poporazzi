@@ -10,6 +10,9 @@ import UIKit
 /// DeepLink 관리용
 enum DeepLinkManager {
     
+    /// 기본 앱스토어 링크
+    static let appStoreLink = "https://apps.apple.com/app/id\(NameSpace.appleId)"
+    
     /// 사진 앱의 앨범으로 딥링크합니다.
     static func openPhotoAlbum() {
         if let url = URL(string: "photos-navigation://album?name=recents") {
@@ -26,7 +29,7 @@ enum DeepLinkManager {
     
     /// 앱스토어 리뷰 페이지로 딥링크합니다.
     static func openAppStoreReview() {
-        if let url = URL(string: "https://apps.apple.com/app/id\(NameSpace.appleId)?action=write-review") {
+        if let url = URL(string: "\(appStoreLink)?action=write-review") {
             UIApplication.shared.open(url)
         }
     }
