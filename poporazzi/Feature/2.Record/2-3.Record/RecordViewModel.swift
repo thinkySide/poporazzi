@@ -243,6 +243,8 @@ extension RecordViewModel {
         input.currentScrollOffset
             .distinctUntilChanged()
             .emit(with: self) { owner, point in
+                guard !owner.isSelectMode else { return }
+                
                 let scrollThreshold: CGFloat = 10
                 let currentY = point.y
                 
