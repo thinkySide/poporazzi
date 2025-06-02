@@ -1,7 +1,7 @@
 # 🥷📸 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.4.4)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.5.0)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Realm, XCTest, Xcode Cloud|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11), [Instagram](https://www.instagram.com/poporazzzzzi?igsh=MWV1cDl4ZWU2b2p0bQ%3D%3D&utm_source=qr), [Thread](https://www.threads.com/@thinkydev?igshid=NTc4MTIwNjQ2YQ==)|
@@ -12,7 +12,7 @@
 2. 내맘대로 여행 즐기며 마음껏 사진 찍기.
 3. 여행 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기!
 
-![Group 1](https://github.com/user-attachments/assets/2ac72c32-27b9-46ba-b1cd-53e0c1e004d5)
+![Group 1](https://github.com/user-attachments/assets/05ee4fd6-2a20-40b3-875c-dfdcbb6ab307)
 
 ### 🛠️ 개발 타임라인
 
@@ -109,3 +109,9 @@
 |[#121 AlbumList 데이터 및 이벤트 연결](https://github.com/thinkySide/poporazzi/pull/121)|앨범 및 폴더 정보, 썸네일 반환 로직 구현|
 |[#123 애니메이션 적용 시 터치 이벤트 먹힘 현상 수정](https://github.com/thinkySide/poporazzi/pull/123)|animate option을 이용한 애니메이션 터치 버그 수정|
 |[#125 DetailView 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/125)|DetailView 화면 및 기능 구현, 페이지네이션 최적화|
+|[#127 AlbumView 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/127)|DataType Entity 도입, PaginationManager 객체 구현, 전역 LoadingIndicator 구현|
+|[#129 FolderList 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/129)|FolderList 화면 및 기능 구현|
+|[#131 MyAlbumList Flow 추가 기능 구현](https://github.com/thinkySide/poporazzi/pull/131)|AlbumDetail, MediaDetail 페이지네이션 로직 업데이트|
+|[#133 Record Flow 리팩토링](https://github.com/thinkySide/poporazzi/pull/133)|Record UI 업데이트 및 ViewModel 리팩토링|
+|[#135 Settings 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/135)|앱스토어 리뷰 작성, 오픈채팅방, SNS 이동 등 설정 화면 구현|
+|[#137 1.5.0 출시를 위한 디테일 작업 및 QA](https://github.com/thinkySide/poporazzi/pull/137)|UX 라이팅 업데이트 및 고화질 이미지 로딩 기능 구현|
