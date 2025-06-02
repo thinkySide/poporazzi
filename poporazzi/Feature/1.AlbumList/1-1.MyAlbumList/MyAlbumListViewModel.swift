@@ -82,8 +82,7 @@ extension MyAlbumListViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
             .bind(with: self) { owner, albumList in
-                var thumbnailList = owner.output.thumbnailList.value
-                thumbnailList = thumbnailList.filter { albumList.contains($0.key) }
+                var thumbnailList: [Album: [UIImage?]] = [:]
                 albumList.forEach { thumbnailList.updateValue($0.thumbnailList, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
             }
