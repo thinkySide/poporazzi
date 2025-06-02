@@ -17,6 +17,11 @@ final class MediaDetailCell: UICollectionViewCell {
     
     private let thumbnailContainer = UIView()
     
+    private let indicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        return indicator
+    }()
+    
     /// 미디어 이미지
     private let mediaImage: UIImageView = {
         let imageView = UIImageView()
@@ -63,12 +68,17 @@ extension MediaDetailCell {
     
     enum Action {
         case setImage(UIImage)
+        case toggleLoading(Bool)
     }
     
     func action(_ action: Action) {
         switch action {
         case let .setImage(image):
             mediaImage.image = image
+            
+        case let .toggleLoading(bool):
+            indicator.isHidden = !bool
+            bool ? indicator.startAnimating() : indicator.stopAnimating()
         }
     }
 }
@@ -80,6 +90,7 @@ extension MediaDetailCell {
     func configLayout() {
         containerView.flex.define { flex in
             flex.addItem(mediaImage).grow(1)
+            flex.addItem(indicator).position(.absolute).alignSelf(.center).top(50%)
         }
     }
 }

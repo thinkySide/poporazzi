@@ -91,10 +91,13 @@ extension MediaDetailViewController {
                 if let safeImage = image {
                     cell.action(.setImage(safeImage))
                     self.initialImage = nil
+                    cell.action(.toggleLoading(false))
                 }
             } else {
                 if let initialImage {
                     cell.action(.setImage(initialImage))
+                } else {
+                    cell.action(.toggleLoading(true))
                 }
             }
             
