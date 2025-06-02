@@ -53,7 +53,7 @@ extension RecordEditViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Record>
+        let record: BehaviorRelay<Record>
         
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
@@ -196,7 +196,7 @@ extension RecordEditViewModel {
         input.saveButtonTapped
             .emit(with: self) { owner, _ in
                 let currentTitle = owner.output.titleText.value
-                let oldAlbum = owner.output.album.value
+                let oldAlbum = owner.output.record.value
                 let albumTitle = currentTitle.isEmpty ? oldAlbum.title : currentTitle
                 
                 let newAlbum = Record(

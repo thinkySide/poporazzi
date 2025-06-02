@@ -53,6 +53,7 @@ extension MyAlbumListViewModel {
     
     enum Delegate {
         case permissionAuthorized
+        case viewDidRefresh
     }
 }
 
@@ -62,7 +63,6 @@ extension MyAlbumListViewModel {
     
     func transform(_ input: Input) -> Output {
         Signal.merge(
-            input.viewDidLoad,
             output.viewDidRefresh.asSignal(),
             photoKitService.photoLibraryCollectionChange
         )
@@ -105,6 +105,9 @@ extension MyAlbumListViewModel {
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case .permissionAuthorized:
+                    owner.output.viewDidRefresh.accept(())
+                    
+                case .viewDidRefresh:
                     owner.output.viewDidRefresh.accept(())
                 }
             }

@@ -17,6 +17,7 @@ final class FolderListViewModel: ViewModel {
     
     let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     
     init(output: Output) {
         self.output = output
@@ -43,12 +44,18 @@ extension FolderListViewModel {
         let thumbnailList = BehaviorRelay<[String: [UIImage?]]>(value: [:])
         
         let updateThumbnail = PublishRelay<[String]>()
+        
+        let viewDidRefresh = PublishRelay<Void>()
     }
     
     enum Navigation {
         case pop
         case pushFolderList(Album)
         case pushAlbumDetail(Album)
+    }
+    
+    enum Delegate {
+        case viewDidRefresh
     }
 }
 
@@ -58,8 +65,8 @@ extension FolderListViewModel {
     
     func transform(_ input: Input) -> Output {
         Signal.merge(
-            input.viewDidLoad,
-            photoKitService.photoLibraryCollectionChange
+            photoKitService.photoLibraryCollectionChange,
+            output.viewDidRefresh.asSignal()
         )
         .emit(with: self) { owner, _ in
             let albumList = owner.photoKitService.fetchAlbumList(from: owner.folder)
@@ -93,6 +100,15 @@ extension FolderListViewModel {
         input.backButtonTapped
             .emit(with: self) { owner, _ in
                 owner.navigation.accept(.pop)
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .viewDidRefresh:
+                    owner.output.viewDidRefresh.accept(())
+                }
             }
             .disposed(by: disposeBag)
         

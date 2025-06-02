@@ -82,7 +82,7 @@ extension MyAlbumListViewController {
         guard !updateList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
         let validList = snapshot.itemIdentifiers.filter { updateList.contains($0.id) }
-        snapshot.reloadItems(validList)
+        snapshot.reconfigureItems(validList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }

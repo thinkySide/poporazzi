@@ -60,7 +60,7 @@ extension RecordEditViewController {
         )
         let output = viewModel.transform(input)
         
-        output.album
+        output.record
             .bind(with: self) { owner, record in
                 owner.scene.titleTextField.action(.updateText(record.title))
                 owner.scene.titleTextField.action(.updatePlaceholder(record.title))
