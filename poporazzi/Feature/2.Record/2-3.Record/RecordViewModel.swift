@@ -585,7 +585,7 @@ extension RecordViewModel {
     
     /// 더보기 Menu
     var seemoreMenu: [MenuModel] {
-        let editAlbum = MenuModel(symbol: .edit, title: "앨범 수정") { [weak self] in
+        let edit = MenuModel(symbol: .edit, title: "기록 수정") { [weak self] in
             self?.menuAction.accept(.editAlbum)
         }
         let excludeRecord = MenuModel(symbol: .exclude, title: "제외된 기록") { [weak self] in
@@ -594,7 +594,7 @@ extension RecordViewModel {
         let noSave = MenuModel(symbol: .noSave, title: "저장 없이 종료", attributes: .destructive) { [weak self] in
             self?.menuAction.accept(.noSave)
         }
-        return [editAlbum, excludeRecord, noSave]
+        return [edit, excludeRecord, noSave]
     }
     
     /// 더보기 툴바 버튼 Menu

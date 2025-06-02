@@ -77,6 +77,7 @@ extension AlbumDetailViewModel {
     enum Navigation {
         case viewWillDisappear
         case pop
+        case pushAlbumEdit(Album)
         case presentDetail(Album, UIImage?, [Media], Int)
         case presentMediaShareSheet([Any])
     }
@@ -269,7 +270,7 @@ extension AlbumDetailViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    print("앨범 수정")
+                    owner.navigation.accept(.pushAlbumEdit(owner.album))
                     
                 case .removeAlbum:
                     HapticManager.notification(type: .warning)

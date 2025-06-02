@@ -399,6 +399,9 @@ extension Coordinator {
                     folderListVM?.delegate.accept(.viewDidRefresh)
                     myAlbumListVM?.delegate.accept(.viewDidRefresh)
                     
+                case let .pushAlbumEdit(album):
+                    owner.pushAlbumEdit(album)
+                    
                 case .pop:
                     folderListVM?.delegate.accept(.viewDidRefresh)
                     myAlbumListVM?.delegate.accept(.viewDidRefresh)
@@ -429,7 +432,7 @@ extension Coordinator {
         navigationController.pushViewController(folderListVC, animated: true)
         
         folderListVM.navigation
-            .bind(with: self) { [weak newFolderListVM] owner, path in
+            .bind(with: self) { [weak newFolderListVM, weak folderListVM] owner, path in
                 switch path {
                 case .viewWillDisappear:
                     newFolderListVM?.delegate.accept(.viewDidRefresh)
@@ -441,13 +444,33 @@ extension Coordinator {
                     owner.navigationController.popViewController(animated: true)
                     
                 case let .pushFolderList(album):
-                    owner.pushFolderList(myAlbumListVM, newFolderListVM, album)
+                    owner.pushFolderList(myAlbumListVM, folderListVM, album)
                     
                 case let .pushAlbumDetail(album):
-                    owner.pushAlbumDetail(myAlbumListVM, newFolderListVM, album)
+                    owner.pushAlbumDetail(myAlbumListVM, folderListVM, album)
                 }
             }
             .disposed(by: folderListVM.disposeBag)
+    }
+    
+    private func pushAlbumEdit(_ album: Album) {
+        let albumEditVM = AlbumEditViewModel(
+            output: .init(
+                album: .init(value: album),
+                titleText: .init(value: album.title)
+            )
+        )
+        let albumEditVC = AlbumEditViewController(viewModel: albumEditVM)
+        navigationController.pushViewController(albumEditVC, animated: true)
+        
+        albumEditVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                }
+            }
+            .disposed(by: albumEditVM.disposeBag)
     }
 }
 
