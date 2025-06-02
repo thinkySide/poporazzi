@@ -133,9 +133,9 @@ final class Coordinator: NSObject {
         settingsVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
-                case let .presentAppStoreLinkShareSheet(message, url):
+                case let .presentShareSheet(shareItems):
                     let activityController = UIActivityViewController(
-                        activityItems: [message, url],
+                        activityItems: shareItems,
                         applicationActivities: nil
                     )
                     owner.navigationController.present(activityController, animated: true)

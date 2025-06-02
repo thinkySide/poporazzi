@@ -44,7 +44,7 @@ extension SettingsViewModel {
     }
     
     enum Navigation {
-        case presentAppStoreLinkShareSheet(String, URL)
+        case presentShareSheet([Any])
     }
 }
 
@@ -68,18 +68,23 @@ extension SettingsViewModel {
         input.shareWithFriendsButtonTapped
             .emit(with: self) { owner, _ in
                 let appStoreLink = DeepLinkManager.appStoreLink
-                if let url = URL(string: appStoreLink) {
-                    owner.navigation.accept(.presentAppStoreLinkShareSheet(
-                        """
-                        사진, 앨범 정리하는게 힘들 땐 포포라치를 사용해보세요!
-                        
-                        1. 여행이나 데이트 전 기록 시작하기 버튼 꾹 눌러놓기
-                        2. 내 맘대로 즐기며 마음껏 사진 찍기
-                        3. 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기
-                        """,
-                        url
-                    ))
-                }
+                let message = """
+                “📸 사진 정리, 이제 포포라치에게 맡겨보세요”
+
+                여행이나 데이트, 추억을 남기고 싶은 순간에 포포라치로 자동 앨범 정리를 시작해보세요!
+                
+                1️⃣ 여행이나 데이터 전 기록 시작 버튼 꾹
+                2️⃣ 내 맘대로 즐기며 마음껏 사진 찍기
+                3️⃣ 종료 후 자동으로 정리된 앨범 확인하기
+
+                필요한 건 순간을 즐기는 마음뿐이에요.
+                
+                👉 지금 포포라치로 추억을 예쁘게 정리해보세요!
+                
+                [앱스토어 다운로드 - 포포라치]
+                \(appStoreLink)
+                """
+                owner.navigation.accept(.presentShareSheet([message]))
             }
             .disposed(by: disposeBag)
         
