@@ -35,6 +35,7 @@ final class FolderListViewController: ViewController {
         super.viewDidLoad()
         setupDataSource()
         bind()
+        setupMenu()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -105,7 +106,8 @@ extension FolderListViewController {
             viewDidLoad: .just(()),
             viewWillDisappear: event.viewWillDisappear.asSignal(),
             folderCellSelected: scene.albumCollectionView.rx.itemSelected.asSignal(),
-            backButtonTapped: scene.backButton.button.rx.tap.asSignal()
+            backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
+            seemoreButtonTapped: scene.seemoreButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
@@ -128,5 +130,10 @@ extension FolderListViewController {
                 owner.updatePaginationDataSource(to: updateList)
             }
             .disposed(by: disposeBag)
+    }
+    
+    func setupMenu() {
+        scene.seemoreButton.button.showsMenuAsPrimaryAction = true
+        scene.seemoreButton.button.menu = viewModel.seemoreMenu.toUIMenu
     }
 }

@@ -18,6 +18,7 @@ final class FolderListViewModel: ViewModel {
     let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
     let delegate = PublishRelay<Delegate>()
+    let menuAction = PublishRelay<MenuAction>()
     
     init(output: Output) {
         self.output = output
@@ -38,6 +39,7 @@ extension FolderListViewModel {
         
         let folderCellSelected: Signal<IndexPath>
         let backButtonTapped: Signal<Void>
+        let seemoreButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -59,6 +61,11 @@ extension FolderListViewModel {
     
     enum Delegate {
         case viewDidRefresh
+    }
+    
+    enum MenuAction {
+        case editFolder
+        case removeFolder
     }
 }
 
@@ -112,11 +119,37 @@ extension FolderListViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.seemoreButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
         delegate
             .bind(with: self) { owner, delegate in
                 switch delegate {
                 case .viewDidRefresh:
                     owner.output.viewDidRefresh.accept(())
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        menuAction
+            .bind(with: self) { owner, action in
+                switch action {
+                case .editFolder:
+                    print("폴더 수정")
+                    
+                case .removeFolder:
+                    HapticManager.notification(type: .warning)
+                    owner.photoKitService.removeFolder(from: [owner.folder.id])
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { isSuccess in
+                            if isSuccess {
+                                owner.navigation.accept(.pop)
+                            }
+                        }
+                        .disposed(by: owner.disposeBag)
                 }
             }
             .disposed(by: disposeBag)
@@ -139,5 +172,21 @@ extension FolderListViewModel {
     
     var thumbnailList: [String: [UIImage?]] {
         output.thumbnailList.value
+    }
+}
+
+// MARK: - Menu
+
+extension FolderListViewModel {
+    
+    /// 더보기 Menu
+    var seemoreMenu: [MenuModel] {
+        let edit = MenuModel(symbol: .edit, title: "폴더 수정") { [weak self] in
+            self?.menuAction.accept(.editFolder)
+        }
+        let remove = MenuModel(symbol: .removeLine, title: "폴더 삭제", attributes: .destructive) { [weak self] in
+            self?.menuAction.accept(.removeFolder)
+        }
+        return [edit, remove]
     }
 }

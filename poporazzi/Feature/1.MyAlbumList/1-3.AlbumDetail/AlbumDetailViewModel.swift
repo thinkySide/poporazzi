@@ -272,6 +272,7 @@ extension AlbumDetailViewModel {
                     print("앨범 수정")
                     
                 case .removeAlbum:
+                    HapticManager.notification(type: .warning)
                     owner.photoKitService.removeAlbum(from: [owner.album.id])
                         .observe(on: MainScheduler.asyncInstance)
                         .bind { isSuccess in

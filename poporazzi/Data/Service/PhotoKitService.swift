@@ -467,10 +467,33 @@ extension PhotoKitService {
             
             var phAssetCollectionList: [PHAssetCollection?] = []
             identifiers.forEach { phAssetCollectionList.append(self.fetchAlbum(from: $0)) }
-            let collectionList = phAssetCollectionList.compactMap { $0 }
+            let collectionList = phAssetCollectionList.compactMap { $0 } as NSArray
             
             PHPhotoLibrary.shared().performChanges {
-                PHAssetCollectionChangeRequest.deleteAssetCollections(collectionList as NSArray)
+                PHAssetCollectionChangeRequest.deleteAssetCollections(collectionList)
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
+        }
+    }
+    
+    /// 폴더 삭제 후 결과 이벤트를 반환합니다.
+    func removeFolder(from identifiers: [String]) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            var phCollectionList: [PHCollectionList?] = []
+            identifiers.forEach { phCollectionList.append(self.fetchFolder(from: $0)) }
+            let collectionLists = phCollectionList.compactMap { $0 } as NSArray
+            
+            PHPhotoLibrary.shared().performChanges {
+                PHCollectionListChangeRequest.deleteCollectionLists(collectionLists)
             } completionHandler: { isSuccess, _ in
                 observer.onNext(isSuccess)
                 observer.onCompleted()

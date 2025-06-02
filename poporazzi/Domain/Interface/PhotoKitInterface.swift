@@ -80,6 +80,9 @@ protocol PhotoKitInterface {
     /// 앨범 삭제 후 결과 이벤트를 반환합니다.
     func removeAlbum(from identifiers: [String]) -> Observable<Bool>
     
+    /// 폴더 삭제 후 결과 이벤트를 반환합니다.
+    func removeFolder(from identifiers: [String]) -> Observable<Bool>
+    
     
     // MARK: - Media Remote
     
