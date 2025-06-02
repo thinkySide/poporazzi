@@ -40,4 +40,25 @@ enum DeepLinkManager {
             UIApplication.shared.open(url)
         }
     }
+    
+    /// 오픈채팅방으로 딥링크합니다.
+    static func openChatRoomLink() {
+        if let url = URL(string: "https://open.kakao.com/o/gSh6Vzzh") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    /// 인스타그램으로 딥링크합니다.
+    static func openInstagram() {
+        if let url = URL(string: "https://www.instagram.com/thinkydev?igsh=MWV1cDl4ZWU2b2p0bQ%3D%3D&utm_source=qr") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    /// 스레드로 딥링크합니다.
+    static func openThread() {
+        if let url = URL(string: "https://www.threads.com/@thinkydev?igshid=NTc4MTIwNjQ2YQ==") {
+            UIApplication.shared.open(url)
+        }
+    }
 }
