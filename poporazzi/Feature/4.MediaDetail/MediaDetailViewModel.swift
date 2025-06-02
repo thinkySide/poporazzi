@@ -166,7 +166,8 @@ extension MediaDetailViewModel {
                 )
             }
             .bind(with: self) { owner, mediaList in
-                var thumbnailList = [Media: UIImage?]()
+                if mediaList.isEmpty { return }
+                var thumbnailList = owner.thumbnailList
                 mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
             }
