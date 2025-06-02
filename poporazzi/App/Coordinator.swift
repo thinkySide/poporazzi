@@ -447,11 +447,42 @@ extension Coordinator {
                 case let .pushFolderList(album):
                     owner.pushFolderList(myAlbumListVM, folderListVM, album)
                     
+                case let .pushFolderEdit(folder):
+                    owner.pushFolderEdit(folderListVM, folder)
+                    
                 case let .pushAlbumDetail(album):
                     owner.pushAlbumDetail(myAlbumListVM, folderListVM, album)
                 }
             }
             .disposed(by: folderListVM.disposeBag)
+    }
+    
+    /// 폴더 수정 화면으로 Push 합니다.
+    private func pushFolderEdit(
+        _ folderListVM: FolderListViewModel?,
+        _ folder: Album
+    ) {
+        let folderEditVM = FolderEditViewModel(
+            output: .init(
+                folder: .init(value: folder),
+                titleText: .init(value: folder.title)
+            )
+        )
+        let folderEditVC = FolderEditViewController(viewModel: folderEditVM)
+        navigationController.pushViewController(folderEditVC, animated: true)
+        
+        folderEditVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case let .popWithUpdate(folder):
+                    owner.navigationController.popViewController(animated: true)
+                    folderListVM?.delegate.accept(.folderWillUpdate(folder))
+                }
+            }
+            .disposed(by: folderEditVM.disposeBag)
     }
     
     /// 앨범 수정 화면으로 Push 합니다.

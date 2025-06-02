@@ -56,11 +56,13 @@ extension FolderListViewModel {
         case viewWillDisappear
         case pop
         case pushFolderList(Album)
+        case pushFolderEdit(Album)
         case pushAlbumDetail(Album)
     }
     
     enum Delegate {
         case viewDidRefresh
+        case folderWillUpdate(Album)
     }
     
     enum MenuAction {
@@ -130,6 +132,9 @@ extension FolderListViewModel {
                 switch delegate {
                 case .viewDidRefresh:
                     owner.output.viewDidRefresh.accept(())
+                    
+                case let .folderWillUpdate(folder):
+                    owner.output.folder.accept(folder)
                 }
             }
             .disposed(by: disposeBag)
@@ -138,7 +143,7 @@ extension FolderListViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editFolder:
-                    print("폴더 수정")
+                    owner.navigation.accept(.pushFolderEdit(owner.folder))
                     
                 case .removeFolder:
                     HapticManager.notification(type: .warning)

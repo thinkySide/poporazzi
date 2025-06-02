@@ -456,6 +456,28 @@ extension PhotoKitService {
         }
     }
     
+    /// 폴더를 수정한 후 결과 이벤트를 반환합니다.
+    public func editFolder(to folder: Album) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self,
+                  let phFolder = self.fetchFolder(from: folder.id)
+            else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHCollectionListChangeRequest(for: phFolder)
+                request?.title = folder.title
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
+        }
+    }
+    
     /// 앨범에서 에셋일 제외합니다.
     public func excludePhotos(from album: Album, to assetIdentifiers: [String]) -> Observable<Bool> {
         Observable.create { [weak self] observer in
