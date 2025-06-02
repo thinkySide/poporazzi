@@ -164,7 +164,7 @@ extension AlbumDetailView {
         }
         
         navigationTrailingButtons.flex.direction(.row).define { flex in
-            flex.addItem(seemoreButton)
+            // flex.addItem(seemoreButton)
             flex.addItem(selectButton).marginLeft(8)
             flex.addItem(selectCancelButton).position(.absolute).right(0)
         }

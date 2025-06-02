@@ -40,7 +40,7 @@ final class PhotoKitService: NSObject, PhotoKitInterface {
     /// 고사양 이미지 요청 옵션
     private let highImageRequestOptions: PHImageRequestOptions = {
         let requestOptions = PHImageRequestOptions()
-        requestOptions.isSynchronous = true
+        requestOptions.isSynchronous = false
         requestOptions.deliveryMode = .highQualityFormat
         requestOptions.isNetworkAccessAllowed = true
         return requestOptions

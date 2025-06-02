@@ -19,7 +19,6 @@ final class MediaDetailViewController: ViewController {
     private let viewModel: MediaDetailViewModel
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Media>!
-    // private var selectedRow = 0
     
     private let event = Event()
     
@@ -88,17 +87,16 @@ extension MediaDetailViewController {
                 for: indexPath
             ) as? MediaDetailCell else { return nil }
             
-            var thumbnail: UIImage?
-            if let initialImage {
-                thumbnail = initialImage
-                self.initialImage = nil
+            if let image = self.viewModel.thumbnailList[media] {
+                if let safeImage = image {
+                    cell.action(.setImage(safeImage))
+                    self.initialImage = nil
+                }
+            } else {
+                if let initialImage {
+                    cell.action(.setImage(initialImage))
+                }
             }
-            
-            if let loadImage = self.viewModel.thumbnailList[media] {
-                thumbnail = loadImage
-            }
-            
-            cell.action(.setImage(thumbnail))
             
             return cell
         }
@@ -111,7 +109,6 @@ extension MediaDetailViewController {
         mediaList.forEach { snapshot.appendItems([$0], toSection: .main) }
         dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
             guard let self else { return }
-            
             if let initialIndex {
                 scene.action(.setInitialIndex(initialIndex))
                 self.initialIndex = nil

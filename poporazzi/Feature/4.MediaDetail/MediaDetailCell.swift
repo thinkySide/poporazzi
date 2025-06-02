@@ -62,15 +62,13 @@ final class MediaDetailCell: UICollectionViewCell {
 extension MediaDetailCell {
     
     enum Action {
-        case setImage(UIImage?)
+        case setImage(UIImage)
     }
     
     func action(_ action: Action) {
         switch action {
         case let .setImage(image):
-            if let image {
-                mediaImage.image = image
-            }
+            mediaImage.image = image
         }
     }
 }
