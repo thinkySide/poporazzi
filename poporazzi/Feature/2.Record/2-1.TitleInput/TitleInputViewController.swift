@@ -61,12 +61,5 @@ extension TitleInputViewController {
                 owner.scene.titleTextField.action(.toggleLine)
             }
             .disposed(by: disposeBag)
-        
-        output.alertPresented
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, alert in
-                owner.showAlert(alert)
-            }
-            .disposed(by: disposeBag)
     }
 }

@@ -61,6 +61,7 @@ extension MainViewModel {
     
     enum AlertAction {
         case navigateToSettings
+        case openAppStore
     }
 }
 
@@ -145,9 +146,23 @@ extension MainViewModel {
                 switch action {
                 case .navigateToSettings:
                     DeepLinkManager.openSettings()
+                    
+                case .openAppStore:
+                    VersionManager.openAppStore()
                 }
             }
             .disposed(by: disposeBag)
+        
+#if !DEBUG
+        VersionManager.appStoreAppVersion
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .bind(with: self) { owner, appStoreVersion in
+                if appStoreVersion != VersionManager.deviceAppVersion {
+                    owner.output.alertPresented.accept(owner.recommendUpdateAlert)
+                }
+            }
+            .disposed(by: disposeBag)
+#endif
         
         return output
     }
@@ -166,6 +181,21 @@ extension MainViewModel {
                 self?.alertAction.accept(.navigateToSettings)
             },
             cancelButton: .init(title: "취소")
+        )
+    }
+    
+    /// 업데이트 권장 Alert
+    private var recommendUpdateAlert: AlertModel {
+        AlertModel(
+            title: "새롭게 업데이트된 버전이 있어요!",
+            message: "포포라치의 새로운 기능을 이용하기 위해 업데이트가 필요해요 😎",
+            eventButton: .init(
+                title: "업데이트",
+                action: { [weak self] in
+                    self?.alertAction.accept(.openAppStore)
+                }
+            ),
+            cancelButton: .init(title: "다음에")
         )
     }
 }
