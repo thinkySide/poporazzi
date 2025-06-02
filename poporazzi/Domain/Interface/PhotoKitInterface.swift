@@ -77,6 +77,10 @@ protocol PhotoKitInterface {
         to assetIdentifiers: [String]
     ) -> Observable<Bool>
     
+    /// 앨범 삭제 후 결과 이벤트를 반환합니다.
+    func removeAlbum(from identifiers: [String]) -> Observable<Bool>
+    
+    
     // MARK: - Media Remote
     
     /// 즐겨찾기 상태를 전환합니다.

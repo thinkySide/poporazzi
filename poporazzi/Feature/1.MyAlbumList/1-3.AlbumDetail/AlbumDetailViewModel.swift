@@ -272,7 +272,14 @@ extension AlbumDetailViewModel {
                     print("앨범 수정")
                     
                 case .removeAlbum:
-                    print("앨범 삭제")
+                    owner.photoKitService.removeAlbum(from: [owner.album.id])
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { isSuccess in
+                            if isSuccess {
+                                owner.navigation.accept(.pop)
+                            }
+                        }
+                        .disposed(by: owner.disposeBag)
                     
                 case .share:
                     let selectedList = owner.selectedMediaList.map(\.id)
