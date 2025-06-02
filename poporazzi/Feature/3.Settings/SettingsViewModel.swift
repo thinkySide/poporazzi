@@ -30,6 +30,8 @@ final class SettingsViewModel: ViewModel {
 extension SettingsViewModel {
     
     struct Input {
+        let viewDidLoad: Signal<Void>
+        
         let writeAppStoreReviviewButtonTapped: Signal<Void>
         let requestFeatureAndImprovementButtonTapped: Signal<Void>
         let shareWithFriendsButtonTapped: Signal<Void>
@@ -40,7 +42,7 @@ extension SettingsViewModel {
     }
     
     struct Output {
-        
+        let version = BehaviorRelay<String>(value: "")
     }
     
     enum Navigation {
@@ -53,6 +55,13 @@ extension SettingsViewModel {
 extension SettingsViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.viewDidLoad
+            .emit(with: self) { owner, _ in
+                let version = VersionManager.deviceAppVersion
+                owner.output.version.accept(version)
+            }
+            .disposed(by: disposeBag)
+        
         input.writeAppStoreReviviewButtonTapped
             .emit(with: self) { owner, _ in
                 DeepLinkManager.openAppStoreReview()

@@ -13,9 +13,13 @@ final class SettingsView: CodeBaseUI {
     
     var containerView = UIView()
     
-    private lazy var navigationBar = NavigationBar(leading: titleLabel)
+    private lazy var navigationBar = NavigationBar(
+        leading: titleLabel,
+        trailing: versionLabel
+    )
     
     private let titleLabel = UILabel("설정", size: 20, color: .mainLabel)
+    private let versionLabel = UILabel(size: 14, color: .subLabel)
     
     private let serviceFormLabel = FormLabel(title: "🛎️ 서비스")
     let writeAppStoreReviviewButton = ListButton(title: "앱스토어 리뷰 작성")
@@ -50,12 +54,15 @@ final class SettingsView: CodeBaseUI {
 extension SettingsView {
     
     enum Action {
-        
+        case updateVersionLabel(String)
     }
     
     func action(_ action: Action) {
         switch action {
-            
+        case let .updateVersionLabel(version):
+            versionLabel.text = version
+            versionLabel.flex.markDirty()
+            containerView.flex.layout()
         }
     }
 }

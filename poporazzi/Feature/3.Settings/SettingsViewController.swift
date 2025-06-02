@@ -45,6 +45,7 @@ extension SettingsViewController {
     
     func bind() {
         let input = SettingsViewModel.Input(
+            viewDidLoad: .just(()),
             writeAppStoreReviviewButtonTapped: scene.writeAppStoreReviviewButton.tapGesture.rx.event.asVoidSignal(),
             requestFeatureAndImprovementButtonTapped: scene.requestFeatureAndImprovementButton.tapGesture.rx.event.asVoidSignal(),
             shareWithFriendsButtonTapped: scene.shareWithFriendsButton.tapGesture.rx.event.asVoidSignal(),
@@ -54,5 +55,11 @@ extension SettingsViewController {
             
         )
         let output = viewModel.transform(input)
+        
+        output.version
+            .bind(with: self) { owner, version in
+                owner.scene.action(.updateVersionLabel(version))
+            }
+            .disposed(by: disposeBag)
     }
 }
