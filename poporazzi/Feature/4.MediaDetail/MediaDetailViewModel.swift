@@ -102,7 +102,12 @@ extension MediaDetailViewModel {
         .asObservable()
         .bind(with: self) { owner, _ in
             do {
-                owner.output.mediaList.accept(try owner.fetchAllMediaListWithNoThumbnail())
+                let mediaList = try owner.fetchAllMediaListWithNoThumbnail()
+                if mediaList.isEmpty {
+                    owner.navigation.accept(.dismiss)
+                } else {
+                    owner.output.mediaList.accept(mediaList)
+                }
             } catch {
                 print(error)
             }
@@ -139,9 +144,7 @@ extension MediaDetailViewModel {
             }
             .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, mediaList in
-                let allMediaList = owner.mediaList
-                var thumbnailList = owner.thumbnailList
-                thumbnailList = thumbnailList.filter { allMediaList.contains($0.key) }
+                var thumbnailList = [Media: UIImage?]()
                 mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
             }
@@ -163,10 +166,8 @@ extension MediaDetailViewModel {
                 )
             }
             .bind(with: self) { owner, mediaList in
-                var thumbnailList = owner.thumbnailList
-                for media in mediaList {
-                    thumbnailList.updateValue(media.thumbnail, forKey: media)
-                }
+                var thumbnailList = [Media: UIImage?]()
+                mediaList.forEach { thumbnailList.updateValue($0.thumbnail, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
             }
             .disposed(by: disposeBag)
