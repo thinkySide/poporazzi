@@ -199,7 +199,7 @@ extension PhotoKitService {
     }
 }
 
-// MARK: - UseCase
+// MARK: - Media List
 
 extension PhotoKitService {
     
@@ -318,6 +318,11 @@ extension PhotoKitService {
             return Disposables.create()
         }
     }
+}
+
+// MARK: - Media Remote
+
+extension PhotoKitService {
     
     /// 즐겨찾기 상태를 전환합니다.
     func toggleMediaFavorite(from assetIdentifiers: [String], isFavorite: Bool) {
@@ -329,6 +334,25 @@ extension PhotoKitService {
             }
         }
     }
+    
+    /// 주어진 ID의 사진을 삭제합니다.
+    func removePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
+        Observable.create { observer in
+            let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+            PHPhotoLibrary.shared().performChanges {
+                PHAssetChangeRequest.deleteAssets(assets)
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            return Disposables.create()
+        }
+    }
+}
+
+// MARK: - Album Remote
+
+extension PhotoKitService {
     
     /// 하나의 앨범으로 만들어 저장합니다.
     func saveAlbumAsSingle(title: String, sectionMediaList: SectionMediaList) -> Observable<Void> {
@@ -410,16 +434,46 @@ extension PhotoKitService {
         }
     }
     
-    /// 주어진 ID의 사진을 삭제합니다.
-    func removePhotos(from assetIdentifiers: [String]) -> Observable<Bool> {
-        Observable.create { observer in
-            let assets = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+    /// 앨범을 수정한 후 결과 이벤트를 반환합니다.
+    public func editAlbum(to album: Album) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self,
+                  let phAlbum = fetchAlbum(from: album.id)
+            else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
             PHPhotoLibrary.shared().performChanges {
-                PHAssetChangeRequest.deleteAssets(assets)
+                let request = PHAssetCollectionChangeRequest(for: phAlbum)
+                request?.title = album.title
             } completionHandler: { isSuccess, _ in
                 observer.onNext(isSuccess)
                 observer.onCompleted()
             }
+            
+            return Disposables.create()
+        }
+    }
+    
+    /// 폴더를 수정한 후 결과 이벤트를 반환합니다.
+    public func editFolder(to folder: Album) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self,
+                  let phFolder = self.fetchFolder(from: folder.id)
+            else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHCollectionListChangeRequest(for: phFolder)
+                request?.title = folder.title
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            
             return Disposables.create()
         }
     }
@@ -446,6 +500,57 @@ extension PhotoKitService {
             return Disposables.create()
         }
     }
+    
+    /// 앨범 삭제 후 결과 이벤트를 반환합니다.
+    func removeAlbum(from identifiers: [String]) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            var phAssetCollectionList: [PHAssetCollection?] = []
+            identifiers.forEach { phAssetCollectionList.append(self.fetchAlbum(from: $0)) }
+            let collectionList = phAssetCollectionList.compactMap { $0 } as NSArray
+            
+            PHPhotoLibrary.shared().performChanges {
+                PHAssetCollectionChangeRequest.deleteAssetCollections(collectionList)
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
+        }
+    }
+    
+    /// 폴더 삭제 후 결과 이벤트를 반환합니다.
+    func removeFolder(from identifiers: [String]) -> Observable<Bool> {
+        Observable.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            var phCollectionList: [PHCollectionList?] = []
+            identifiers.forEach { phCollectionList.append(self.fetchFolder(from: $0)) }
+            let collectionLists = phCollectionList.compactMap { $0 } as NSArray
+            
+            PHPhotoLibrary.shared().performChanges {
+                PHCollectionListChangeRequest.deleteCollectionLists(collectionLists)
+            } completionHandler: { isSuccess, _ in
+                observer.onNext(isSuccess)
+                observer.onCompleted()
+            }
+            
+            return Disposables.create()
+        }
+    }
+}
+
+// MARK: - Share
+
+extension PhotoKitService {
     
     /// 선택한 AssetIdentifiers의 File URL을 반환합니다.
     func fetchShareItemList(from assetIdentifiers: [String]) -> Observable<[Any]> {

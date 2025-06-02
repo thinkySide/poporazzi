@@ -71,11 +71,24 @@ protocol PhotoKitInterface {
         sectionMediaList: SectionMediaList
     ) -> Observable<Void>
     
+    /// 앨범을 수정한 후 결과 이벤트를 반환합니다.
+    func editAlbum(to album: Album) -> Observable<Bool>
+    
+    /// 폴더를 수정한 후 결과 이벤트를 반환합니다.
+    func editFolder(to folder: Album) -> Observable<Bool>
+    
     /// 앨범에서 에셋을 제외합니다.
     func excludePhotos(
         from album: Album,
         to assetIdentifiers: [String]
     ) -> Observable<Bool>
+    
+    /// 앨범 삭제 후 결과 이벤트를 반환합니다.
+    func removeAlbum(from identifiers: [String]) -> Observable<Bool>
+    
+    /// 폴더 삭제 후 결과 이벤트를 반환합니다.
+    func removeFolder(from identifiers: [String]) -> Observable<Bool>
+    
     
     // MARK: - Media Remote
     

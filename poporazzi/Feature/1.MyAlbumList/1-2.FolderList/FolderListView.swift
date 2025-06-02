@@ -14,9 +14,14 @@ final class FolderListView: CodeBaseUI {
     var containerView = UIView()
     
     /// NavigationBar
-    private lazy var navigationBar = NavigationBar(leading: backButton)
+    private lazy var navigationBar = NavigationBar(
+        leading: backButton,
+        trailing: seemoreButton
+    )
     
     let backButton = NavigationButton(buttonType: .back)
+    
+    let seemoreButton = NavigationButton(buttonType: .seemore)
     
     let albumCollectionView: UICollectionView = {
         let collectionView = UICollectionView(

@@ -393,11 +393,15 @@ extension Coordinator {
         
         albumDetailVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { [weak myAlbumListVM, weak albumDetailVC] owner, path in
+            .bind(with: self) {
+                [weak myAlbumListVM, weak albumDetailVC, weak albumDetailVM] owner, path in
                 switch path {
                 case .viewWillDisappear:
                     folderListVM?.delegate.accept(.viewDidRefresh)
                     myAlbumListVM?.delegate.accept(.viewDidRefresh)
+                    
+                case let .pushAlbumEdit(album):
+                    owner.pushAlbumEdit(albumDetailVM, album)
                     
                 case .pop:
                     folderListVM?.delegate.accept(.viewDidRefresh)
@@ -429,7 +433,7 @@ extension Coordinator {
         navigationController.pushViewController(folderListVC, animated: true)
         
         folderListVM.navigation
-            .bind(with: self) { [weak newFolderListVM] owner, path in
+            .bind(with: self) { [weak newFolderListVM, weak folderListVM] owner, path in
                 switch path {
                 case .viewWillDisappear:
                     newFolderListVM?.delegate.accept(.viewDidRefresh)
@@ -441,13 +445,72 @@ extension Coordinator {
                     owner.navigationController.popViewController(animated: true)
                     
                 case let .pushFolderList(album):
-                    owner.pushFolderList(myAlbumListVM, newFolderListVM, album)
+                    owner.pushFolderList(myAlbumListVM, folderListVM, album)
+                    
+                case let .pushFolderEdit(folder):
+                    owner.pushFolderEdit(folderListVM, folder)
                     
                 case let .pushAlbumDetail(album):
-                    owner.pushAlbumDetail(myAlbumListVM, newFolderListVM, album)
+                    owner.pushAlbumDetail(myAlbumListVM, folderListVM, album)
                 }
             }
             .disposed(by: folderListVM.disposeBag)
+    }
+    
+    /// 폴더 수정 화면으로 Push 합니다.
+    private func pushFolderEdit(
+        _ folderListVM: FolderListViewModel?,
+        _ folder: Album
+    ) {
+        let folderEditVM = FolderEditViewModel(
+            output: .init(
+                folder: .init(value: folder),
+                titleText: .init(value: folder.title)
+            )
+        )
+        let folderEditVC = FolderEditViewController(viewModel: folderEditVM)
+        navigationController.pushViewController(folderEditVC, animated: true)
+        
+        folderEditVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case let .popWithUpdate(folder):
+                    owner.navigationController.popViewController(animated: true)
+                    folderListVM?.delegate.accept(.folderWillUpdate(folder))
+                }
+            }
+            .disposed(by: folderEditVM.disposeBag)
+    }
+    
+    /// 앨범 수정 화면으로 Push 합니다.
+    private func pushAlbumEdit(
+        _ albumDetailVM: AlbumDetailViewModel?,
+        _ album: Album
+    ) {
+        let albumEditVM = AlbumEditViewModel(
+            output: .init(
+                album: .init(value: album),
+                titleText: .init(value: album.title)
+            )
+        )
+        let albumEditVC = AlbumEditViewController(viewModel: albumEditVM)
+        navigationController.pushViewController(albumEditVC, animated: true)
+        
+        albumEditVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                case let .popWithUpdate(newAlbum):
+                    owner.navigationController.popViewController(animated: true)
+                    albumDetailVM?.delegate.accept(.albumWillUpdate(newAlbum))
+                }
+            }
+            .disposed(by: albumEditVM.disposeBag)
     }
 }
 

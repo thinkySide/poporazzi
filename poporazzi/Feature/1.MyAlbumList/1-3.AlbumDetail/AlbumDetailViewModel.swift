@@ -19,6 +19,7 @@ final class AlbumDetailViewModel: ViewModel {
     
     let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     let menuAction = PublishRelay<MenuAction>()
     let contextMenuAction = PublishRelay<ContextMenuAction>()
     let actionSheetAction = PublishRelay<ActionSheetAction>()
@@ -77,8 +78,13 @@ extension AlbumDetailViewModel {
     enum Navigation {
         case viewWillDisappear
         case pop
+        case pushAlbumEdit(Album)
         case presentDetail(Album, UIImage?, [Media], Int)
         case presentMediaShareSheet([Any])
+    }
+    
+    enum Delegate {
+        case albumWillUpdate(Album)
     }
     
     enum MenuAction {
@@ -269,10 +275,18 @@ extension AlbumDetailViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .editAlbum:
-                    print("앨범 수정")
+                    owner.navigation.accept(.pushAlbumEdit(owner.album))
                     
                 case .removeAlbum:
-                    print("앨범 삭제")
+                    HapticManager.notification(type: .warning)
+                    owner.photoKitService.removeAlbum(from: [owner.album.id])
+                        .observe(on: MainScheduler.asyncInstance)
+                        .bind { isSuccess in
+                            if isSuccess {
+                                owner.navigation.accept(.pop)
+                            }
+                        }
+                        .disposed(by: owner.disposeBag)
                     
                 case .share:
                     let selectedList = owner.selectedMediaList.map(\.id)
@@ -343,6 +357,15 @@ extension AlbumDetailViewModel {
                     let actionSheet = owner.removeActionSheet(from: [media])
                     owner.output.actionSheetPresented.accept(actionSheet)
                     HapticManager.notification(type: .warning)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case let .albumWillUpdate(newAlbum):
+                    owner.output.album.accept(newAlbum)
                 }
             }
             .disposed(by: disposeBag)
