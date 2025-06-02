@@ -1,5 +1,5 @@
 //
-//  AlbumEditView.swift
+//  RecordEditView.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/17/25.
@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class AlbumEditView: CodeBaseUI {
+final class RecordEditView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -95,7 +95,7 @@ final class AlbumEditView: CodeBaseUI {
 
 // MARK: - Action
 
-extension AlbumEditView {
+extension RecordEditView {
     
     enum Action {
         case updateMediaFetchOption(MediaFetchOption)
@@ -145,7 +145,7 @@ extension AlbumEditView {
 
 // MARK: - Layout
 
-extension AlbumEditView {
+extension RecordEditView {
     
     func configLayout() {
         containerView.flex.direction(.column).define { flex in

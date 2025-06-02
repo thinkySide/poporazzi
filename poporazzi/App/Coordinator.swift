@@ -205,8 +205,8 @@ extension Coordinator {
         _ startNavigation: UINavigationController?,
         _ title: String
     ) {
-        let albumOptionVM = AlbumOptionInputViewModel(output: .init(titleText: .init(value: title)))
-        let albumOptionVC = AlbumOptionInputViewController(viewModel: albumOptionVM)
+        let albumOptionVM = RecordOptionInputViewModel(output: .init(titleText: .init(value: title)))
+        let albumOptionVC = RecordOptionInputViewController(viewModel: albumOptionVM)
         startNavigation?.pushViewController(albumOptionVC, animated: true)
         
         albumOptionVM.navigation
@@ -235,7 +235,7 @@ extension Coordinator {
         _ recordVM: RecordViewModel?,
         _ album: Record
     ) {
-        let editVM = AlbumEditViewModel(
+        let editVM = RecordEditViewModel(
             output: .init(
                 album: .init(value: album),
                 titleText: .init(value: album.title),
@@ -245,7 +245,7 @@ extension Coordinator {
                 mediaFilterOption: .init(value: album.mediaFilterOption)
             )
         )
-        let editVC = AlbumEditViewController(viewModel: editVM)
+        let editVC = RecordEditViewController(viewModel: editVM)
         self.navigationController.pushViewController(editVC, animated: true)
         
         editVM.navigation
@@ -458,8 +458,8 @@ extension Coordinator {
     
     /// 날짜 선택 모달을 Present 합니다.
     private func presentDatePickerModal(
-        _ editVC: AlbumEditViewController?,
-        _ editVM: AlbumEditViewModel,
+        _ editVC: RecordEditViewController?,
+        _ editVM: RecordEditViewModel,
         _ modalState: DatePickerModalViewModel.ModalState,
         _ startDate: Date,
         _ endDate: Date?

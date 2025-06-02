@@ -9,7 +9,7 @@ import UIKit
 import PinLayout
 import FlexLayout
 
-final class AlbumOptionInputView: CodeBaseUI {
+final class RecordOptionInputView: CodeBaseUI {
     
     var containerView = UIView()
     
@@ -21,9 +21,16 @@ final class AlbumOptionInputView: CodeBaseUI {
     
     /// 메인 라벨
     let mainLabel = UILabel(
-        "앨범에 저장할 항목을 선택해주세요",
+        "어떤 항목을 저장할까요?",
         size: 22,
         color: .mainLabel
+    )
+    
+    /// 서브 라벨
+    let subLabel = UILabel(
+        "원하는 옵션에 맞춰 똑똑하게 기록할게요",
+        size: 16,
+        color: .subLabel
     )
     
     /// 미디어 유형
@@ -45,10 +52,10 @@ final class AlbumOptionInputView: CodeBaseUI {
     let filterOptionsFormLabel = FormLabel(title: "분류 기준", subtitle: "1개 이상 선택")
     
     /// 직접 촬영한 항목 체크박스
-    let selfShootingFilterCheckBox = FormCheckBox("직접 촬영한 항목", variation: .selected)
+    let selfShootingFilterCheckBox = FormCheckBox("직접 촬영한 항목", subtitle: "HEIC / MOV", variation: .selected)
     
     /// 다운로드한 항목 체크박스
-    let downloadFilterCheckBox = FormCheckBox("다운로드한 항목", variation: .deselected)
+    let downloadFilterCheckBox = FormCheckBox("다운로드한 항목", subtitle: "PNG / JPEG / MP4", variation: .deselected)
     
     /// 스크린샷 항목 체크박스
     let screenshotFilterCheckBox = FormCheckBox("스크린샷", variation: .deselected)
@@ -85,7 +92,7 @@ final class AlbumOptionInputView: CodeBaseUI {
 
 // MARK: - Action
 
-extension AlbumOptionInputView {
+extension RecordOptionInputView {
     
     enum Action {
         case updateMediaFetchOption(MediaFetchOption)
@@ -132,7 +139,7 @@ extension AlbumOptionInputView {
 
 // MARK: - Layout
 
-extension AlbumOptionInputView {
+extension RecordOptionInputView {
     
     func configLayout() {
         containerView.flex
@@ -142,8 +149,9 @@ extension AlbumOptionInputView {
                 
                 flex.addItem().direction(.column).paddingHorizontal(20).define { flex in
                     flex.addItem(mainLabel).marginTop(16)
+                    flex.addItem(subLabel).marginTop(8)
                     
-                    flex.addItem(fetchOptionFormLabel).marginTop(40)
+                    flex.addItem(fetchOptionFormLabel).marginTop(48)
                     flex.addItem(choiceChipView).marginTop(16)
                     
                     flex.addItem(filterOptionsFormLabel).marginTop(40)
