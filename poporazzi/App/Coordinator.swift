@@ -395,6 +395,10 @@ extension Coordinator {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak myAlbumListVM, weak albumDetailVC] owner, path in
                 switch path {
+                case .viewWillDisappear:
+                    folderListVM?.delegate.accept(.viewDidRefresh)
+                    myAlbumListVM?.delegate.accept(.viewDidRefresh)
+                    
                 case .pop:
                     folderListVM?.delegate.accept(.viewDidRefresh)
                     myAlbumListVM?.delegate.accept(.viewDidRefresh)
@@ -427,6 +431,10 @@ extension Coordinator {
         folderListVM.navigation
             .bind(with: self) { [weak newFolderListVM] owner, path in
                 switch path {
+                case .viewWillDisappear:
+                    newFolderListVM?.delegate.accept(.viewDidRefresh)
+                    myAlbumListVM?.delegate.accept(.viewDidRefresh)
+                    
                 case .pop:
                     newFolderListVM?.delegate.accept(.viewDidRefresh)
                     myAlbumListVM?.delegate.accept(.viewDidRefresh)

@@ -38,6 +38,7 @@ extension AlbumDetailViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        let viewWillDisappear: Signal<Void>
         
         let willDisplayIndexPath: Signal<IndexPath>
         let cellSelected: Signal<IndexPath>
@@ -74,6 +75,7 @@ extension AlbumDetailViewModel {
     }
     
     enum Navigation {
+        case viewWillDisappear
         case pop
         case presentDetail(Album, UIImage?, [Media], Int)
         case presentMediaShareSheet([Any])
@@ -205,6 +207,12 @@ extension AlbumDetailViewModel {
             .distinctUntilChanged()
             .emit(with: self) { owner, point in
                 owner.output.isNavigationTitleShown.accept(point.y >= 80)
+            }
+            .disposed(by: disposeBag)
+        
+        input.viewWillDisappear
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.viewWillDisappear)
             }
             .disposed(by: disposeBag)
         

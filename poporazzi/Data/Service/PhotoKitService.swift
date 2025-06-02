@@ -170,6 +170,7 @@ extension PhotoKitService {
                         // 폴더 썸네일 최대 4개 패치
                         let thumbnailList: [UIImage?] = await withTaskGroup(of: (Int, UIImage?).self) { group in
                             for (index, assetCollection) in assetCollectionList.enumerated() {
+                                guard index < 4 else { break }
                                 group.addTask {
                                     let assetResult = self.assetResult(from: assetCollection)
                                     let thumbnail = await self.thumbnail(from: assetResult)
@@ -179,7 +180,6 @@ extension PhotoKitService {
                             
                             var result = [(Int, UIImage?)]()
                             for await item in group {
-                                guard result.count <= 4 else { break }
                                 result.append(item)
                             }
                             

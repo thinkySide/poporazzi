@@ -14,6 +14,7 @@ final class FolderListViewController: ViewController {
     private let scene = FolderListView()
     private let viewModel: FolderListViewModel
     private let disposeBag = DisposeBag()
+    private let event = Event()
     
     private var dataSource: UICollectionViewDiffableDataSource<AlbumSection, Album>!
     
@@ -36,8 +37,22 @@ final class FolderListViewController: ViewController {
         bind()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        event.viewWillDisappear.accept(())
+    }
+    
     deinit {
         Log.print(#file, .deinit)
+    }
+}
+
+// MARK: - Event
+
+extension FolderListViewController {
+    
+    struct Event {
+        let viewWillDisappear = PublishRelay<Void>()
     }
 }
 
@@ -88,6 +103,7 @@ extension FolderListViewController {
     func bind() {
         let input = FolderListViewModel.Input(
             viewDidLoad: .just(()),
+            viewWillDisappear: event.viewWillDisappear.asSignal(),
             folderCellSelected: scene.albumCollectionView.rx.itemSelected.asSignal(),
             backButtonTapped: scene.backButton.button.rx.tap.asSignal()
         )

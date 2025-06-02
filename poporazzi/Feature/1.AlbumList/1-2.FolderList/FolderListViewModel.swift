@@ -34,6 +34,8 @@ extension FolderListViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
+        let viewWillDisappear: Signal<Void>
+        
         let folderCellSelected: Signal<IndexPath>
         let backButtonTapped: Signal<Void>
     }
@@ -49,6 +51,7 @@ extension FolderListViewModel {
     }
     
     enum Navigation {
+        case viewWillDisappear
         case pop
         case pushFolderList(Album)
         case pushAlbumDetail(Album)
@@ -94,6 +97,12 @@ extension FolderListViewModel {
                 case .album: owner.navigation.accept(.pushAlbumDetail(album))
                 case .folder: owner.navigation.accept(.pushFolderList(album))
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        input.viewWillDisappear
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.viewWillDisappear)
             }
             .disposed(by: disposeBag)
         

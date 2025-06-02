@@ -39,9 +39,8 @@ extension MyAlbumListViewModel {
     
     struct Output {
         let albumList = BehaviorRelay<[Album]>(value: [])
-        let thumbnailList = BehaviorRelay<[String: [UIImage?]]>(value: [:])
+        let thumbnailList = BehaviorRelay<[Album: [UIImage?]]>(value: [:])
         
-        let updateThumbnail = PublishRelay<[String]>()
         let viewDidRefresh = PublishRelay<Void>()
     }
     
@@ -83,11 +82,10 @@ extension MyAlbumListViewModel {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap { $0.photoKitService.fetchAlbumListWithThumbnail(from: $1) }
             .bind(with: self) { owner, albumList in
-                let thumbnailList = Dictionary(uniqueKeysWithValues: albumList.map {
-                    ($0.id, $0.thumbnailList)
-                })
+                var thumbnailList = owner.output.thumbnailList.value
+                thumbnailList = thumbnailList.filter { albumList.contains($0.key) }
+                albumList.forEach { thumbnailList.updateValue($0.thumbnailList, forKey: $0) }
                 owner.output.thumbnailList.accept(thumbnailList)
-                owner.output.updateThumbnail.accept(albumList.map(\.id))
             }
             .disposed(by: disposeBag)
         
@@ -125,7 +123,7 @@ extension MyAlbumListViewModel {
         output.albumList.value
     }
     
-    var thumbnailList: [String: [UIImage?]] {
+    var thumbnailList: [Album: [UIImage?]] {
         output.thumbnailList.value
     }
 }

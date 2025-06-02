@@ -176,7 +176,7 @@ extension RecordViewController {
     private func updatePaginationDataSource(to mediaList: [Media]) {
         guard !mediaList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
-        snapshot.reconfigureItems(mediaList)
+        snapshot.reloadItems(mediaList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
