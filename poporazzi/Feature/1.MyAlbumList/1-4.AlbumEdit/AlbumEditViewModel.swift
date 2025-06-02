@@ -11,6 +11,8 @@ import RxCocoa
 
 final class AlbumEditViewModel: ViewModel {
     
+    @Dependency(\.photoKitService) private var photoKitService
+    
     private let output: Output
     
     let disposeBag = DisposeBag()
@@ -46,6 +48,7 @@ extension AlbumEditViewModel {
     
     enum Navigation {
         case pop
+        case popWithUpdate(Album)
     }
 }
 
@@ -71,12 +74,38 @@ extension AlbumEditViewModel {
         
         input.saveButtonTapped
             .emit(with: self) { owner, _ in
-                // TODO: 여기서 앨범 이름 수정
+                let newAlbum = Album(
+                    id: owner.album.id,
+                    title: owner.titleText.isEmpty ? owner.album.title : owner.titleText,
+                    creationDate: owner.album.creationDate,
+                    thumbnailList: owner.album.thumbnailList,
+                    estimateCount: owner.album.estimateCount,
+                    albumType: owner.album.albumType
+                )
                 
-                HapticManager.notification(type: .success)
+                owner.photoKitService.editAlbum(to: newAlbum)
+                    .observe(on: MainScheduler.asyncInstance)
+                    .bind { isSuccess in
+                        owner.navigation.accept(.popWithUpdate(newAlbum))
+                        HapticManager.notification(type: .success)
+                    }
+                    .disposed(by: owner.disposeBag)
             }
             .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Syntax Sugar
+
+extension AlbumEditViewModel {
+    
+    var album: Album {
+        output.album.value
+    }
+    
+    var titleText: String {
+        output.titleText.value
     }
 }

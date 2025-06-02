@@ -71,6 +71,9 @@ protocol PhotoKitInterface {
         sectionMediaList: SectionMediaList
     ) -> Observable<Void>
     
+    /// 앨범을 수정한 후 결과 이벤트를 반환합니다.
+    func editAlbum(to album: Album) -> Observable<Bool>
+    
     /// 앨범에서 에셋을 제외합니다.
     func excludePhotos(
         from album: Album,

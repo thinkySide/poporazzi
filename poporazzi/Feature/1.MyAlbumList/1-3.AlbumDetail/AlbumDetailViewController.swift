@@ -210,6 +210,13 @@ extension AlbumDetailViewController {
         )
         let output = viewModel.transform(input)
         
+        output.album
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, _ in
+                owner.updateTitleHeader()
+            }
+            .disposed(by: disposeBag)
+        
         output.mediaList
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, mediaList in

@@ -393,14 +393,15 @@ extension Coordinator {
         
         albumDetailVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { [weak myAlbumListVM, weak albumDetailVC] owner, path in
+            .bind(with: self) {
+                [weak myAlbumListVM, weak albumDetailVC, weak albumDetailVM] owner, path in
                 switch path {
                 case .viewWillDisappear:
                     folderListVM?.delegate.accept(.viewDidRefresh)
                     myAlbumListVM?.delegate.accept(.viewDidRefresh)
                     
                 case let .pushAlbumEdit(album):
-                    owner.pushAlbumEdit(album)
+                    owner.pushAlbumEdit(albumDetailVM, album)
                     
                 case .pop:
                     folderListVM?.delegate.accept(.viewDidRefresh)
@@ -453,7 +454,11 @@ extension Coordinator {
             .disposed(by: folderListVM.disposeBag)
     }
     
-    private func pushAlbumEdit(_ album: Album) {
+    /// 앨범 수정 화면으로 Push 합니다.
+    private func pushAlbumEdit(
+        _ albumDetailVM: AlbumDetailViewModel?,
+        _ album: Album
+    ) {
         let albumEditVM = AlbumEditViewModel(
             output: .init(
                 album: .init(value: album),
@@ -468,6 +473,10 @@ extension Coordinator {
                 switch path {
                 case .pop:
                     owner.navigationController.popViewController(animated: true)
+                    
+                case let .popWithUpdate(newAlbum):
+                    owner.navigationController.popViewController(animated: true)
+                    albumDetailVM?.delegate.accept(.albumWillUpdate(newAlbum))
                 }
             }
             .disposed(by: albumEditVM.disposeBag)
