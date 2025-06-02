@@ -81,10 +81,10 @@ final class Coordinator: NSObject {
                     owner.presentPermissionRequestModal(myAlbumListVM)
                     
                 case let .pushFolderList(album):
-                    owner.pushFolderList(album)
+                    owner.pushFolderList(myAlbumListVM, nil, album)
                     
                 case let .pushAlbumDetail(album):
-                    owner.pushAlbumDetail(album)
+                    owner.pushAlbumDetail(myAlbumListVM, nil, album)
                 }
             }
             .disposed(by: mainVC.disposeBag)
@@ -97,7 +97,7 @@ final class Coordinator: NSObject {
                     mainViewModel?.delegate.accept(.finishRecord)
                     
                 case let .pushAlbumEdit(album):
-                    owner.pushAlbumEdit(recordVM, album)
+                    owner.pushRecordEdit(recordVM, album)
                     
                 case let .presentExcludeRecord(album):
                     owner.pushExcludeRecord(recordVM, album)
@@ -205,8 +205,8 @@ extension Coordinator {
         _ startNavigation: UINavigationController?,
         _ title: String
     ) {
-        let albumOptionVM = AlbumOptionInputViewModel(output: .init(titleText: .init(value: title)))
-        let albumOptionVC = AlbumOptionInputViewController(viewModel: albumOptionVM)
+        let albumOptionVM = RecordOptionInputViewModel(output: .init(titleText: .init(value: title)))
+        let albumOptionVC = RecordOptionInputViewController(viewModel: albumOptionVM)
         startNavigation?.pushViewController(albumOptionVC, animated: true)
         
         albumOptionVM.navigation
@@ -230,22 +230,22 @@ extension Coordinator {
 
 extension Coordinator {
     
-    /// 앨범 수정 화면을 Push 합니다.
-    private func pushAlbumEdit(
+    /// 기록 수정 화면을 Push 합니다.
+    private func pushRecordEdit(
         _ recordVM: RecordViewModel?,
-        _ album: Record
+        _ record: Record
     ) {
-        let editVM = AlbumEditViewModel(
+        let editVM = RecordEditViewModel(
             output: .init(
-                album: .init(value: album),
-                titleText: .init(value: album.title),
-                startDate: .init(value: album.startDate),
-                endDate: .init(value: album.endDate),
-                mediaFetchOption: .init(value: album.mediaFetchOption),
-                mediaFilterOption: .init(value: album.mediaFilterOption)
+                record: .init(value: record),
+                titleText: .init(value: record.title),
+                startDate: .init(value: record.startDate),
+                endDate: .init(value: record.endDate),
+                mediaFetchOption: .init(value: record.mediaFetchOption),
+                mediaFilterOption: .init(value: record.mediaFilterOption)
             )
         )
-        let editVC = AlbumEditViewController(viewModel: editVM)
+        let editVC = RecordEditViewController(viewModel: editVM)
         self.navigationController.pushViewController(editVC, animated: true)
         
         editVM.navigation
@@ -382,16 +382,26 @@ extension Coordinator {
 extension Coordinator {
     
     /// 앨범 상세보기 화면으로 Push 합니다.
-    private func pushAlbumDetail(_ album: Album) {
+    private func pushAlbumDetail(
+        _ myAlbumListVM: MyAlbumListViewModel?,
+        _ folderListVM: FolderListViewModel?,
+        _ album: Album
+    ) {
         let albumDetailVM = AlbumDetailViewModel(output: .init(album: .init(value: album)))
         let albumDetailVC = AlbumDetailViewController(viewModel: albumDetailVM)
         navigationController.pushViewController(albumDetailVC, animated: true)
         
         albumDetailVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { [weak albumDetailVC] owner, path in
+            .bind(with: self) { [weak myAlbumListVM, weak albumDetailVC] owner, path in
                 switch path {
+                case .viewWillDisappear:
+                    folderListVM?.delegate.accept(.viewDidRefresh)
+                    myAlbumListVM?.delegate.accept(.viewDidRefresh)
+                    
                 case .pop:
+                    folderListVM?.delegate.accept(.viewDidRefresh)
+                    myAlbumListVM?.delegate.accept(.viewDidRefresh)
                     owner.navigationController.popViewController(animated: true)
                     
                 case let .presentDetail(album, image, mediaList, selectedIndex):
@@ -409,22 +419,32 @@ extension Coordinator {
     }
     
     /// 폴더 리스트 화면으로 Push 합니다.
-    private func pushFolderList(_ album: Album) {
+    private func pushFolderList(
+        _ myAlbumListVM: MyAlbumListViewModel?,
+        _ newFolderListVM: FolderListViewModel?,
+        _ album: Album
+    ) {
         let folderListVM = FolderListViewModel(output: .init(folder: .init(value: album)))
         let folderListVC = FolderListViewController(viewModel: folderListVM)
         navigationController.pushViewController(folderListVC, animated: true)
         
         folderListVM.navigation
-            .bind(with: self) { owner, path in
+            .bind(with: self) { [weak newFolderListVM] owner, path in
                 switch path {
+                case .viewWillDisappear:
+                    newFolderListVM?.delegate.accept(.viewDidRefresh)
+                    myAlbumListVM?.delegate.accept(.viewDidRefresh)
+                    
                 case .pop:
+                    newFolderListVM?.delegate.accept(.viewDidRefresh)
+                    myAlbumListVM?.delegate.accept(.viewDidRefresh)
                     owner.navigationController.popViewController(animated: true)
                     
                 case let .pushFolderList(album):
-                    owner.pushFolderList(album)
+                    owner.pushFolderList(myAlbumListVM, newFolderListVM, album)
                     
                 case let .pushAlbumDetail(album):
-                    owner.pushAlbumDetail(album)
+                    owner.pushAlbumDetail(myAlbumListVM, newFolderListVM, album)
                 }
             }
             .disposed(by: folderListVM.disposeBag)
@@ -458,8 +478,8 @@ extension Coordinator {
     
     /// 날짜 선택 모달을 Present 합니다.
     private func presentDatePickerModal(
-        _ editVC: AlbumEditViewController?,
-        _ editVM: AlbumEditViewModel,
+        _ editVC: RecordEditViewController?,
+        _ editVM: RecordEditViewModel,
         _ modalState: DatePickerModalViewModel.ModalState,
         _ startDate: Date,
         _ endDate: Date?

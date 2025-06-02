@@ -41,6 +41,11 @@ final class AlbumDetailViewController: ViewController {
         setupMenu()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        event.viewWillDisappear.accept(())
+    }
+    
     deinit {
         Log.print(#file, .deinit)
     }
@@ -53,6 +58,7 @@ extension AlbumDetailViewController {
     struct Event {
         let willDisplayIndexPath = PublishRelay<IndexPath>()
         let currentScrollOffset = PublishRelay<CGPoint>()
+        let viewWillDisappear = PublishRelay<Void>()
     }
 }
 
@@ -188,6 +194,7 @@ extension AlbumDetailViewController {
     func bind() {
         let input = AlbumDetailViewModel.Input(
             viewDidLoad: .just(()),
+            viewWillDisappear: event.viewWillDisappear.asSignal(),
             willDisplayIndexPath: event.willDisplayIndexPath.asSignal(),
             cellSelected: scene.mediaCollectionView.rx.itemSelected.asSignal(),
             cellDeselected: scene.mediaCollectionView.rx.itemDeselected.asSignal(),

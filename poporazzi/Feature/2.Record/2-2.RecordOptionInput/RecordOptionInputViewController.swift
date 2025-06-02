@@ -1,5 +1,5 @@
 //
-//  AlbumOptionInputViewController.swift
+//  RecordOptionInputViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/13/25.
@@ -9,14 +9,14 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class AlbumOptionInputViewController: ViewController {
+final class RecordOptionInputViewController: ViewController {
     
-    private let scene = AlbumOptionInputView()
-    private let viewModel: AlbumOptionInputViewModel
+    private let scene = RecordOptionInputView()
+    private let viewModel: RecordOptionInputViewModel
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: AlbumOptionInputViewModel) {
+    init(viewModel: RecordOptionInputViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -41,10 +41,10 @@ final class AlbumOptionInputViewController: ViewController {
 
 // MARK: - Binding
 
-extension AlbumOptionInputViewController {
+extension RecordOptionInputViewController {
     
     func bind() {
-        let input = AlbumOptionInputViewModel.Input(
+        let input = RecordOptionInputViewModel.Input(
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             allFetchChoiceChipTapped: scene.allFetchChoiceChip.button.rx.tap.asSignal(),
             photoFetchChoiceChipTapped: scene.photoFetchChoiceChip.button.rx.tap.asSignal(),

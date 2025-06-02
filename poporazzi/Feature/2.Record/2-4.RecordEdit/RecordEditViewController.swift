@@ -1,5 +1,5 @@
 //
-//  AlbumEditViewController.swift
+//  RecordEditViewController.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/17/25.
@@ -9,14 +9,14 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class AlbumEditViewController: ViewController {
+final class RecordEditViewController: ViewController {
     
-    private let scene = AlbumEditView()
-    private let viewModel: AlbumEditViewModel
+    private let scene = RecordEditView()
+    private let viewModel: RecordEditViewModel
     
     let disposeBag = DisposeBag()
     
-    init(viewModel: AlbumEditViewModel) {
+    init(viewModel: RecordEditViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -41,10 +41,10 @@ final class AlbumEditViewController: ViewController {
 
 // MARK: - Binding
 
-extension AlbumEditViewController {
+extension RecordEditViewController {
     
     func bind() {
-        let input = AlbumEditViewModel.Input(
+        let input = RecordEditViewModel.Input(
             viewDidLoad: .just(()),
             titleTextChanged: scene.titleTextField.textField.rx.text.orEmpty.asSignal(onErrorJustReturn: ""),
             startDatePickerTapped: scene.startDatePicker.tapGesture.rx.event.asVoidSignal(),
@@ -60,7 +60,7 @@ extension AlbumEditViewController {
         )
         let output = viewModel.transform(input)
         
-        output.album
+        output.record
             .bind(with: self) { owner, record in
                 owner.scene.titleTextField.action(.updateText(record.title))
                 owner.scene.titleTextField.action(.updatePlaceholder(record.title))

@@ -60,7 +60,7 @@ extension MyAlbumListViewController {
                 for: indexPath
             ) as? MyAlbumListCell else { return nil }
             
-            if let thumbnailList = self.viewModel.thumbnailList[album.id] {
+            if let thumbnailList = self.viewModel.thumbnailList[album] {
                 cell.action(.setAlbum(album, thumbnailList))
             } else {
                 cell.action(.setAlbum(album, []))
@@ -78,11 +78,11 @@ extension MyAlbumListViewController {
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    private func updatePaginationDataSource(to updateList: [String]) {
-        guard !updateList.isEmpty else { return }
+    private func updatePaginationDataSource(to albumList: [Album]) {
+        guard !albumList.isEmpty else { return }
         var snapshot = dataSource.snapshot()
-        let validList = snapshot.itemIdentifiers.filter { updateList.contains($0.id) }
-        snapshot.reloadItems(validList)
+        let valideList = snapshot.itemIdentifiers.filter { albumList.contains($0) }
+        snapshot.reconfigureItems(valideList)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
@@ -105,10 +105,10 @@ extension MyAlbumListViewController {
             }
             .disposed(by: disposeBag)
         
-        output.updateThumbnail
+        output.thumbnailList
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, updateList in
-                owner.updatePaginationDataSource(to: updateList)
+            .bind(with: self) { owner, thumbnailList in
+                owner.updatePaginationDataSource(to: thumbnailList.map(\.key))
             }
             .disposed(by: disposeBag)
     }

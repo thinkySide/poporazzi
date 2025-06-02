@@ -1,5 +1,5 @@
 //
-//  AlbumEditViewModel.swift
+//  RecordEditViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 4/17/25.
@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-final class AlbumEditViewModel: ViewModel {
+final class RecordEditViewModel: ViewModel {
     
     @Dependency(\.persistenceService) private var persistenceDataService
     
@@ -31,7 +31,7 @@ final class AlbumEditViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension AlbumEditViewModel {
+extension RecordEditViewModel {
     
     struct Input {
         let viewDidLoad: Signal<Void>
@@ -53,7 +53,7 @@ extension AlbumEditViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Record>
+        let record: BehaviorRelay<Record>
         
         let titleText: BehaviorRelay<String>
         let startDate: BehaviorRelay<Date>
@@ -81,7 +81,7 @@ extension AlbumEditViewModel {
 
 // MARK: - Transform
 
-extension AlbumEditViewModel {
+extension RecordEditViewModel {
     
     func transform(_ input: Input) -> Output {
         input.titleTextChanged
@@ -196,7 +196,7 @@ extension AlbumEditViewModel {
         input.saveButtonTapped
             .emit(with: self) { owner, _ in
                 let currentTitle = owner.output.titleText.value
-                let oldAlbum = owner.output.album.value
+                let oldAlbum = owner.output.record.value
                 let albumTitle = currentTitle.isEmpty ? oldAlbum.title : currentTitle
                 
                 let newAlbum = Record(
@@ -235,7 +235,7 @@ extension AlbumEditViewModel {
 
 // MARK: - CheckBox
 
-extension AlbumEditViewModel {
+extension RecordEditViewModel {
     
     /// 현재 CheckBox 표시 상태로 유효한 상태인지 확인합니다.
     private func isValidCheckBox() -> Bool {

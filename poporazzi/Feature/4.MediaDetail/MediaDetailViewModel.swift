@@ -111,6 +111,7 @@ extension MediaDetailViewModel {
         
         // 기본 정보 및 이미지 불러오기
         output.mediaList
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .withUnretained(self)
             .flatMap { owner, mediaList in
                 var index = owner.output.initialIndex.value
@@ -136,6 +137,7 @@ extension MediaDetailViewModel {
                     option: .high
                 )
             }
+            .observe(on: MainScheduler.asyncInstance)
             .bind(with: self) { owner, mediaList in
                 let allMediaList = owner.mediaList
                 var thumbnailList = owner.thumbnailList

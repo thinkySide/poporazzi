@@ -17,7 +17,6 @@ final class TitleInputViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
-    let alert = PublishRelay<Alert>()
     
     init(output: Output) {
         self.output = output
@@ -40,15 +39,10 @@ extension TitleInputViewModel {
     struct Output {
         let titleText = BehaviorRelay<String>(value: "")
         let isNextButtonEnabled = BehaviorRelay<Bool>(value: false)
-        let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
         case pushAlbumOptionInput(title: String)
-    }
-    
-    enum Alert {
-        case openAppStore
     }
 }
 
@@ -74,46 +68,6 @@ extension TitleInputViewModel {
             }
             .disposed(by: disposeBag)
         
-        alert
-            .bind(with: self) { owner, action in
-                switch action {
-                case .openAppStore:
-                    VersionManager.openAppStore()
-                }
-            }
-            .disposed(by: disposeBag)
-        
-#if !DEBUG
-        VersionManager.appStoreAppVersion
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .bind(with: self) { owner, appStoreVersion in
-                if appStoreVersion != VersionManager.deviceAppVersion {
-                    owner.output.alertPresented.accept(owner.recommendUpdateAlert)
-                }
-            }
-            .disposed(by: disposeBag)
-#endif
-        
         return output
-    }
-}
-
-// MARK: - Alert
-
-extension TitleInputViewModel {
-    
-    /// 업데이트 권장 Alert
-    private var recommendUpdateAlert: AlertModel {
-        AlertModel(
-            title: "새롭게 업데이트된 버전이 있어요!",
-            message: "포포라치의 새로운 기능을 이용하기 위해 업데이트가 필요해요 😎",
-            eventButton: .init(
-                title: "업데이트",
-                action: { [weak self] in
-                    self?.alert.accept(.openAppStore)
-                }
-            ),
-            cancelButton: .init(title: "다음에")
-        )
     }
 }

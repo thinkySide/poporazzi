@@ -1,5 +1,5 @@
 //
-//  AlbumOptionInputViewModel.swift
+//  RecordOptionInputViewModel.swift
 //  poporazzi
 //
 //  Created by 김민준 on 5/13/25.
@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-final class AlbumOptionInputViewModel: ViewModel {
+final class RecordOptionInputViewModel: ViewModel {
     
     @Dependency(\.persistenceService) var persistenceService
     @Dependency(\.photoKitService) var photoKitService
@@ -31,7 +31,7 @@ final class AlbumOptionInputViewModel: ViewModel {
 
 // MARK: - Input & Output
 
-extension AlbumOptionInputViewModel {
+extension RecordOptionInputViewModel {
     
     struct Input {
         let backButtonTapped: Signal<Void>
@@ -62,7 +62,7 @@ extension AlbumOptionInputViewModel {
 
 // MARK: - Transform
 
-extension AlbumOptionInputViewModel {
+extension RecordOptionInputViewModel {
     
     func transform(_ input: Input) -> Output {
         input.backButtonTapped
@@ -136,7 +136,7 @@ extension AlbumOptionInputViewModel {
 
 // MARK: - Helper
 
-extension AlbumOptionInputViewModel {
+extension RecordOptionInputViewModel {
     
     /// 기록을 시작합니다.
     private func startRecord() {
@@ -157,7 +157,7 @@ extension AlbumOptionInputViewModel {
 
 // MARK: - CheckBox
 
-extension AlbumOptionInputViewModel {
+extension RecordOptionInputViewModel {
     
     /// 현재 CheckBox 표시 상태로 유효한 상태인지 확인합니다.
     private func isValidCheckBox() -> Bool {
