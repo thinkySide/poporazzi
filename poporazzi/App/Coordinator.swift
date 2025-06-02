@@ -130,6 +130,19 @@ final class Coordinator: NSObject {
             }
             .disposed(by: recordVC.disposeBag)
         
+        settingsVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case let .presentShareSheet(shareItems):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItems,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
+                }
+            }
+            .disposed(by: settingsVM.disposeBag)
+        
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
     }

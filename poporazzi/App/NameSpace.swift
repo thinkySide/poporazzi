@@ -9,6 +9,9 @@ import Foundation
 
 enum NameSpace {
     
+    /// 포포라치 App ID
+    static let appleId = "6744402068"
+    
     /// Sheet 기본 Corner Radius
     static let sheetRadius: CGFloat = 40
     
