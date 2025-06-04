@@ -145,6 +145,13 @@ final class Coordinator: NSObject {
         
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
+        
+        if UserDefaultsService.isFirstLaunch {
+            let onboardingVM = OnboardingViewModel(output: .init())
+            let onboardingVC = OnboardingViewController(viewModel: onboardingVM)
+            onboardingVC.modalPresentationStyle = .overFullScreen
+            self.navigationController.present(onboardingVC, animated: false)
+        }
     }
 }
 
