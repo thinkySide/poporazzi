@@ -23,19 +23,13 @@ final class OnboardingView: CodeBaseUI {
         return label
     }()
     
-    private let screenshot: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        return imageView
-    }()
+    var screenshotCollectionView = UICollectionView(frame: .zero, collectionViewLayout: .init())
     
     let actionButton = ActionButton(title: "다음으로", variataion: .secondary)
     
     init() {
         super.init(frame: .zero)
         setup()
-        
-        titleLabel.text = "앨범 정리, 3단계로\n쉽고 편하게 정리해요"
     }
     
     required init?(coder: NSCoder) {
@@ -54,11 +48,14 @@ final class OnboardingView: CodeBaseUI {
 extension OnboardingView {
     
     enum Action {
-        
+        case updateTitleLabel(NSMutableAttributedString)
     }
     
     func action(_ action: Action) {
-        
+        switch action {
+        case let .updateTitleLabel(title):
+            titleLabel.attributedText = title
+        }
     }
 }
 
@@ -67,11 +64,16 @@ extension OnboardingView {
 extension OnboardingView {
     
     func configLayout() {
-        containerView.flex.direction(.column).alignItems(.center).define { flex in
+        containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
+            
             flex.addItem(titleLabel).marginTop(8)
-            flex.addItem().grow(1)
-            flex.addItem(actionButton).width(120)
+            
+            flex.addItem(screenshotCollectionView)
+                .grow(1)
+                .marginVertical(24)
+            
+            flex.addItem(actionButton).width(120).alignSelf(.center)
         }
     }
 }

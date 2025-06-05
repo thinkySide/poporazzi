@@ -30,11 +30,13 @@ final class OnboardingViewModel: ViewModel {
 extension OnboardingViewModel {
     
     struct Input {
-        
+        let actionButtonTapped: Signal<Void>
+        let currentIndex: Signal<Int>
     }
     
     struct Output {
-        
+        let onboardingItems = BehaviorRelay<[OnboardingItem]>(value: OnboardingItem.list)
+        let currentItem = BehaviorRelay<OnboardingItem>(value: OnboardingItem.list.first!)
     }
     
     enum Navigation {
@@ -47,7 +49,29 @@ extension OnboardingViewModel {
 extension OnboardingViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.actionButtonTapped
+            .emit(with: self) { owner, _ in
+                
+            }
+            .disposed(by: disposeBag)
+        
+        input.currentIndex
+            .distinctUntilChanged()
+            .emit(with: self) { owner, index in
+                let item = owner.onboardingItems[index]
+                owner.output.currentItem.accept(item)
+            }
+            .disposed(by: disposeBag)
         
         return output
+    }
+}
+
+// MARK: - Syntax Sugar
+
+extension OnboardingViewModel {
+    
+    var onboardingItems: [OnboardingItem] {
+        output.onboardingItems.value
     }
 }
