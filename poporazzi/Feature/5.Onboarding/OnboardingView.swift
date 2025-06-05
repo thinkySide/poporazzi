@@ -13,7 +13,9 @@ final class OnboardingView: CodeBaseUI {
     
     var containerView = UIView()
     
-    private lazy var navigationBar = NavigationBar()
+    private lazy var navigationBar = NavigationBar(center: paginationIndicator)
+    
+    let paginationIndicator = PaginationIndicator(pageCount: OnboardingItem.list.count)
     
     private let titleLabel: UILabel = {
         let label = UILabel(size: 26, color: .mainLabel)

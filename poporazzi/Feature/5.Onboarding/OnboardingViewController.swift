@@ -157,6 +157,7 @@ extension OnboardingViewController {
         
         output.currentIndex
             .bind(with: self) { owner, index in
+                owner.scene.paginationIndicator.action(.updateCurrentIndex(index))
                 if index >= owner.viewModel.onboardingItems.count - 1 {
                     owner.scene.action(.updateActionButton("시작하기", .primary))
                 } else {
