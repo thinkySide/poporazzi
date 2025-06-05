@@ -36,7 +36,7 @@ final class PermissionRequestModalView: CodeBaseUI {
         return imageView
     }()
     
-    let requestAuthButton = ActionButton(title: "접근 권한 확인", variataion: .primary)
+    let requestAuthButton = ActionButton(title: "접근 권한 확인", variation: .primary)
     
     init() {
         super.init(frame: .zero)

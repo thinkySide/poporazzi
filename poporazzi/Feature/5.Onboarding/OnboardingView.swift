@@ -25,7 +25,7 @@ final class OnboardingView: CodeBaseUI {
     
     var screenshotCollectionView = UICollectionView(frame: .zero, collectionViewLayout: .init())
     
-    let actionButton = ActionButton(title: "다음으로", variataion: .secondary)
+    let actionButton = ActionButton(title: "다음으로", variation: .secondary)
     
     init() {
         super.init(frame: .zero)
@@ -49,12 +49,18 @@ extension OnboardingView {
     
     enum Action {
         case updateTitleLabel(NSMutableAttributedString)
+        case updateActionButton(String, ActionButton.Variation)
     }
     
     func action(_ action: Action) {
         switch action {
         case let .updateTitleLabel(title):
             titleLabel.attributedText = title
+            
+        case let .updateActionButton(title, variation):
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.actionButton.action(.updateVariation(title, variation))
+            }
         }
     }
 }

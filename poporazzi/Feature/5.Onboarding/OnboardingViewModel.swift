@@ -36,7 +36,10 @@ extension OnboardingViewModel {
     
     struct Output {
         let onboardingItems = BehaviorRelay<[OnboardingItem]>(value: OnboardingItem.list)
+        let currentIndex = BehaviorRelay<Int>(value: 0)
         let currentItem = BehaviorRelay<OnboardingItem>(value: OnboardingItem.list.first!)
+        
+        let nextButtonTapped = PublishRelay<Int>()
     }
     
     enum Navigation {
@@ -51,13 +54,22 @@ extension OnboardingViewModel {
     func transform(_ input: Input) -> Output {
         input.actionButtonTapped
             .emit(with: self) { owner, _ in
-                
+                let currentIndex = owner.output.currentIndex.value
+                if currentIndex >= owner.onboardingItems.count - 1 {
+                    // TODO: Start
+                } else {
+                    owner.output.nextButtonTapped.accept(currentIndex + 1)
+                }
             }
             .disposed(by: disposeBag)
         
         input.currentIndex
             .distinctUntilChanged()
-            .emit(with: self) { owner, index in
+            .emit(to: output.currentIndex)
+            .disposed(by: disposeBag)
+        
+        output.currentIndex
+            .bind(with: self) { owner, index in
                 let item = owner.onboardingItems[index]
                 owner.output.currentItem.accept(item)
             }
@@ -73,5 +85,9 @@ extension OnboardingViewModel {
     
     var onboardingItems: [OnboardingItem] {
         output.onboardingItems.value
+    }
+    
+    var currentIndex: Int {
+        output.currentIndex.value
     }
 }

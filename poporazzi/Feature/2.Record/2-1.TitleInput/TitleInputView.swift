@@ -43,7 +43,7 @@ final class TitleInputView: CodeBaseUI {
     let keyboardAccessoryView = UIView()
     
     /// 다음 버튼
-    let nextButton = ActionButton(title: "다음", variataion: .primary)
+    let nextButton = ActionButton(title: "다음", variation: .primary)
     
     init() {
         super.init(frame: .zero)

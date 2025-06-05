@@ -28,18 +28,9 @@ final class ActionButton: CodeBaseUI {
         return button
     }()
     
-    init(title: String, variataion: Variation) {
+    init(title: String, variation: Variation) {
         super.init(frame: .zero)
         setup()
-        button.setTitle(title, for: .normal)
-        switch variataion {
-        case .primary:
-            button.backgroundColor = .brandPrimary
-            button.setTitleColor(.white, for: .normal)
-        case .secondary:
-            button.backgroundColor = .brandSecondary
-            button.setTitleColor(.subLabel, for: .normal)
-        }
     }
     
     required init?(coder: NSCoder) {
@@ -58,11 +49,23 @@ final class ActionButton: CodeBaseUI {
 extension ActionButton {
     
     enum Action {
+        case updateVariation(String, Variation)
         case toggleEnabled(Bool)
     }
     
     func action(_ action: Action) {
         switch action {
+        case let .updateVariation(title, variation):
+            button.setTitle(title, for: .normal)
+            switch variation {
+            case .primary:
+                button.backgroundColor = .brandPrimary
+                button.setTitleColor(.white, for: .normal)
+            case .secondary:
+                button.backgroundColor = .brandSecondary
+                button.setTitleColor(.subLabel, for: .normal)
+            }
+            
         case let .toggleEnabled(isEnabled):
             UIView.animate(withDuration: 0.2) { [weak self] in
                 self?.button.isEnabled = isEnabled

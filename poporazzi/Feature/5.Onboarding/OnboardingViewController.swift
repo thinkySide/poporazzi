@@ -155,9 +155,32 @@ extension OnboardingViewController {
             }
             .disposed(by: disposeBag)
         
+        output.currentIndex
+            .bind(with: self) { owner, index in
+                if index >= owner.viewModel.onboardingItems.count - 1 {
+                    owner.scene.action(.updateActionButton("시작하기", .primary))
+                } else {
+                    owner.scene.action(.updateActionButton("다음으로", .secondary))
+                }
+            }
+            .disposed(by: disposeBag)
+        
         output.currentItem
             .bind(with: self) { owner, item in
                 owner.scene.action(.updateTitleLabel(item.title))
+            }
+            .disposed(by: disposeBag)
+        
+        output.nextButtonTapped
+            .bind(with: self) { owner, index in
+                let indexPath = IndexPath(item: index, section: 0)
+                owner.scene.screenshotCollectionView.isPagingEnabled = false
+                owner.scene.screenshotCollectionView.scrollToItem(
+                    at: indexPath,
+                    at: .centeredHorizontally,
+                    animated: true
+                )
+                owner.scene.screenshotCollectionView.isPagingEnabled = true
             }
             .disposed(by: disposeBag)
     }

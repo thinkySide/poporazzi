@@ -59,9 +59,9 @@ final class DatePickerModalView: CodeBaseUI {
     
     private let actionbuttonView = UIView()
     
-    let cancelButton = ActionButton(title: "취소", variataion: .secondary)
+    let cancelButton = ActionButton(title: "취소", variation: .secondary)
     
-    let confirmButton = ActionButton(title: "확인", variataion: .primary)
+    let confirmButton = ActionButton(title: "확인", variation: .primary)
     
     init(variation: Variation) {
         self.variation = variation
