@@ -149,7 +149,7 @@ extension RecordCell {
                 
             case let .video(_, _, duration):
                 videoDurationLabel.text = duration.videoDurationFormat
-                defaultoverlay.alpha = 0
+                defaultoverlay.alpha = 1
                 favoriteIcon.alpha = media.isFavorite ? 1 : 0
                 videoDurationLabel.flex.markDirty()
             }
