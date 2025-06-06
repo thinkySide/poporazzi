@@ -47,10 +47,10 @@ final class FinishConfirmModalView: CodeBaseUI {
     private let actionbuttonView = UIView()
     
     /// 종료 버튼
-    let finishButton = ActionButton(title: "기록 종료하기", variataion: .primary)
+    let finishButton = ActionButton(title: "기록 종료하기", variation: .primary)
     
     /// 취소 버튼
-    let cancelButton = ActionButton(title: "취소", variataion: .secondary)
+    let cancelButton = ActionButton(title: "취소", variation: .secondary)
     
     init() {
         super.init(frame: .zero)

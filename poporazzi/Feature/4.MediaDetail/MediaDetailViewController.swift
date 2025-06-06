@@ -27,7 +27,11 @@ final class MediaDetailViewController: ViewController {
     private var initialIndex: Int?
     private var initialImage: UIImage?
     
-    init(viewModel: MediaDetailViewModel, initialIndex: Int?, initialImage: UIImage?) {
+    init(
+        viewModel: MediaDetailViewModel,
+        initialIndex: Int?,
+        initialImage: UIImage?
+    ) {
         self.viewModel = viewModel
         self.initialIndex = initialIndex
         self.initialImage = initialImage

@@ -73,6 +73,7 @@ extension PermissionRequestModalViewModel {
                                 
                             case .authorized:
                                 owner.navigation.accept(.dismiss)
+                                UserDefaultsService.isFirstLaunch = false
                                 
                             @unknown default:
                                 break

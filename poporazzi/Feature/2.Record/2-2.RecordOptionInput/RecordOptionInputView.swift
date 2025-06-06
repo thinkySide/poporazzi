@@ -72,7 +72,7 @@ final class RecordOptionInputView: CodeBaseUI {
     }()
     
     /// 시작 버튼
-    let startButton = ActionButton(title: "기록 시작하기", variataion: .primary)
+    let startButton = ActionButton(title: "기록 시작하기", variation: .primary)
     
     init() {
         super.init(frame: .zero)
