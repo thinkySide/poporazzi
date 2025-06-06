@@ -15,7 +15,7 @@ final class ListButton: CodeBaseUI {
     
     let tapGesture = UITapGestureRecognizer()
     
-    private let titleLabel = UILabel(size: 18, color: .mainLabel)
+    private let titleLabel = UILabel(size: 17, color: .mainLabel)
     
     private let chevronRight = UIImageView(
         symbol: .right,

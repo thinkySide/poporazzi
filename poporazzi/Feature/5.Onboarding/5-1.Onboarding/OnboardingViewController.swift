@@ -144,10 +144,17 @@ extension OnboardingViewController {
     
     func bind() {
         let input = OnboardingViewModel.Input(
+            backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
             actionButtonTapped: scene.actionButton.button.rx.tap.asSignal(),
             currentIndex: event.currentIndex.asSignal()
         )
         let output = viewModel.transform(input)
+        
+        output.isOnboarding
+            .bind(with: self) { owner, isOnboarding in
+                owner.scene.action(.isOnboarding(isOnboarding))
+            }
+            .disposed(by: disposeBag)
         
         output.onboardingItems
             .bind(with: self) { owner, items in
@@ -159,7 +166,8 @@ extension OnboardingViewController {
             .bind(with: self) { owner, index in
                 owner.scene.paginationIndicator.action(.updateCurrentIndex(index))
                 if index >= owner.viewModel.onboardingItems.count - 1 {
-                    owner.scene.action(.updateActionButton("시작하기", .primary))
+                    let title = owner.viewModel.isOnboarding ? "시작하기" : "돌아가기"
+                    owner.scene.action(.updateActionButton(title, .primary))
                 } else {
                     owner.scene.action(.updateActionButton("다음으로", .secondary))
                 }

@@ -62,23 +62,23 @@ final class Coordinator: NSObject {
         navigationController.interactivePopGestureRecognizer?.delegate = self
         
         mainViewModel.navigation
-            .bind(with: self) { [weak myAlbumListVM, weak recordVM] owner, path in
+            .bind(with: self) { [weak navigationController, weak myAlbumListVM, weak recordVM] owner, path in
                 switch path {
                 case .presentTitleInput:
                     owner.presentTitleInput(recordVM)
                     
                 case .presentAuthRequestModal:
-                    owner.presentPermissionRequestModal(myAlbumListVM)
+                    owner.presentPermissionRequestModal(navigationController, myAlbumListVM)
                 }
             }
             .disposed(by: mainVC.disposeBag)
         
         myAlbumListVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { [weak myAlbumListVM] owner, path in
+            .bind(with: self) { [weak navigationController, weak myAlbumListVM] owner, path in
                 switch path {
                 case .presentPermissionRequestModal:
-                    owner.presentPermissionRequestModal(myAlbumListVM)
+                    owner.presentPermissionRequestModal(navigationController, myAlbumListVM)
                     
                 case let .pushFolderList(album):
                     owner.pushFolderList(myAlbumListVM, nil, album)
@@ -133,6 +133,9 @@ final class Coordinator: NSObject {
         settingsVM.navigation
             .bind(with: self) { owner, path in
                 switch path {
+                case .pushOnboarding:
+                    owner.pushOnboarding()
+                    
                 case let .presentShareSheet(shareItems):
                     let activityController = UIActivityViewController(
                         activityItems: shareItems,
@@ -147,10 +150,22 @@ final class Coordinator: NSObject {
         window?.makeKeyAndVisible()
         
         if UserDefaultsService.isFirstLaunch {
-            let onboardingVM = OnboardingViewModel(output: .init())
+            let onboardingVM = OnboardingViewModel(output: .init(isOnboarding: .init(value: true)))
             let onboardingVC = OnboardingViewController(viewModel: onboardingVM)
             onboardingVC.modalPresentationStyle = .overFullScreen
             self.navigationController.present(onboardingVC, animated: false)
+            
+            onboardingVM.navigation
+                .bind(with: self) { [weak onboardingVC, weak myAlbumListVM] owner, path in
+                    switch path {
+                    case .presentPermissionRequestModal:
+                        owner.presentPermissionRequestModal(onboardingVC, myAlbumListVM)
+                        
+                    default:
+                        break
+                    }
+                }
+                .disposed(by: onboardingVM.disposeBag)
         }
     }
 }
@@ -521,18 +536,42 @@ extension Coordinator {
     }
 }
 
+// MARK: - Settings Flow
+
+extension Coordinator {
+    
+    /// 온보딩 화면으로 Push합니다.
+    private func pushOnboarding() {
+        let onboardingVM = OnboardingViewModel(output: .init(isOnboarding: .init(value: false)))
+        let onboardingVC = OnboardingViewController(viewModel: onboardingVM)
+        self.navigationController.pushViewController(onboardingVC, animated: true)
+        
+        onboardingVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    owner.navigationController.popViewController(animated: true)
+                    
+                default:
+                    break
+                }
+            }
+            .disposed(by: onboardingVM.disposeBag)
+    }
+}
+
 // MARK: - Common Sheet
 
 extension Coordinator {
     
     /// 사진 보관함 권한 요청 모달을 Present합니다.
-    private func presentPermissionRequestModal(_ myAlbumListVM: MyAlbumListViewModel?) {
+    private func presentPermissionRequestModal(_ rootViewController: UIViewController?, _ myAlbumListVM: MyAlbumListViewModel?) {
         let permissionRequestVM = PermissionRequestModalViewModel(output: .init())
         let permissionRequestVC = PermissionRequestModalViewController(viewModel: permissionRequestVM)
         permissionRequestVC.isModalInPresentation = true
         permissionRequestVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
         permissionRequestVC.sheetPresentationController?.detents = [.custom(resolver: { _ in 360 })]
-        self.navigationController.present(permissionRequestVC, animated: true)
+        rootViewController?.present(permissionRequestVC, animated: true)
         
         permissionRequestVM.navigation
             .observe(on: MainScheduler.instance)

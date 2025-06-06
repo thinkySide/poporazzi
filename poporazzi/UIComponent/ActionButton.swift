@@ -31,6 +31,7 @@ final class ActionButton: CodeBaseUI {
     init(title: String, variation: Variation) {
         super.init(frame: .zero)
         setup()
+        action(.updateVariation(title, variation))
     }
     
     required init?(coder: NSCoder) {

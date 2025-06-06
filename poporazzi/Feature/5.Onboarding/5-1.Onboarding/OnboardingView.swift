@@ -13,7 +13,12 @@ final class OnboardingView: CodeBaseUI {
     
     var containerView = UIView()
     
-    private lazy var navigationBar = NavigationBar(center: paginationIndicator)
+    private lazy var navigationBar = NavigationBar(
+        leading: backButton,
+        center: paginationIndicator
+    )
+    
+    let backButton = NavigationButton(buttonType: .back)
     
     let paginationIndicator = PaginationIndicator(pageCount: OnboardingItem.list.count)
     
@@ -50,12 +55,16 @@ final class OnboardingView: CodeBaseUI {
 extension OnboardingView {
     
     enum Action {
+        case isOnboarding(Bool)
         case updateTitleLabel(NSMutableAttributedString)
         case updateActionButton(String, ActionButton.Variation)
     }
     
     func action(_ action: Action) {
         switch action {
+        case let .isOnboarding(bool):
+            backButton.isHidden = bool
+            
         case let .updateTitleLabel(title):
             titleLabel.attributedText = title
             

@@ -22,6 +22,7 @@ final class SettingsView: CodeBaseUI {
     private let versionLabel = UILabel(size: 14, color: .subLabel)
     
     private let serviceFormLabel = FormLabel(title: "🛎️ 서비스")
+    let helpButton = ListButton(title: "도움말")
     let writeAppStoreReviviewButton = ListButton(title: "앱스토어 리뷰 작성")
     let requestFeatureAndImprovementButton = ListButton(title: "기능 요청 및 개선사항 제안")
     let shareWithFriendsButton = ListButton(title: "친구에게 공유")
@@ -78,6 +79,7 @@ extension SettingsView {
             
             flex.addItem().paddingHorizontal(20).marginTop(32).define { flex in
                 flex.addItem(serviceFormLabel)
+                flex.addItem(helpButton).marginTop(spacing)
                 flex.addItem(writeAppStoreReviviewButton).marginTop(spacing)
                 flex.addItem(requestFeatureAndImprovementButton).marginTop(spacing)
                 flex.addItem(shareWithFriendsButton).marginTop(spacing)

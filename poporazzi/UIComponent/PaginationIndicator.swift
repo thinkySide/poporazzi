@@ -70,7 +70,7 @@ extension PaginationIndicator {
             let dots = [firstDot, secondDot, thirdDot, fourthDot]
             for i in 0..<pageCount {
                 UIView.animate(withDuration: 0.2) {
-                    dots[i].backgroundColor = i == index ? .brandPrimary : .subButton
+                    dots[i].backgroundColor = i == index ? .brandPrimary : .brandSecondary
                 }
             }
         }

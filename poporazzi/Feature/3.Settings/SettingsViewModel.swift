@@ -32,6 +32,7 @@ extension SettingsViewModel {
     struct Input {
         let viewDidLoad: Signal<Void>
         
+        let helpButtonTapped: Signal<Void>
         let writeAppStoreReviviewButtonTapped: Signal<Void>
         let requestFeatureAndImprovementButtonTapped: Signal<Void>
         let shareWithFriendsButtonTapped: Signal<Void>
@@ -46,6 +47,7 @@ extension SettingsViewModel {
     }
     
     enum Navigation {
+        case pushOnboarding
         case presentShareSheet([Any])
     }
 }
@@ -59,6 +61,12 @@ extension SettingsViewModel {
             .emit(with: self) { owner, _ in
                 let version = VersionManager.deviceAppVersion
                 owner.output.version.accept(version)
+            }
+            .disposed(by: disposeBag)
+        
+        input.helpButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.pushOnboarding)
             }
             .disposed(by: disposeBag)
         

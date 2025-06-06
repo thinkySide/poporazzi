@@ -30,11 +30,13 @@ final class OnboardingViewModel: ViewModel {
 extension OnboardingViewModel {
     
     struct Input {
+        let backButtonTapped: Signal<Void>
         let actionButtonTapped: Signal<Void>
         let currentIndex: Signal<Int>
     }
     
     struct Output {
+        let isOnboarding: BehaviorRelay<Bool>
         let onboardingItems = BehaviorRelay<[OnboardingItem]>(value: OnboardingItem.list)
         let currentIndex = BehaviorRelay<Int>(value: 0)
         let currentItem = BehaviorRelay<OnboardingItem>(value: OnboardingItem.list.first!)
@@ -43,7 +45,8 @@ extension OnboardingViewModel {
     }
     
     enum Navigation {
-        
+        case pop
+        case presentPermissionRequestModal
     }
 }
 
@@ -52,11 +55,21 @@ extension OnboardingViewModel {
 extension OnboardingViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.backButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.pop)
+            }
+            .disposed(by: disposeBag)
+        
         input.actionButtonTapped
             .emit(with: self) { owner, _ in
                 let currentIndex = owner.output.currentIndex.value
                 if currentIndex >= owner.onboardingItems.count - 1 {
-                    // TODO: Start
+                    if owner.isOnboarding {
+                        owner.navigation.accept(.presentPermissionRequestModal)
+                    } else {
+                        owner.navigation.accept(.pop)
+                    }
                 } else {
                     owner.output.nextButtonTapped.accept(currentIndex + 1)
                 }
@@ -65,7 +78,10 @@ extension OnboardingViewModel {
         
         input.currentIndex
             .distinctUntilChanged()
-            .emit(to: output.currentIndex)
+            .emit(with: self) { owner, index in
+                owner.output.currentIndex.accept(index)
+                HapticManager.impact(style: .soft)
+            }
             .disposed(by: disposeBag)
         
         output.currentIndex
@@ -82,6 +98,10 @@ extension OnboardingViewModel {
 // MARK: - Syntax Sugar
 
 extension OnboardingViewModel {
+    
+    var isOnboarding: Bool {
+        output.isOnboarding.value
+    }
     
     var onboardingItems: [OnboardingItem] {
         output.onboardingItems.value
