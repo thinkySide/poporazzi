@@ -1,7 +1,7 @@
 # 🥷📸 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.5.0)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.5.1)|
 |:--|:--|
 |기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Realm, XCTest, Xcode Cloud|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11), [Instagram](https://www.instagram.com/poporazzzzzi?igsh=MWV1cDl4ZWU2b2p0bQ%3D%3D&utm_source=qr), [Thread](https://www.threads.com/@thinkydev?igshid=NTc4MTIwNjQ2YQ==)|
@@ -94,8 +94,8 @@
 |[#103 RecordCollectionView Sticky Header 기능 구현](https://github.com/thinkySide/poporazzi/pull/103)|CompositionalLayout Section Header를 활용한 StickyHeader 구현|
 |[#105 1.4.4 Minor 업데이트](https://github.com/thinkySide/poporazzi/pull/105)|저장 없이 종료 기능 버튼 이동, 기록 비어있을 경우 출력되는 UI 업데이트, 분류 기준 도움말 라벨 추가|
 
-#### v1.5.0 ~ / 25.05.19 ~
-> 상호작용 가능한 것 같은 부분들에 신경써 디테일을 올릭자 합니다.
+#### v1.5.0 ~ 1.5.1 / 25.05.19 ~ 
+> 상호작용 가능한 것 같은 부분들에 신경써 디테일을 올리고자 합니다.
 
 |PR 제목|주요 구현 내용|
 |:--|:--|
@@ -115,3 +115,5 @@
 |[#133 Record Flow 리팩토링](https://github.com/thinkySide/poporazzi/pull/133)|Record UI 업데이트 및 ViewModel 리팩토링|
 |[#135 Settings 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/135)|앱스토어 리뷰 작성, 오픈채팅방, SNS 이동 등 설정 화면 구현|
 |[#137 1.5.0 출시를 위한 디테일 작업 및 QA](https://github.com/thinkySide/poporazzi/pull/137)|UX 라이팅 업데이트 및 고화질 이미지 로딩 기능 구현|
+|[#139 앨범 및 폴더 수정, 삭제 기능 구현](https://github.com/thinkySide/poporazzi/pull/139)|앨범 및 폴더 이름 수정, 삭제 기능 구현|
+|[#141 온보딩 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/141)|온보딩 및 설정 탭 내 도움말 화면 및 기능 구현|
