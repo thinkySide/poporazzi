@@ -41,7 +41,7 @@ extension FinishConfirmModalViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Record>
+        let record: BehaviorRelay<Record>
         let sectionMediaList: BehaviorRelay<SectionMediaList>
         let saveOption = BehaviorRelay<RecordSaveOption>(value: .saveAsSingle)
         let toggleLoading = BehaviorRelay<Bool>(value: false)
@@ -145,7 +145,7 @@ extension FinishConfirmModalViewModel {
     /// 하나로 앨범을 저장합니다.
     private func saveAlbumAsSingle() -> Observable<Void> {
         photoKitService.saveAlbumAsSingle(
-            title: output.album.value.title,
+            title: output.record.value.title,
             sectionMediaList: output.sectionMediaList.value
         )
     }
@@ -153,7 +153,7 @@ extension FinishConfirmModalViewModel {
     /// 일차별로 앨범을 저장합니다.
     private func saveAlubmByDay() -> Observable<Void> {
         photoKitService.saveAlubmByDay(
-            title: output.album.value.title,
+            title: output.record.value.title,
             sectionMediaList: output.sectionMediaList.value
         )
     }

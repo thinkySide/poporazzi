@@ -48,5 +48,17 @@ extension CompleteRecordViewController {
             
         )
         let output = viewModel.transform(input)
+        
+        output.mediaList
+            .bind(with: self) { owner, mediaList in
+                owner.scene.action(.updateTitleLabel(mediaList.count))
+            }
+            .disposed(by: disposeBag)
+        
+        output.randomImageList
+            .bind(with: self) { owner, imageList in
+                owner.scene.action(.updateRandomImageView(imageList))
+            }
+            .disposed(by: disposeBag)
     }
 }

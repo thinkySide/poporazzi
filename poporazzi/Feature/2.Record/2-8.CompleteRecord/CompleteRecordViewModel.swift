@@ -5,7 +5,7 @@
 //  Created by 김민준 on 6/17/25.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import RxCocoa
 
@@ -34,7 +34,9 @@ extension CompleteRecordViewModel {
     }
     
     struct Output {
-        
+        let record: BehaviorRelay<Record>
+        let mediaList: BehaviorRelay<[Media]>
+        let randomImageList: BehaviorRelay<[UIImage]>
     }
     
     enum Navigation {

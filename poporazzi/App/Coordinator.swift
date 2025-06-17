@@ -93,8 +93,12 @@ final class Coordinator: NSObject {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak mainViewModel, weak recordVM] owner, path in
                 switch path {
-                case .finishRecord:
-                    break
+                case .stopRecord:
+                    owner.navigationController.dismiss(animated: true)
+                    
+                case let .finishRecord(record, mediaList, randomImageList):
+                    owner.navigationController.dismiss(animated: true)
+                    owner.pushCompleteRecord(record, mediaList, randomImageList)
                     
                 case let .pushAlbumEdit(album):
                     owner.pushRecordEdit(recordVM, album)
@@ -334,7 +338,7 @@ extension Coordinator {
     private func presentFinishModal(_ recordVM: RecordViewModel?, album: Record, sectionMediaList: SectionMediaList) {
         let finishVM = FinishConfirmModalViewModel(
             output: .init(
-                album: .init(value: album),
+                record: .init(value: album),
                 sectionMediaList: .init(value: sectionMediaList)
             )
         )
@@ -352,8 +356,7 @@ extension Coordinator {
                     owner.navigationController.dismiss(animated: true)
                     
                 case .finishRecord:
-                    owner.navigationController.dismiss(animated: true)
-                    owner.pushCompleteRecord(recordVM)
+                    recordVM?.delegate.accept(.finishRecord)
                 }
             }
             .disposed(by: finishVC.disposeBag)
@@ -405,8 +408,18 @@ extension Coordinator {
     }
     
     /// 기록 완료 화면으로 Push 합니다.
-    private func pushCompleteRecord(_ recordVM: RecordViewModel?) {
-        let completeRecordVM = CompleteRecordViewModel(output: .init())
+    private func pushCompleteRecord(
+        _ record: Record,
+        _ mediaList: [Media],
+        _ randomImageList: [UIImage]
+    ) {
+        let completeRecordVM = CompleteRecordViewModel(
+            output: .init(
+                record: .init(value: record),
+                mediaList: .init(value: mediaList),
+                randomImageList: .init(value: randomImageList)
+            )
+        )
         let completeRecrodVC = CompleteRecordViewController(viewModel: completeRecordVM)
         self.navigationController.pushViewController(completeRecrodVC, animated: true)
         
