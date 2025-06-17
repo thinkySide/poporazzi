@@ -17,7 +17,7 @@ final class CompleteRecordView: CodeBaseUI {
     
     private let actionbuttonView = UIView()
     
-    private let titleLabel: UILabel = {
+    private let mainLabel: UILabel = {
         let label = UILabel(size: 22, color: .mainLabel)
         label.numberOfLines = 2
         label.textAlignment = .center
@@ -42,6 +42,16 @@ final class CompleteRecordView: CodeBaseUI {
         imageView.clipsToBounds = true
         return imageView
     }()
+    
+    private let recordIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = .recordText
+        return imageView
+    }()
+    
+    private let recordTitleLabel = UILabel(size: 22, color: .mainLabel)
+    
+    private let recordInfoLabel = UILabel(size: 16, color: .subLabel)
     
     let showAlbumButton = ActionButton(title: "앨범 보기", variation: .secondary)
     
@@ -72,12 +82,13 @@ extension CompleteRecordView {
     enum Action {
         case updateTitleLabel(Int)
         case updateRandomImageView([UIImage])
+        case updateRecordInfo(Record)
     }
     
     func action(_ action: Action) {
         switch action {
         case let .updateTitleLabel(count):
-            titleLabel.attributedText = NSMutableAttributedString()
+            mainLabel.attributedText = NSMutableAttributedString()
                 .tint("소중한 기록 ", color: .mainLabel)
                 .tint("\(count)장", color: .brandPrimary)
                 .tint("을\n앨범으로 저장했어요", color: .mainLabel)
@@ -89,6 +100,18 @@ extension CompleteRecordView {
             if let secondImage = imageList[safe: 1] {
                 secondImageView.image = secondImage
             }
+            
+        case let .updateRecordInfo(record):
+            recordTitleLabel.text = record.title
+            
+            let startDate = record.startDate.detailFormat
+            let dayCount = (Calendar.current.dateComponents(
+                [.day],
+                from: record.startDate,
+                to: record.endDate ?? Date()
+            ).day ?? 0) +  1
+            
+            recordInfoLabel.text = "\(startDate)부터, \(dayCount)일간 기록"
         }
     }
 }
@@ -101,10 +124,15 @@ extension CompleteRecordView {
         containerView.flex.direction(.column).define { flex in
             flex.addItem(navigationBar)
             
-            flex.addItem(titleLabel).alignSelf(.center)
+            flex.addItem(mainLabel).alignSelf(.center)
             
             flex.addItem(randomImageView)
                 .marginTop(40)
+                .height(280)
+            
+            flex.addItem(recordIcon).marginTop(24).alignSelf(.center)
+            flex.addItem(recordTitleLabel).marginTop(8).alignSelf(.center)
+            flex.addItem(recordInfoLabel).marginTop(8).alignSelf(.center)
             
             flex.addItem().grow(1)
             

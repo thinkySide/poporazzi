@@ -24,6 +24,12 @@ extension Date {
         return Date.dateFormatter.string(from: self)
     }
     
+    /// 기본 포맷을 반환합니다.
+    var compactFormat: String {
+        Date.dateFormatter.dateFormat = "yy. M. d"
+        return Date.dateFormatter.string(from: self)
+    }
+    
     /// 시작 날짜 포맷을 반환합니다.
     var startDateFormat: String {
         Date.dateFormatter.dateFormat = "yyyy년 M월 d일 EEEE ~"

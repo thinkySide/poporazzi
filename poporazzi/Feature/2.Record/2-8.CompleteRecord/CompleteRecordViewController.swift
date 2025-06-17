@@ -49,6 +49,12 @@ extension CompleteRecordViewController {
         )
         let output = viewModel.transform(input)
         
+        output.record
+            .bind(with: self) { owner, record in
+                owner.scene.action(.updateRecordInfo(record))
+            }
+            .disposed(by: disposeBag)
+        
         output.mediaList
             .bind(with: self) { owner, mediaList in
                 owner.scene.action(.updateTitleLabel(mediaList.count))

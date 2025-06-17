@@ -442,6 +442,10 @@ extension RecordViewModel {
                     owner.cancelSelectMode()
                     
                 case .finishRecord:
+                    let endDate = owner.mediaList.last?.creationDate
+                    var finishRecord = owner.record
+                    finishRecord.endDate = endDate
+                    
                     var randomImageList = [UIImage]()
                     for thumbnail in owner.thumbnailList.compactMap(\.value) {
                         guard randomImageList.count < 2 else { break }
@@ -449,11 +453,13 @@ extension RecordViewModel {
                     }
                     owner.navigation.accept(
                         .finishRecord(
-                            owner.record,
+                            finishRecord,
                             owner.mediaList,
                             randomImageList
                         )
                     )
+                    
+                    owner.persistenceService.updateAlbum(to: finishRecord)
                 }
             }
             .disposed(by: disposeBag)
