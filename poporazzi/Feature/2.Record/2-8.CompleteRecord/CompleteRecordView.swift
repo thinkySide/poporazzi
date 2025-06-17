@@ -53,6 +53,16 @@ final class CompleteRecordView: CodeBaseUI {
     
     private let recordInfoLabel = UILabel(size: 16, color: .subLabel)
     
+    let shareButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("공유하기", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = .setDovemayo(18)
+        button.backgroundColor = .brandPrimary
+        button.clipsToBounds = true
+        return button
+    }()
+    
     let showAlbumButton = ActionButton(title: "앨범 보기", variation: .secondary)
     
     let backToHomeButton = ActionButton(title: "홈으로 돌아가기", variation: .secondary)
@@ -133,6 +143,10 @@ extension CompleteRecordView {
             flex.addItem(recordIcon).marginTop(24).alignSelf(.center)
             flex.addItem(recordTitleLabel).marginTop(8).alignSelf(.center)
             flex.addItem(recordInfoLabel).marginTop(8).alignSelf(.center)
+            
+            flex.addItem(shareButton)
+                .paddingHorizontal(16).height(40)
+                .marginTop(24).alignSelf(.center).cornerRadius(20)
             
             flex.addItem().grow(1)
             
