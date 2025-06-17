@@ -72,10 +72,17 @@ final class MyAlbumListCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        [albumThumbnail,
-         folderThumbnailFirst, folderThumbnailSecond,
-         folderThumbnailThird, folderThumbnailFourth]
-            .forEach { $0.image = nil }
+        [
+            albumThumbnail,
+            folderThumbnailFirst,
+            folderThumbnailSecond,
+            folderThumbnailThird,
+            folderThumbnailFourth
+        ]
+            .forEach {
+                $0.image = nil
+                $0.backgroundColor = .brandTertiary
+            }
     }
     
     override var isSelected: Bool {
@@ -134,7 +141,9 @@ extension MyAlbumListCell {
             
             titleLabel.text = album.title
             startDateLabel.text = album.creationDate.startDateFormat
-            countLabel.text = "\(album.estimateCount)"
+            countLabel.text = album.estimateCount > 0 
+            ? "\(album.estimateCount)"
+            : album.albumType == .album ? "빈 앨범" : "빈 폴더"
             [titleLabel, startDateLabel, countLabel].forEach { $0.flex.markDirty() }
             containerView.flex.layout()
         }
