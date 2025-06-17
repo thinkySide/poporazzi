@@ -93,8 +93,12 @@ final class Coordinator: NSObject {
             .observe(on: MainScheduler.instance)
             .bind(with: self) { [weak mainViewModel, weak recordVM] owner, path in
                 switch path {
-                case .finishRecord:
-                    mainViewModel?.delegate.accept(.finishRecord)
+                case .stopRecord:
+                    owner.navigationController.dismiss(animated: true)
+                    
+                case let .finishRecord(record, mediaList, randomImageList):
+                    owner.navigationController.dismiss(animated: true)
+                    owner.pushCompleteRecord(record, mediaList, randomImageList)
                     
                 case let .pushAlbumEdit(album):
                     owner.pushRecordEdit(recordVM, album)
@@ -185,7 +189,13 @@ extension Coordinator: UINavigationControllerDelegate, UIGestureRecognizerDelega
             return
         }
         
-        if viewController is RecordViewController {
+        // 제스처 비활성화 할 VC
+        let disabledList = [
+            RecordViewController.self,
+            CompleteRecordViewController.self
+        ]
+        
+        if disabledList.contains(where: { $0 == type(of: viewController) }) {
             navigationController.interactivePopGestureRecognizer?.isEnabled = false
         } else {
             navigationController.interactivePopGestureRecognizer?.isEnabled = true
@@ -328,7 +338,7 @@ extension Coordinator {
     private func presentFinishModal(_ recordVM: RecordViewModel?, album: Record, sectionMediaList: SectionMediaList) {
         let finishVM = FinishConfirmModalViewModel(
             output: .init(
-                album: .init(value: album),
+                record: .init(value: album),
                 sectionMediaList: .init(value: sectionMediaList)
             )
         )
@@ -346,8 +356,7 @@ extension Coordinator {
                     owner.navigationController.dismiss(animated: true)
                     
                 case .finishRecord:
-                    owner.navigationController.dismiss(animated: true)
-                    owner.mainViewModel?.delegate.accept(.finishRecord)
+                    recordVM?.delegate.accept(.finishRecord)
                 }
             }
             .disposed(by: finishVC.disposeBag)
@@ -396,6 +405,41 @@ extension Coordinator {
                 }
             }
             .disposed(by: detailVM.disposeBag)
+    }
+    
+    /// 기록 완료 화면으로 Push 합니다.
+    private func pushCompleteRecord(
+        _ record: Record,
+        _ mediaList: [Media],
+        _ randomImageList: [UIImage]
+    ) {
+        let completeRecordVM = CompleteRecordViewModel(
+            output: .init(
+                record: .init(value: record),
+                mediaList: .init(value: mediaList),
+                randomImageList: .init(value: randomImageList)
+            )
+        )
+        let completeRecrodVC = CompleteRecordViewController(viewModel: completeRecordVM)
+        self.navigationController.pushViewController(completeRecrodVC, animated: true)
+        
+        completeRecordVM.navigation
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, path in
+                switch path {
+                case .completeRecord:
+                    owner.navigationController.popToRootViewController(animated: true)
+                    owner.mainViewModel?.delegate.accept(.finishRecord)
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
+                }
+            }
+            .disposed(by: completeRecordVM.disposeBag)
     }
 }
 

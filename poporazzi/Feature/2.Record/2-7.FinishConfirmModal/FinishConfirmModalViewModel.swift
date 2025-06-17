@@ -13,13 +13,11 @@ final class FinishConfirmModalViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
-    @Dependency(\.storeKitService) private var storeKitService
     
     private let disposeBag = DisposeBag()
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
-    let alertAction = PublishRelay<AlertAction>()
     
     init(output: Output) {
         self.output = output
@@ -42,21 +40,15 @@ extension FinishConfirmModalViewModel {
     }
     
     struct Output {
-        let album: BehaviorRelay<Record>
+        let record: BehaviorRelay<Record>
         let sectionMediaList: BehaviorRelay<SectionMediaList>
         let saveOption = BehaviorRelay<RecordSaveOption>(value: .saveAsSingle)
         let toggleLoading = BehaviorRelay<Bool>(value: false)
-        let alertPresented = PublishRelay<AlertModel>()
     }
     
     enum Navigation {
         case dismiss
         case finishRecord
-    }
-    
-    enum AlertAction {
-        case linkToPhotoAlbum
-        case popToHome
     }
 }
 
@@ -113,21 +105,6 @@ extension FinishConfirmModalViewModel {
             }
             .disposed(by: disposeBag)
         
-        alertAction
-            .bind(with: self) { owner, action in
-                switch action {
-                case .linkToPhotoAlbum:
-                    DeepLinkManager.openPhotoAlbum()
-                    owner.navigation.accept(.finishRecord)
-                    owner.storeKitService.requestReview()
-                    
-                case .popToHome:
-                    owner.navigation.accept(.finishRecord)
-                    owner.storeKitService.requestReview()
-                }
-            }
-            .disposed(by: disposeBag)
-        
         return output
     }
 }
@@ -139,7 +116,7 @@ extension FinishConfirmModalViewModel {
     /// 기록을 종료합니다.
     private func finishRecord() {
         liveActivityService.stop()
-        output.alertPresented.accept(saveCompleteAlert)
+        navigation.accept(.finishRecord)
         HapticManager.notification(type: .success)
         UserDefaultsService.trackingAlbumId = ""
     }
@@ -152,7 +129,7 @@ extension FinishConfirmModalViewModel {
     /// 하나로 앨범을 저장합니다.
     private func saveAlbumAsSingle() -> Observable<Void> {
         photoKitService.saveAlbumAsSingle(
-            title: output.album.value.title,
+            title: output.record.value.title,
             sectionMediaList: output.sectionMediaList.value
         )
     }
@@ -160,34 +137,8 @@ extension FinishConfirmModalViewModel {
     /// 일차별로 앨범을 저장합니다.
     private func saveAlubmByDay() -> Observable<Void> {
         photoKitService.saveAlubmByDay(
-            title: output.album.value.title,
+            title: output.record.value.title,
             sectionMediaList: output.sectionMediaList.value
-        )
-    }
-}
-
-// MARK: - Alert
-
-extension FinishConfirmModalViewModel {
-    
-    /// 앨범 저장 완료 Alert
-    private var saveCompleteAlert: AlertModel {
-        let title = output.album.value.title
-        return AlertModel(
-            title: "기록이 종료되었습니다!",
-            message: "사진 앱 내 '\(title)' 앨범을 확인해보세요!",
-            eventButton: .init(
-                title: "앨범 확인",
-                action: { [weak self] in
-                    self?.alertAction.accept(.linkToPhotoAlbum)
-                }
-            ),
-            cancelButton: .init(
-                title: "홈으로 돌아가기",
-                action: { [weak self] in
-                    self?.alertAction.accept(.popToHome)
-                }
-            )
         )
     }
 }

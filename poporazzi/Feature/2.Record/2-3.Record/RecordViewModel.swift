@@ -79,7 +79,8 @@ extension RecordViewModel {
     }
     
     enum Navigation {
-        case finishRecord
+        case stopRecord
+        case finishRecord(Record, [Media], [UIImage])
         case pushAlbumEdit(Record)
         case presentExcludeRecord(Record)
         case presentFinishModal(Record, SectionMediaList)
@@ -94,6 +95,7 @@ extension RecordViewModel {
         case albumDidEdited(Record)
         case updateExcludeRecord(Record)
         case completeSharing
+        case finishRecord
     }
     
     enum AlertAction {
@@ -333,7 +335,7 @@ extension RecordViewModel {
             .bind(with: self) { owner, action in
                 switch action {
                 case .finishWithoutRecord:
-                    owner.navigation.accept(.finishRecord)
+                    owner.navigation.accept(.stopRecord)
                     owner.liveActivityService.stop()
                     UserDefaultsService.trackingAlbumId = ""
                 }
@@ -438,6 +440,26 @@ extension RecordViewModel {
                     
                 case .completeSharing:
                     owner.cancelSelectMode()
+                    
+                case .finishRecord:
+                    let endDate = owner.mediaList.last?.creationDate
+                    var finishRecord = owner.record
+                    finishRecord.endDate = endDate
+                    
+                    var randomImageList = [UIImage]()
+                    for thumbnail in owner.thumbnailList.compactMap(\.value) {
+                        guard randomImageList.count < 2 else { break }
+                        randomImageList.append(thumbnail)
+                    }
+                    owner.navigation.accept(
+                        .finishRecord(
+                            finishRecord,
+                            owner.mediaList,
+                            randomImageList
+                        )
+                    )
+                    
+                    owner.persistenceService.updateAlbum(to: finishRecord)
                 }
             }
             .disposed(by: disposeBag)
