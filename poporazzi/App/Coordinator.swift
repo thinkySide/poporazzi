@@ -423,7 +423,15 @@ extension Coordinator {
         let completeRecrodVC = CompleteRecordViewController(viewModel: completeRecordVM)
         self.navigationController.pushViewController(completeRecrodVC, animated: true)
         
-        // mainViewModel?.delegate.accept(.finishRecord)
+        completeRecordVM.navigation
+            .bind(with: self) { owner, path in
+                switch path {
+                case .completeRecord:
+                    owner.navigationController.popToRootViewController(animated: true)
+                    owner.mainViewModel?.delegate.accept(.finishRecord)
+                }
+            }
+            .disposed(by: completeRecordVM.disposeBag)
     }
 }
 

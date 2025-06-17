@@ -11,9 +11,11 @@ import RxCocoa
 
 final class CompleteRecordViewModel: ViewModel {
     
-    private let disposeBag = DisposeBag()
+    @Dependency(\.storeKitService) private var storeKitService
+    
     private let output: Output
     
+    let disposeBag = DisposeBag()
     let navigation = PublishRelay<Navigation>()
     
     init(output: Output) {
@@ -30,7 +32,8 @@ final class CompleteRecordViewModel: ViewModel {
 extension CompleteRecordViewModel {
     
     struct Input {
-        
+        let showAlbumButtonTapped: Signal<Void>
+        let backToHomeButtonTapped: Signal<Void>
     }
     
     struct Output {
@@ -40,7 +43,7 @@ extension CompleteRecordViewModel {
     }
     
     enum Navigation {
-        
+        case completeRecord
     }
 }
 
@@ -49,6 +52,21 @@ extension CompleteRecordViewModel {
 extension CompleteRecordViewModel {
     
     func transform(_ input: Input) -> Output {
+        
+        input.showAlbumButtonTapped
+            .emit(with: self) { owner, _ in
+                DeepLinkManager.openPhotoAlbum()
+                owner.navigation.accept(.completeRecord)
+                owner.storeKitService.requestReview()
+            }
+            .disposed(by: disposeBag)
+        
+        input.backToHomeButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.navigation.accept(.completeRecord)
+                owner.storeKitService.requestReview()
+            }
+            .disposed(by: disposeBag)
         
         return output
     }

@@ -45,7 +45,8 @@ extension CompleteRecordViewController {
     
     func bind() {
         let input = CompleteRecordViewModel.Input(
-            
+            showAlbumButtonTapped: scene.showAlbumButton.button.rx.tap.asSignal(),
+            backToHomeButtonTapped: scene.backToHomeButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)
         
