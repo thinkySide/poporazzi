@@ -105,21 +105,6 @@ extension FinishConfirmModalViewModel {
             }
             .disposed(by: disposeBag)
         
-//        alertAction
-//            .bind(with: self) { owner, action in
-//                switch action {
-//                case .linkToPhotoAlbum:
-//                    DeepLinkManager.openPhotoAlbum()
-//                    owner.navigation.accept(.finishRecord)
-//                    owner.storeKitService.requestReview()
-//                    
-//                case .popToHome:
-//                    owner.navigation.accept(.finishRecord)
-//                    owner.storeKitService.requestReview()
-//                }
-//            }
-//            .disposed(by: disposeBag)
-        
         return output
     }
 }

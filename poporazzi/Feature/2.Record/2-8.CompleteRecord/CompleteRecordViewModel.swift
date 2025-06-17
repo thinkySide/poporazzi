@@ -12,6 +12,7 @@ import RxCocoa
 final class CompleteRecordViewModel: ViewModel {
     
     @Dependency(\.storeKitService) private var storeKitService
+    @Dependency(\.photoKitService) private var photoKitService
     
     private let output: Output
     
@@ -32,6 +33,7 @@ final class CompleteRecordViewModel: ViewModel {
 extension CompleteRecordViewModel {
     
     struct Input {
+        let shareButtonTapped: Signal<Void>
         let showAlbumButtonTapped: Signal<Void>
         let backToHomeButtonTapped: Signal<Void>
     }
@@ -40,10 +42,13 @@ extension CompleteRecordViewModel {
         let record: BehaviorRelay<Record>
         let mediaList: BehaviorRelay<[Media]>
         let randomImageList: BehaviorRelay<[UIImage]>
+        
+        let toggleLoading = PublishRelay<Bool>()
     }
     
     enum Navigation {
         case completeRecord
+        case presentMediaShareSheet([Any])
     }
 }
 
@@ -52,6 +57,19 @@ extension CompleteRecordViewModel {
 extension CompleteRecordViewModel {
     
     func transform(_ input: Input) -> Output {
+        input.shareButtonTapped
+            .emit(with: self) { owner, _ in
+                owner.output.toggleLoading.accept(true)
+                let identifiers = owner.output.mediaList.value.map(\.id)
+                owner.photoKitService.fetchShareItemList(from: identifiers)
+                    .observe(on: MainScheduler.asyncInstance)
+                    .bind { shareItemList in
+                        owner.output.toggleLoading.accept(false)
+                        owner.navigation.accept(.presentMediaShareSheet(shareItemList))
+                    }
+                    .disposed(by: owner.disposeBag)
+            }
+            .disposed(by: disposeBag)
         
         input.showAlbumButtonTapped
             .emit(with: self) { owner, _ in

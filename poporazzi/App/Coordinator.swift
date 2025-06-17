@@ -424,11 +424,19 @@ extension Coordinator {
         self.navigationController.pushViewController(completeRecrodVC, animated: true)
         
         completeRecordVM.navigation
+            .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, path in
                 switch path {
                 case .completeRecord:
                     owner.navigationController.popToRootViewController(animated: true)
                     owner.mainViewModel?.delegate.accept(.finishRecord)
+                    
+                case let .presentMediaShareSheet(shareItemList):
+                    let activityController = UIActivityViewController(
+                        activityItems: shareItemList,
+                        applicationActivities: nil
+                    )
+                    owner.navigationController.present(activityController, animated: true)
                 }
             }
             .disposed(by: completeRecordVM.disposeBag)

@@ -31,6 +31,7 @@ final class CompleteRecordViewController: ViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupLoadingIndicator()
         bind()
     }
     
@@ -45,6 +46,7 @@ extension CompleteRecordViewController {
     
     func bind() {
         let input = CompleteRecordViewModel.Input(
+            shareButtonTapped: scene.shareButton.rx.tap.asSignal(),
             showAlbumButtonTapped: scene.showAlbumButton.button.rx.tap.asSignal(),
             backToHomeButtonTapped: scene.backToHomeButton.button.rx.tap.asSignal()
         )
@@ -65,6 +67,13 @@ extension CompleteRecordViewController {
         output.randomImageList
             .bind(with: self) { owner, imageList in
                 owner.scene.action(.updateRandomImageView(imageList))
+            }
+            .disposed(by: disposeBag)
+        
+        output.toggleLoading
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, isLoading in
+                owner.toggleLoadingIndicator(isLoading)
             }
             .disposed(by: disposeBag)
     }

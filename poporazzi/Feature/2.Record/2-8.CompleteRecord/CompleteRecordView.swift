@@ -27,6 +27,18 @@ final class CompleteRecordView: CodeBaseUI {
     
     private let randomImageView = UIView()
     
+    private let firstImageContainerView: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        return view
+    }()
+    
+    private let secondImageContainerView: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        return view
+    }()
+    
     private let firstImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -38,7 +50,7 @@ final class CompleteRecordView: CodeBaseUI {
     private let secondImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .brandTertiary
+        imageView.backgroundColor = .brandSecondary
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -70,6 +82,8 @@ final class CompleteRecordView: CodeBaseUI {
     init() {
         super.init(frame: .zero)
         setup()
+        firstImageContainerView.addSubview(firstImageView)
+        secondImageContainerView.addSubview(secondImageView)
     }
     
     required init?(coder: NSCoder) {
@@ -80,8 +94,12 @@ final class CompleteRecordView: CodeBaseUI {
         super.layoutSubviews()
         containerView.pin.all(pin.safeArea)
         containerView.flex.layout()
-        firstImageView.transform = CGAffineTransform(rotationAngle: -8 * .pi / 180)
-        secondImageView.transform = CGAffineTransform(rotationAngle: 15 * .pi / 180)
+        
+        firstImageView.pin.all()
+        secondImageView.pin.all()
+        
+        // firstImageContainerView.transform = CGAffineTransform(rotationAngle: -8 * .pi / 180)
+        // secondImageContainerView.transform = CGAffineTransform(rotationAngle: 15 * .pi / 180)
     }
 }
 
@@ -154,16 +172,16 @@ extension CompleteRecordView {
         }
         
         randomImageView.flex.define { flex in
-            flex.addItem(firstImageView)
+            flex.addItem(firstImageContainerView)
                 .width(140).aspectRatio(1).cornerRadius(18)
                 .alignSelf(.center)
                 .position(.absolute)
                 .marginRight(110)
             
-            flex.addItem(secondImageView)
+            flex.addItem(secondImageContainerView)
                 .width(190).aspectRatio(1).cornerRadius(18)
-                .alignSelf(.center)
                 .position(.absolute)
+                .alignSelf(.center)
                 .marginTop(50)
                 .marginLeft(70)
         }
