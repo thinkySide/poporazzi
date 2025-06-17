@@ -94,7 +94,7 @@ final class Coordinator: NSObject {
             .bind(with: self) { [weak mainViewModel, weak recordVM] owner, path in
                 switch path {
                 case .finishRecord:
-                    mainViewModel?.delegate.accept(.finishRecord)
+                    break
                     
                 case let .pushAlbumEdit(album):
                     owner.pushRecordEdit(recordVM, album)
@@ -185,7 +185,13 @@ extension Coordinator: UINavigationControllerDelegate, UIGestureRecognizerDelega
             return
         }
         
-        if viewController is RecordViewController {
+        // 제스처 비활성화 할 VC
+        let disabledList = [
+            RecordViewController.self,
+            CompleteRecordViewController.self
+        ]
+        
+        if disabledList.contains(where: { $0 == type(of: viewController) }) {
             navigationController.interactivePopGestureRecognizer?.isEnabled = false
         } else {
             navigationController.interactivePopGestureRecognizer?.isEnabled = true
@@ -347,7 +353,7 @@ extension Coordinator {
                     
                 case .finishRecord:
                     owner.navigationController.dismiss(animated: true)
-                    owner.mainViewModel?.delegate.accept(.finishRecord)
+                    owner.pushCompleteRecord(recordVM)
                 }
             }
             .disposed(by: finishVC.disposeBag)
@@ -396,6 +402,15 @@ extension Coordinator {
                 }
             }
             .disposed(by: detailVM.disposeBag)
+    }
+    
+    /// 기록 완료 화면으로 Push 합니다.
+    private func pushCompleteRecord(_ recordVM: RecordViewModel?) {
+        let completeRecordVM = CompleteRecordViewModel(output: .init())
+        let completeRecrodVC = CompleteRecordViewController(viewModel: completeRecordVM)
+        self.navigationController.pushViewController(completeRecrodVC, animated: true)
+        
+        // mainViewModel?.delegate.accept(.finishRecord)
     }
 }
 
