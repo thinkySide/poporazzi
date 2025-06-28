@@ -94,7 +94,7 @@ final class Coordinator: NSObject {
             .bind(with: self) { [weak mainViewModel, weak recordVM] owner, path in
                 switch path {
                 case .stopRecord:
-                    owner.navigationController.dismiss(animated: true)
+                    owner.mainViewModel?.delegate.accept(.finishRecord)
                     
                 case let .finishRecord(record, mediaList, randomImageList):
                     owner.navigationController.dismiss(animated: true)
