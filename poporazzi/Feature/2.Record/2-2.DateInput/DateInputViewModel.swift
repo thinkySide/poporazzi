@@ -153,7 +153,7 @@ extension DateInputViewModel {
         if let startDate = output.startDate.value {
             userNotificationService.registerNotification(
                 title: "\(output.titleText.value) 앨범 기록 시작 📸",
-                body: "지금부터 촬영한 모든 기록을 저장할게요!",
+                body: "지금부터 촬영한 모든 항목을 기록할게요!",
                 triggerDate: startDate
             )
         }

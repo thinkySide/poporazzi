@@ -51,7 +51,7 @@ final class DatePickerModalView: CodeBaseUI {
         datePicker.preferredDatePickerStyle = .inline
         datePicker.locale = Locale(identifier: "ko-KR")
         datePicker.tintColor = .brandPrimary
-        datePicker.minuteInterval = 1
+        datePicker.minuteInterval = 10
         return datePicker
     }()
     
