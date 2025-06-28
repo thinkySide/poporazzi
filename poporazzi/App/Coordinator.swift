@@ -237,8 +237,8 @@ extension Coordinator {
         _ startNavigation: UINavigationController?,
         _ title: String
     ) {
-        let albumOptionVM = RecordOptionInputViewModel(output: .init(titleText: .init(value: title)))
-        let albumOptionVC = RecordOptionInputViewController(viewModel: albumOptionVM)
+        let albumOptionVM = DateInputViewModel(output: .init(titleText: .init(value: title)))
+        let albumOptionVC = DateInputViewController(viewModel: albumOptionVM)
         startNavigation?.pushViewController(albumOptionVC, animated: true)
         
         albumOptionVM.navigation

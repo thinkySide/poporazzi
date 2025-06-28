@@ -100,21 +100,12 @@ struct MediaFilterOption {
     
     init(
         isContainSelfShooting: Bool = true,
-        isContainDownload: Bool = false,
-        isContainScreenshot: Bool = false
+        isContainDownload: Bool = true,
+        isContainScreenshot: Bool = true
     ) {
         self.isContainSelfShooting = isContainSelfShooting
         self.isContainDownload = isContainDownload
         self.isContainScreenshot = isContainScreenshot
-    }
-    
-    /// 기본값
-    static var initialValue: MediaFilterOption {
-        .init(
-            isContainSelfShooting: true,
-            isContainDownload: true,
-            isContainScreenshot: true
-        )
     }
 }
 
