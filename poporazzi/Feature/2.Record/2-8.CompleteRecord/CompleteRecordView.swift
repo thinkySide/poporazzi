@@ -29,13 +29,11 @@ final class CompleteRecordView: CodeBaseUI {
     
     private let firstImageContainerView: UIView = {
         let view = UIView()
-        view.clipsToBounds = true
         return view
     }()
     
     private let secondImageContainerView: UIView = {
         let view = UIView()
-        view.clipsToBounds = true
         return view
     }()
     
@@ -98,8 +96,13 @@ final class CompleteRecordView: CodeBaseUI {
         firstImageView.pin.all()
         secondImageView.pin.all()
         
-        // firstImageContainerView.transform = CGAffineTransform(rotationAngle: -8 * .pi / 180)
-        // secondImageContainerView.transform = CGAffineTransform(rotationAngle: 15 * .pi / 180)
+        firstImageView.layer.cornerRadius = 18
+        secondImageView.layer.cornerRadius = 18
+        
+        UIView.animate(withDuration: 0.5, delay: 0.3, options: .curveEaseInOut) { [weak self] in
+            self?.firstImageView.transform = CGAffineTransform(rotationAngle: -8 * .pi / 180)
+            self?.secondImageView.transform = CGAffineTransform(rotationAngle: 15 * .pi / 180)
+        }
     }
 }
 
@@ -173,13 +176,13 @@ extension CompleteRecordView {
         
         randomImageView.flex.define { flex in
             flex.addItem(firstImageContainerView)
-                .width(140).aspectRatio(1).cornerRadius(18)
+                .width(140).aspectRatio(1)
                 .alignSelf(.center)
                 .position(.absolute)
                 .marginRight(110)
             
             flex.addItem(secondImageContainerView)
-                .width(190).aspectRatio(1).cornerRadius(18)
+                .width(190).aspectRatio(1)
                 .position(.absolute)
                 .alignSelf(.center)
                 .marginTop(50)
