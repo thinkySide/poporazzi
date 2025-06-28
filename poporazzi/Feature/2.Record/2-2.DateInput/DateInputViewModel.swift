@@ -19,6 +19,7 @@ final class DateInputViewModel: ViewModel {
     private let output: Output
     
     let navigation = PublishRelay<Navigation>()
+    let delegate = PublishRelay<Delegate>()
     
     init(output: Output) {
         self.output = output
@@ -35,6 +36,8 @@ extension DateInputViewModel {
     
     struct Input {
         let backButtonTapped: Signal<Void>
+        let startDatePickerTapped: Signal<Void>
+        let endDatePickerTapped: Signal<Void>
         let startButtonTapped: Signal<Void>
     }
     
@@ -46,7 +49,14 @@ extension DateInputViewModel {
     
     enum Navigation {
         case pop
+        case presentStartDatePicker(startDate: Date, endDate: Date?)
+        case presentEndDatePicker(startDate: Date, endDate: Date?)
         case startRecord(Record)
+    }
+    
+    enum Delegate {
+        case startDateDidChanged(Date)
+        case endDateDidChanged(Date?)
     }
 }
 
@@ -61,9 +71,37 @@ extension DateInputViewModel {
             }
             .disposed(by: disposeBag)
         
+        input.startDatePickerTapped
+            .emit(with: self) { owner, _ in
+                let startDate = owner.output.startDate.value ?? .now
+                let endDate = owner.output.endDate.value
+                owner.navigation.accept(.presentStartDatePicker(startDate: startDate, endDate: endDate))
+            }
+            .disposed(by: disposeBag)
+        
+        input.endDatePickerTapped
+            .emit(with: self) { owner, _ in
+                let startDate = owner.output.startDate.value ?? .now
+                let endDate = owner.output.endDate.value
+                owner.navigation.accept(.presentEndDatePicker(startDate: startDate, endDate: endDate))
+            }
+            .disposed(by: disposeBag)
+        
         input.startButtonTapped
             .emit(with: self) { owner, _ in
                 owner.startRecord()
+            }
+            .disposed(by: disposeBag)
+        
+        delegate
+            .bind(with: self) { owner, delegate in
+                switch delegate {
+                case .startDateDidChanged(let date):
+                    owner.output.startDate.accept(date)
+                    
+                case .endDateDidChanged(let date):
+                    owner.output.endDate.accept(date)
+                }
             }
             .disposed(by: disposeBag)
         
@@ -79,6 +117,8 @@ extension DateInputViewModel {
     private func startRecord() {
         let album = Record(
             title: output.titleText.value,
+            startDate: output.startDate.value ?? .now,
+            endDate: output.endDate.value,
             mediaFetchOption: .all,
             mediaFilterOption: .init()
         )

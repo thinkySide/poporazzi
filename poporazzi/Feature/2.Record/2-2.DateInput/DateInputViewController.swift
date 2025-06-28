@@ -46,6 +46,8 @@ extension DateInputViewController {
     func bind() {
         let input = DateInputViewModel.Input(
             backButtonTapped: scene.backButton.button.rx.tap.asSignal(),
+            startDatePickerTapped: scene.startDatePicker.tapGesture.rx.event.asVoidSignal(),
+            endDatePickerTapped: scene.endDatePicker.tapGesture.rx.event.asVoidSignal(),
             startButtonTapped: scene.startButton.button.rx.tap.asSignal()
         )
         let output = viewModel.transform(input)

@@ -224,29 +224,35 @@ extension Coordinator {
             .bind(with: self) { [weak titleInputVM, weak startRecordNavigation] owner, path in
                 switch path {
                 case let .pushAlbumOptionInput(title):
-                    owner.pushAlbumOptionInput(titleInputVM, recordVM, startRecordNavigation, title)
+                    owner.pushDateInput(titleInputVM, recordVM, startRecordNavigation, title)
                 }
             }
             .disposed(by: titleInputVC.disposeBag)
     }
     
-    /// 앨범 옵션 입력 화면으로 Push 합니다.
-    private func pushAlbumOptionInput(
+    /// 앨범 시간대 입력 화면을 Push 합니다.
+    private func pushDateInput(
         _ titleInputVM: TitleInputViewModel?,
         _ recordVM: RecordViewModel?,
         _ startNavigation: UINavigationController?,
         _ title: String
     ) {
-        let albumOptionVM = DateInputViewModel(output: .init(titleText: .init(value: title)))
-        let albumOptionVC = DateInputViewController(viewModel: albumOptionVM)
-        startNavigation?.pushViewController(albumOptionVC, animated: true)
+        let dateInputVM = DateInputViewModel(output: .init(titleText: .init(value: title)))
+        let dateInputVC = DateInputViewController(viewModel: dateInputVM)
+        startNavigation?.pushViewController(dateInputVC, animated: true)
         
-        albumOptionVM.navigation
+        dateInputVM.navigation
             .observe(on: MainScheduler.instance)
-            .bind(with: self) { [weak startNavigation] owner, path in
+            .bind(with: self) { [weak startNavigation, weak dateInputVC] owner, path in
                 switch path {
                 case .pop:
                     startNavigation?.popViewController(animated: true)
+                    
+                case let .presentStartDatePicker(startDate, endDate):
+                    owner.presentDatePickerModal(dateInputVC, dateInputVM, .startDate, startDate, endDate)
+                    
+                case let .presentEndDatePicker(startDate, endDate):
+                    owner.presentDatePickerModal(dateInputVC, dateInputVM, .endDate, startDate, endDate)
                     
                 case let .startRecord(album):
                     owner.navigationController.dismiss(animated: true)
@@ -254,7 +260,57 @@ extension Coordinator {
                     recordVM?.delegate.accept(.startRecord(album))
                 }
             }
-            .disposed(by: albumOptionVC.disposeBag)
+            .disposed(by: dateInputVC.disposeBag)
+    }
+    
+    /// 날짜 선택 모달을 Present 합니다.
+    private func presentDatePickerModal(
+        _ dateInputVC: DateInputViewController?,
+        _ dateInputVM: DateInputViewModel,
+        _ modalState: DatePickerModalViewModel.ModalState,
+        _ startDate: Date,
+        _ endDate: Date?
+    ) {
+        let isEndofRecordActive: Bool = {
+            switch modalState {
+            case .startDate: return false
+            case .endDate: return endDate == nil
+            }
+        }()
+        
+        let datePickerVM = DatePickerModalViewModel(
+            output: .init(
+                modalState: .init(value: modalState),
+                startDate: .init(value: startDate),
+                endDate: .init(value: endDate),
+                isEndOfRecordActive: .init(value: isEndofRecordActive)
+            )
+        )
+        let datePickerVC = DatePickerModalViewController(
+            viewModel: datePickerVM,
+            variation: modalState == .startDate ? .startDate : .endDate
+        )
+        datePickerVC.sheetPresentationController?.preferredCornerRadius = NameSpace.sheetRadius
+        datePickerVC.sheetPresentationController?.prefersGrabberVisible = true
+        dateInputVC?.present(datePickerVC, animated: true)
+        
+        datePickerVM.navigation
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, path in
+                switch path {
+                case .pop:
+                    dateInputVC?.dismiss(animated: true)
+                    
+                case let .popFromStartDate(date):
+                    dateInputVM.delegate.accept(.startDateDidChanged(date))
+                    dateInputVC?.dismiss(animated: true)
+                    
+                case let .popFromEndDate(date):
+                    dateInputVM.delegate.accept(.endDateDidChanged(date))
+                    dateInputVC?.dismiss(animated: true)
+                }
+            }
+            .disposed(by: datePickerVC.disposeBag)
     }
 }
 

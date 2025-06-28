@@ -36,8 +36,8 @@ struct Record: Hashable, Equatable {
     init(
         id: String = UUID().uuidString,
         title: String,
-        startDate: Date = .now,
-        endDate: Date? = nil,
+        startDate: Date,
+        endDate: Date?,
         excludeMediaList: Set<String> = [],
         mediaFetchOption: MediaFetchOption,
         mediaFilterOption: MediaFilterOption
@@ -63,6 +63,7 @@ extension Record {
         Record(
             title: "",
             startDate: .now,
+            endDate: nil,
             excludeMediaList: [],
             mediaFetchOption: .all,
             mediaFilterOption: .init()
