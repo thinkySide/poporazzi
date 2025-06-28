@@ -14,6 +14,7 @@ final class DateInputViewModel: ViewModel {
     @Dependency(\.persistenceService) var persistenceService
     @Dependency(\.photoKitService) var photoKitService
     @Dependency(\.liveActivityService) var liveActivityService
+    @Dependency(\.userNotificationService) var userNotificationService
     
     private let disposeBag = DisposeBag()
     private let output: Output
@@ -129,5 +130,32 @@ extension DateInputViewModel {
         
         try? persistenceService.createAlbum(from: album)
         UserDefaultsService.trackingAlbumId = album.id
+        
+        userNotificationService.checkAuth()
+            .bind(with: self) { owner, isAuth in
+                if isAuth {
+                    owner.registerNotification()
+                } else {
+                    owner.userNotificationService.requestAuth()
+                        .bind { isRequestAuth in
+                            if isRequestAuth {
+                                owner.registerNotification()
+                            }
+                        }
+                        .disposed(by: owner.disposeBag)
+                }
+            }
+            .disposed(by: disposeBag)
+    }
+    
+    /// 시작 날짜를 기준으로 Notification을 등록합니다.
+    private func registerNotification() {
+        if let startDate = output.startDate.value {
+            userNotificationService.registerNotification(
+                title: "\(output.titleText.value) 앨범 기록 시작 📸",
+                body: "지금부터 촬영한 모든 기록을 저장할게요!",
+                triggerDate: startDate
+            )
+        }
     }
 }

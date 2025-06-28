@@ -21,6 +21,7 @@ final class DIContainer {
         let persistenceService: PersistenceInterface
         let liveActivityService: LiveActivityInterface
         let photoKitService: PhotoKitInterface
+        let userNotificationService: UserNotificationInterface
         let storeKitService: StoreKitInterface
     }
     
@@ -46,12 +47,14 @@ extension DIContainer {
                 persistenceService: PersistenceService(),
                 liveActivityService: LiveActivityService(),
                 photoKitService: PhotoKitService(),
+                userNotificationService: UserNotificationService(),
                 storeKitService: StoreKitService()
             )
             case .testValue: .init(
                 persistenceService: MockPersistenceService(),
                 liveActivityService: MockLiveActivityService(),
                 photoKitService: PhotoKitService(),
+                userNotificationService: UserNotificationService(),
                 storeKitService: MockStoreKitService()
             )
             }
