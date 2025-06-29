@@ -92,6 +92,7 @@
 				Resource/Images.xcassets,
 				"Utility/CustomFont+.swift",
 				"Utility/Formatter+.swift",
+				"Utility/Locale+.swift",
 			);
 			target = 8221E3462DC3668F0092469D /* poporazziWidgetExtension */;
 		};

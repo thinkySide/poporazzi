@@ -49,7 +49,7 @@ final class DatePickerModalView: CodeBaseUI {
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .dateAndTime
         datePicker.preferredDatePickerStyle = .inline
-        datePicker.locale = Locale(identifier: "ko-KR")
+        datePicker.locale = .preferredLanguage
         datePicker.tintColor = .brandPrimary
         datePicker.minuteInterval = 10
         return datePicker

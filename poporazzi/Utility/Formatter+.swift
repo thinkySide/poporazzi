@@ -12,28 +12,34 @@ import Foundation
 extension Date {
     
     /// 공용 DateFormatter
-    static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        return formatter
-    }()
+    static let dateFormatter = DateFormatter()
+    
+    /// 로컬라이징된 문자열을 반환합니다.
+    private func localizedString(_ template: String) -> String {
+        let formatter = Date.dateFormatter
+        formatter.locale = .preferredLanguage
+        formatter.calendar = .current
+        formatter.timeZone = .current
+        formatter.setLocalizedDateFormatFromTemplate(template)
+        return formatter.string(from: self)
+    }
     
     /// 날짜 비교용 포맷을 반환합니다.
     var compareFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy-MM-dd"
-        return Date.dateFormatter.string(from: self)
+        let formatter = Date.dateFormatter
+        formatter.locale = .current
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: self)
     }
     
     /// 기본 포맷을 반환합니다.
     var compactFormat: String {
-        Date.dateFormatter.dateFormat = "yy. M. d"
-        return Date.dateFormatter.string(from: self)
+        localizedString("yyMd")
     }
     
     /// 시작 날짜 포맷을 반환합니다.
     var startDateFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 EEEE ~"
-        return Date.dateFormatter.string(from: self)
+        localizedString("yyyyMMMMdEEE") + " ~"
     }
     
     /// 시작 날짜 전체 포맷을 반환합니다.
