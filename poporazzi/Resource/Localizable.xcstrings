@@ -1,0 +1,26 @@
+{
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "%lld장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%llditems"
+          }
+        }
+      }
+    },
+    "내 앨범" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Album"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

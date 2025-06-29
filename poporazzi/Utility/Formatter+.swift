@@ -26,10 +26,7 @@ extension Date {
     
     /// 날짜 비교용 포맷을 반환합니다.
     var compareFormat: String {
-        let formatter = Date.dateFormatter
-        formatter.locale = .current
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: self)
+        localizedString("yyyy-MM-dd")
     }
     
     /// 기본 포맷을 반환합니다.
