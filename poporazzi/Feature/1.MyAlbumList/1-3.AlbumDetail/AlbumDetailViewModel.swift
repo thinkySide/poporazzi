@@ -454,10 +454,17 @@ extension AlbumDetailViewModel {
     
     /// 더보기 Menu
     var seemoreMenu: [MenuModel] {
-        let editAlbum = MenuModel(symbol: .edit, title: "앨범 수정") { [weak self] in
+        let editAlbum = MenuModel(
+            symbol: .edit,
+            title: String(localized: "앨범 수정")
+        ) { [weak self] in
             self?.menuAction.accept(.editAlbum)
         }
-        let removeAlbum = MenuModel(symbol: .removeLine, title: "앨범 삭제", attributes: .destructive) { [weak self] in
+        let removeAlbum = MenuModel(
+            symbol: .removeLine,
+            title: String(localized: "앨범 삭제"),
+            attributes: .destructive
+        ) { [weak self] in
             self?.menuAction.accept(.removeAlbum)
         }
         return [editAlbum, removeAlbum]
@@ -465,7 +472,10 @@ extension AlbumDetailViewModel {
     
     /// 더보기 툴바 버튼 Menu
     var seemoreToolbarMenu: [MenuModel] {
-        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+        let share = MenuModel(
+            symbol: .share,
+            title: String(localized: "공유하기")
+        ) { [weak self] in
             self?.menuAction.accept(.share)
         }
         return [share]
@@ -477,17 +487,27 @@ extension AlbumDetailViewModel {
         let media = mediaList[index]
         let favorite = MenuModel(
             symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
-            title: media.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"
+            title: media.isFavorite ? String(localized: "즐겨찾기 해제") : String(localized: "즐겨찾기")
         ) { [weak self] in
             self?.contextMenuAction.accept(.toggleFavorite(media))
         }
-        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+        let share = MenuModel(
+            symbol: .share,
+            title: String(localized: "공유하기")
+        ) { [weak self] in
             self?.contextMenuAction.accept(.share(media))
         }
-        let exclude = MenuModel(symbol: .exclude, title: "앨범에서 제외하기") { [weak self] in
+        let exclude = MenuModel(
+            symbol: .exclude,
+            title: String(localized: "앨범에서 제외하기")
+        ) { [weak self] in
             self?.contextMenuAction.accept(.exclude(media))
         }
-        let remove = MenuModel(symbol: .removeLine, title: "삭제하기", attributes: .destructive) { [weak self] in
+        let remove = MenuModel(
+            symbol: .removeLine,
+            title: String(localized: "삭제하기"),
+            attributes: .destructive
+        ) { [weak self] in
             self?.contextMenuAction.accept(.remove(media))
         }
         return [favorite, share, exclude, remove]
@@ -501,12 +521,12 @@ extension AlbumDetailViewModel {
     /// 앨범 제외 Action Sheet
     private func excludeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
         ActionSheetModel(
-            message: "선택한 기록이 ‘\(album.title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
+            message: String(localized: "선택한 기록이 ‘\(album.title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요."),
             buttons: [
-                .init(title: "\(mediaList.count)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                .init(title: String(localized: "\(mediaList.count)장의 기록 앨범에서 제외"), style: .default) { [weak self] in
                     self?.actionSheetAction.accept(.exclude(mediaList))
                 },
-                .init(title: "취소", style: .cancel)
+                .init(title: String(localized: "취소"), style: .cancel)
             ]
         )
     }
@@ -514,12 +534,12 @@ extension AlbumDetailViewModel {
     /// 기록 삭제 Action Sheet
     private func removeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
         ActionSheetModel(
-            message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
+            message: String(localized: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요."),
             buttons: [
-                .init(title: "\(mediaList.count)장의 기록 삭제", style: .destructive) { [weak self] in
+                .init(title: String(localized: "\(mediaList.count)장의 기록 삭제"), style: .destructive) { [weak self] in
                     self?.actionSheetAction.accept(.remove(mediaList))
                 },
-                .init(title: "취소", style: .cancel)
+                .init(title: String(localized: "취소"), style: .cancel)
             ]
         )
     }

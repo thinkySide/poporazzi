@@ -186,10 +186,17 @@ extension FolderListViewModel {
     
     /// 더보기 Menu
     var seemoreMenu: [MenuModel] {
-        let edit = MenuModel(symbol: .edit, title: "폴더 수정") { [weak self] in
+        let edit = MenuModel(
+            symbol: .edit,
+            title: String(localized: "폴더 수정")
+        ) { [weak self] in
             self?.menuAction.accept(.editFolder)
         }
-        let remove = MenuModel(symbol: .removeLine, title: "폴더 삭제", attributes: .destructive) { [weak self] in
+        let remove = MenuModel(
+            symbol: .removeLine,
+            title: String(localized: "폴더 삭제"),
+            attributes: .destructive
+        ) { [weak self] in
             self?.menuAction.accept(.removeFolder)
         }
         return [edit, remove]
