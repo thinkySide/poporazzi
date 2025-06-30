@@ -24,15 +24,15 @@ final class DatePickerModalView: CodeBaseUI {
         
         var title: String {
             switch self {
-            case .startDate: "시작 시간 설정"
-            case .endDate: "종료 시간 설정"
+            case .startDate: String(localized: "시작 시간 설정")
+            case .endDate: String(localized: "종료 시간 설정")
             }
         }
         
         var info: String {
             switch self {
-            case .startDate: "선택한 시간부터 앨범이 기록돼요"
-            case .endDate: "선택한 시간까지 앨범이 기록돼요"
+            case .startDate: String(localized: "선택한 시간부터 앨범이 기록돼요")
+            case .endDate: String(localized: "선택한 시간까지 앨범이 기록돼요")
             }
         }
     }
@@ -55,13 +55,22 @@ final class DatePickerModalView: CodeBaseUI {
         return datePicker
     }()
     
-    let endOfRecordCheckBox = FormCheckBox("기록 종료 시 까지", variation: .deselected)
+    let endOfRecordCheckBox = FormCheckBox(
+        String(localized: "기록 종료 시 까지"),
+        variation: .deselected
+    )
     
     private let actionbuttonView = UIView()
     
-    let cancelButton = ActionButton(title: "취소", variation: .secondary)
+    let cancelButton = ActionButton(
+        title: String(localized: "취소"),
+        variation: .secondary
+    )
     
-    let confirmButton = ActionButton(title: "확인", variation: .primary)
+    let confirmButton = ActionButton(
+        title: String(localized: "확인"),
+        variation: .primary
+    )
     
     init(variation: Variation) {
         self.variation = variation

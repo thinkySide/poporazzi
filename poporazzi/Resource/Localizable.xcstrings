@@ -255,6 +255,16 @@
         }
       }
     },
+    "기록 종료 시 까지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Until Recording Finish"
+          }
+        }
+      }
+    },
     "기록 종료하기" : {
       "localizations" : {
         "en" : {
@@ -505,6 +515,26 @@
         }
       }
     },
+    "선택한 시간까지 앨범이 기록돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The album will record until the selected time"
+          }
+        }
+      }
+    },
+    "선택한 시간부터 앨범이 기록돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The album will record from the selected time"
+          }
+        }
+      }
+    },
     "설정" : {
       "localizations" : {
         "en" : {
@@ -553,6 +583,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start Time"
+          }
+        }
+      }
+    },
+    "시작 시간 설정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Start Time"
           }
         }
       }
@@ -793,6 +833,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "End Time"
+          }
+        }
+      }
+    },
+    "종료 시간 설정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set End Time"
           }
         }
       }
