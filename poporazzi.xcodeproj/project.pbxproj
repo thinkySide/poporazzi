@@ -90,6 +90,8 @@
 				Resource/Colors.xcassets,
 				Resource/Font/DovemayoGothic/Dovemayo_gothic.ttf,
 				Resource/Images.xcassets,
+				Resource/InfoPlist.xcstrings,
+				Resource/Localizable.xcstrings,
 				"Utility/CustomFont+.swift",
 				"Utility/Formatter+.swift",
 				"Utility/Locale+.swift",
