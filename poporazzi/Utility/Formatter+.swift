@@ -17,7 +17,7 @@ extension Date {
     /// 로컬라이징된 문자열을 반환합니다.
     private func localizedString(_ template: String) -> String {
         let formatter = Date.dateFormatter
-        formatter.locale = .preferredLanguage
+        formatter.locale = .current
         formatter.calendar = .current
         formatter.timeZone = .current
         formatter.setLocalizedDateFormatFromTemplate(template)

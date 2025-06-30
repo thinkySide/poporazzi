@@ -49,9 +49,9 @@ final class DatePickerModalView: CodeBaseUI {
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .dateAndTime
         datePicker.preferredDatePickerStyle = .inline
-        datePicker.locale = .preferredLanguage
+        datePicker.locale = .current
         datePicker.tintColor = .brandPrimary
-        datePicker.minuteInterval = 1
+        datePicker.minuteInterval = 10
         return datePicker
     }()
     
