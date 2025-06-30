@@ -175,27 +175,27 @@ extension MainViewModel {
     /// 설정 화면 이동 Alert
     private var navigateToSettingsAlert: AlertModel {
         AlertModel(
-            title: "포포라치 이용을 위해선 사진 보관함 전체 접근 권한이 필요해요 🥲",
-            message: "설정 화면으로 이동 후 권한을 재설정 할 수 있어요",
-            eventButton: .init(title: "설정화면 이동") { [weak self] in
+            title: String(localized: "포포라치 이용을 위해선 사진 보관함 전체 접근 권한이 필요해요 🥲"),
+            message: String(localized: "설정 화면으로 이동 후 권한을 재설정 할 수 있어요"),
+            eventButton: .init(title: String(localized: "설정화면 이동")) { [weak self] in
                 self?.alertAction.accept(.navigateToSettings)
             },
-            cancelButton: .init(title: "취소")
+            cancelButton: .init(title: String(localized: "취소"))
         )
     }
     
     /// 업데이트 권장 Alert
     private var recommendUpdateAlert: AlertModel {
         AlertModel(
-            title: "새롭게 업데이트된 버전이 있어요!",
-            message: "포포라치의 새로운 기능을 이용하기 위해 업데이트가 필요해요 😎",
+            title: String(localized: "새롭게 업데이트된 버전이 있어요!"),
+            message: String(localized: "포포라치의 새로운 기능을 이용하기 위해 업데이트가 필요해요 😎"),
             eventButton: .init(
-                title: "업데이트",
+                title: String(localized: "업데이트"),
                 action: { [weak self] in
                     self?.alertAction.accept(.openAppStore)
                 }
             ),
-            cancelButton: .init(title: "다음에")
+            cancelButton: .init(title: String(localized: "다음에"))
         )
     }
 }

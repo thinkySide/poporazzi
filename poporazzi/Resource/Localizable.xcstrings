@@ -365,6 +365,16 @@
         }
       }
     },
+    "다음에" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        }
+      }
+    },
     "다음으로" : {
       "localizations" : {
         "en" : {
@@ -541,6 +551,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete"
+          }
+        }
+      }
+    },
+    "새롭게 업데이트된 버전이 있어요!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A new version is available!"
           }
         }
       }
@@ -847,6 +867,16 @@
         }
       }
     },
+    "업데이트" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update"
+          }
+        }
+      }
+    },
     "의 기록이 선택됨" : {
       "localizations" : {
         "en" : {
@@ -1085,6 +1115,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Help poporazzi organize your memories!"
+          }
+        }
+      }
+    },
+    "포포라치의 새로운 기능을 이용하기 위해 업데이트가 필요해요 😎" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time to update and unlock some cool new stuff! 😎"
           }
         }
       }
