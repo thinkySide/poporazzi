@@ -57,7 +57,7 @@ final class MediaDetailView: CodeBaseUI {
     let favoriteButton = ToolBarButton(.favorite)
     
     /// 앨범에서 제외 버튼
-    let excludeButton = ToolBarButton(.title("앨범에서 제외"))
+    let excludeButton = ToolBarButton(.title(String(localized: "앨범에서 제외")))
     
     /// 더보기 버튼
     let seemoreButton = ToolBarButton(.seemore)
@@ -113,7 +113,7 @@ extension MediaDetailView {
                 dayCountLabel.isHidden = true
                 dateLabel.font = .setDovemayo(15)
             } else {
-                dayCountLabel.text = "\(dayCount)일차"
+                dayCountLabel.text = String(localized: "\(dayCount)일차")
                 dateLabel.font = .setDovemayo(14)
             }
             dateLabel.text = date.detailFormat

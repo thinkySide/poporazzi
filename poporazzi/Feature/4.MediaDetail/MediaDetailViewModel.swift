@@ -405,9 +405,9 @@ extension MediaDetailViewModel {
     /// 기록 삭제 실패 Alert
     private var removeFailedAlert: AlertModel {
         AlertModel(
-            title: "사진을 삭제할 수 없어요",
-            message: "사진 라이브러리 권한을 확인해주세요",
-            eventButton: .init(title: "확인")
+            title: String(localized: "사진을 삭제할 수 없어요"),
+            message: String(localized: "사진 라이브러리 권한을 확인해주세요"),
+            eventButton: .init(title: String(localized: "확인"))
         )
     }
 }
@@ -425,25 +425,31 @@ extension MediaDetailViewModel {
         }
         
         return ActionSheetModel(
-            message: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요.",
+            message: String(localized: "선택한 기록이 ‘\(title)’ 앨범에서 제외돼요. 나중에 언제든지 다시 추가할 수 있어요."),
             buttons: [
-                .init(title: "\(mediaList.count)장의 기록 앨범에서 제외", style: .default) { [weak self] in
+                .init(
+                    title: String(localized: "\(mediaList.count)장의 기록 앨범에서 제외"),
+                    style: .default
+                ) { [weak self] in
                     self?.actionSheetAction.accept(.exclude(mediaList))
                 },
-                .init(title: "취소", style: .cancel)
+                .init(title: String(localized: "취소"), style: .cancel)
             ]
         )
     }
     
     /// 기록 삭제 Action Sheet
     private func removeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
-        ActionSheetModel(
-            message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
+        return ActionSheetModel(
+            message: String(localized: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요."),
             buttons: [
-                .init(title: "\(mediaList.count)장의 기록 삭제", style: .destructive) { [weak self] in
+                .init(
+                    title: String(localized: "\(mediaList.count)장의 기록 삭제"),
+                    style: .destructive
+                ) { [weak self] in
                     self?.actionSheetAction.accept(.remove(mediaList))
                 },
-                .init(title: "취소", style: .cancel)
+                .init(title: String(localized: "취소"), style: .cancel)
             ]
         )
     }
@@ -455,7 +461,7 @@ extension MediaDetailViewModel {
     
     /// 더보기 툴바 버튼 Menu
     private var seemoreToolbarMenu: [MenuModel] {
-        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+        let share = MenuModel(symbol: .share, title: String(localized: "공유하기")) { [weak self] in
             self?.menuAction.accept(.share)
         }
         return [share]
