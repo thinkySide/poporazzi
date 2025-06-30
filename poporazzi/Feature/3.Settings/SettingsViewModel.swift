@@ -117,7 +117,7 @@ extension SettingsViewModel {
     /// 친구에게 공유할 메시지
     private var shareMessage: String {
         let appStoreLink = DeepLinkManager.appStoreLink
-        return """
+        return String(localized: """
         “📸 사진 정리, 이제 포포라치에게 맡겨보세요”
         
         여행이나 데이트, 추억을 남기고 싶은 순간에 포포라치로 자동 앨범 정리를 시작해보세요!
@@ -131,7 +131,7 @@ extension SettingsViewModel {
         👉 지금 포포라치로 추억을 예쁘게 정리해보세요!
         
         [앱스토어 다운로드 - 포포라치]
-        \(appStoreLink)
-        """
+        """)
+        + "\n\(appStoreLink)"
     }
 }
