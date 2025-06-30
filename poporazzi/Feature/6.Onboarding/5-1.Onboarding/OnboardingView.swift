@@ -32,7 +32,7 @@ final class OnboardingView: CodeBaseUI {
     
     var screenshotCollectionView = UICollectionView(frame: .zero, collectionViewLayout: .init())
     
-    let actionButton = ActionButton(title: "다음으로", variation: .secondary)
+    let actionButton = ActionButton(title: String(localized: "다음으로"), variation: .secondary)
     
     init() {
         super.init(frame: .zero)

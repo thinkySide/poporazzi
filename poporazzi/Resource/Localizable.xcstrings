@@ -185,6 +185,46 @@
         }
       }
     },
+    "3단계" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 Easy Steps"
+          }
+        }
+      }
+    },
+    "I. 기록하고 싶은\n순간을 시작하고" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I. Tap to start\nthe moment"
+          }
+        }
+      }
+    },
+    "II. 마음껏 즐기러\n떠나보세요!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "II. Go have fun\nout there!"
+          }
+        }
+      }
+    },
+    "III. 종료하면 앨범으로\n쏙 넣어드릴게요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "III. We’ll drop it into your\nalbum when you’re done"
+          }
+        }
+      }
+    },
     "공유하기" : {
       "localizations" : {
         "en" : {
@@ -325,12 +365,32 @@
         }
       }
     },
+    "다음으로" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
     "도움말" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Help"
+          }
+        }
+      }
+    },
+    "돌아가기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
           }
         }
       }
@@ -455,6 +515,16 @@
         }
       }
     },
+    "사진은 외부로 공유되지 않으며 안전하게 보호돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your photos are never shared and are safely protected"
+          }
+        }
+      }
+    },
     "사진을 삭제할 수 없어요" : {
       "localizations" : {
         "en" : {
@@ -545,6 +615,26 @@
         }
       }
     },
+    "설정 화면으로 이동 후 권한을 재설정 할 수 있어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can reset permissions in the Settings screen"
+          }
+        }
+      }
+    },
+    "설정화면 이동" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Settings"
+          }
+        }
+      }
+    },
     "소중한 기록 %lld장을\n앨범으로 저장했어요" : {
       "localizations" : {
         "en" : {
@@ -593,6 +683,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set Start Time"
+          }
+        }
+      }
+    },
+    "시작하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
           }
         }
       }
@@ -663,6 +763,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The recording will end without saving to the album"
+          }
+        }
+      }
+    },
+    "앨범 정리, 3단계로\n쉽고 편하게 정리해요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize your album in\n3 Easy Steps"
           }
         }
       }
@@ -783,6 +893,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exit without saving?"
+          }
+        }
+      }
+    },
+    "접근 권한 확인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Permissions"
           }
         }
       }
@@ -945,6 +1065,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "poporazzi Open Chat"
+          }
+        }
+      }
+    },
+    "포포라치 이용을 위해선 사진 보관함 전체 접근 권한이 필요해요 🥲" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "poporazzi needs full Photo Library access to work properly 🥲"
+          }
+        }
+      }
+    },
+    "포포라치가 기록을\n정리할 수 있게 도와주세요!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help poporazzi organize your memories!"
           }
         }
       }
