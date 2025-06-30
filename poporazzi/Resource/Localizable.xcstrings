@@ -1,6 +1,42 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "%@ 앨범 기록 시작 📸" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Start Recording Album 📸"
+          }
+        }
+      }
+    },
+    "%@부터, %lld일간 기록" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records from\n%1$@ for %2$lld days"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@부터, %2$lld일간 기록"
+          }
+        }
+      }
+    },
+    "%lld일차" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %lld"
+          }
+        }
+      }
+    },
     "%lld장" : {
       "localizations" : {
         "en" : {
@@ -67,12 +103,134 @@
         }
       }
     },
+    "%lld장의 기록 앨범으로 복구" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Recover %lld Item to Album"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Recover %lld Items to Album"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "⚠️ 1개 이상 선택" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ Select at least one item"
+          }
+        }
+      }
+    },
+    "👋  앨범 정리는 포포라치에게 맡기고 다녀오세요!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👋 Leave the album organizing to\npoporazzi and enjoy your trip!"
+          }
+        }
+      }
+    },
+    "📸  지금부터 촬영한 모든 기록을 저장할게요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "📸 We’ll save everything\nyou capture from now on"
+          }
+        }
+      }
+    },
+    "1개 이상 선택" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select at least one item"
+          }
+        }
+      }
+    },
     "공유하기" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share"
+          }
+        }
+      }
+    },
+    "기록 수정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Record"
+          }
+        }
+      }
+    },
+    "기록 시작 부터" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From the start of the record"
+          }
+        }
+      }
+    },
+    "기록 시작하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Record"
+          }
+        }
+      }
+    },
+    "기록 종료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish Record"
+          }
+        }
+      }
+    },
+    "기록 종료 까지" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Until the end of the recording"
+          }
+        }
+      }
+    },
+    "기록 종료하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish Record"
           }
         }
       }
@@ -87,6 +245,16 @@
         }
       }
     },
+    "기록을 종료할까요?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you want to finish the recording?"
+          }
+        }
+      }
+    },
     "내 앨범" : {
       "localizations" : {
         "en" : {
@@ -97,12 +265,102 @@
         }
       }
     },
+    "다운로드한 항목" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloaded Items"
+          }
+        }
+      }
+    },
+    "다음" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
+    "동영상" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos"
+          }
+        }
+      }
+    },
+    "모든 사진이 하나의 앨범으로 저장돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All photos will be saved in a single album"
+          }
+        }
+      }
+    },
+    "모든 일차별로 앨범을 생성 후 한 폴더에 저장돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One album per day, saved in one folder"
+          }
+        }
+      }
+    },
+    "모든 정보는 언제든지 수정이 가능해요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All information can be modified at any time"
+          }
+        }
+      }
+    },
+    "미디어 종류" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media Type"
+          }
+        }
+      }
+    },
+    "부산 여행, 성수동 데이트" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miami trip, Williamsburg date"
+          }
+        }
+      }
+    },
+    "분류 기준" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by"
+          }
+        }
+      }
+    },
     "빈 앨범" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Empty Album"
+            "value" : "Empty"
           }
         }
       }
@@ -112,7 +370,47 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Empty Folder"
+            "value" : "Empty"
+          }
+        }
+      }
+    },
+    "사진" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos"
+          }
+        }
+      }
+    },
+    "사진 라이브러리 권한을 확인해주세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your Photo Library permissions"
+          }
+        }
+      }
+    },
+    "사진 및 동영상" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos & Videos"
+          }
+        }
+      }
+    },
+    "사진을 삭제할 수 없어요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to delete the photo"
           }
         }
       }
@@ -157,6 +455,68 @@
         }
       }
     },
+    "선택한 시간 사이의 항목을 기록할게요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We’ll save the items between the selected times"
+          }
+        }
+      }
+    },
+    "소중한 기록 %lld장을\n앨범으로 저장했어요" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Save %lld precious record\nto your album."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Save %lld precious records\nto your album."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "스크린샷" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screenshots"
+          }
+        }
+      }
+    },
+    "시작 시간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Time"
+          }
+        }
+      }
+    },
+    "앨범 보기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Album"
+          }
+        }
+      }
+    },
     "앨범 삭제" : {
       "localizations" : {
         "en" : {
@@ -187,6 +547,36 @@
         }
       }
     },
+    "앨범 이름은 언제든 수정이 가능해요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Album names can be edited at any time"
+          }
+        }
+      }
+    },
+    "앨범 저장 기준을 선택해주세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please choose how you want to save your album"
+          }
+        }
+      }
+    },
+    "앨범 저장 없이 기록이 종료돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The recording will end without saving to the album"
+          }
+        }
+      }
+    },
     "앨범에서 제외" : {
       "localizations" : {
         "en" : {
@@ -207,6 +597,46 @@
         }
       }
     },
+    "앨범으로 복구" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recover to Album"
+          }
+        }
+      }
+    },
+    "앨범으로 복구하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recover to Album"
+          }
+        }
+      }
+    },
+    "앨범을 기록할 시간대를 선택해주세요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please select the time zone in which you want to record the album"
+          }
+        }
+      }
+    },
+    "어떤 순간을 기록하고 싶으신가요?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What moment would you like to record?"
+          }
+        }
+      }
+    },
     "의 기록이 선택됨" : {
       "localizations" : {
         "en" : {
@@ -217,12 +647,92 @@
         }
       }
     },
+    "일차별 저장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save by Day"
+          }
+        }
+      }
+    },
     "저장" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save"
+          }
+        }
+      }
+    },
+    "저장 없이 종료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit Without Saving"
+          }
+        }
+      }
+    },
+    "저장 없이 종료할까요?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit without saving?"
+          }
+        }
+      }
+    },
+    "제외된 기록" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded Records"
+          }
+        }
+      }
+    },
+    "제외된 기록이 없어요!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no excluded records!"
+          }
+        }
+      }
+    },
+    "종료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit"
+          }
+        }
+      }
+    },
+    "종료 시 앨범에 저장되지 않는 기록이에요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not saved to album when ended"
+          }
+        }
+      }
+    },
+    "종료 시간" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Time"
           }
         }
       }
@@ -247,6 +757,26 @@
         }
       }
     },
+    "지금부터 촬영한 모든 항목을 기록할게요!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From now on, We’ll record everything you photograph!"
+          }
+        }
+      }
+    },
+    "직접 촬영한 항목" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Captured Items"
+          }
+        }
+      }
+    },
     "총 %lld장" : {
       "localizations" : {
         "en" : {
@@ -265,6 +795,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "촬영된 기록이 없어 앨범 저장 없이 종료돼요" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records — exit without saving to the album"
           }
         }
       }
@@ -305,6 +845,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Folder Name"
+          }
+        }
+      }
+    },
+    "하나로 저장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as One"
+          }
+        }
+      }
+    },
+    "홈으로 돌아가기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Home"
+          }
+        }
+      }
+    },
+    "확인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm"
           }
         }
       }

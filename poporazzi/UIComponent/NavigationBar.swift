@@ -83,7 +83,7 @@ extension NavigationBar {
                 if let centerView {
                     flex.addItem(centerView).position(.absolute).horizontally(100)
                 } else {
-                    flex.addItem(titleLabel).position(.absolute).horizontally(140)
+                    flex.addItem(titleLabel).position(.absolute).horizontally(120)
                 }
                 
                 flex.addItem(trailingView)

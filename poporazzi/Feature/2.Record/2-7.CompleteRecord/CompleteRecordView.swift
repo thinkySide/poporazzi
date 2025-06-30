@@ -61,11 +61,16 @@ final class CompleteRecordView: CodeBaseUI {
     
     private let recordTitleLabel = UILabel(size: 22, color: .mainLabel)
     
-    private let recordInfoLabel = UILabel(size: 16, color: .subLabel)
+    private let recordInfoLabel: UILabel = {
+        let label = UILabel(size: 16, color: .subLabel)
+        label.numberOfLines = 2
+        label.textAlignment = .center
+        return label
+    }()
     
     let shareButton: UIButton = {
         let button = UIButton()
-        button.setTitle("공유하기", for: .normal)
+        button.setTitle(String(localized: "공유하기"), for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .setDovemayo(18)
         button.backgroundColor = .brandPrimary
@@ -73,9 +78,15 @@ final class CompleteRecordView: CodeBaseUI {
         return button
     }()
     
-    let showAlbumButton = ActionButton(title: "앨범 보기", variation: .secondary)
+    let showAlbumButton = ActionButton(
+        title: String(localized: "앨범 보기"),
+        variation: .secondary
+    )
     
-    let backToHomeButton = ActionButton(title: "홈으로 돌아가기", variation: .secondary)
+    let backToHomeButton = ActionButton(
+        title: String(localized: "홈으로 돌아가기"),
+        variation: .secondary
+    )
     
     init() {
         super.init(frame: .zero)
@@ -119,10 +130,11 @@ extension CompleteRecordView {
     func action(_ action: Action) {
         switch action {
         case let .updateTitleLabel(count):
-            mainLabel.attributedText = NSMutableAttributedString()
-                .tint("소중한 기록 ", color: .mainLabel)
-                .tint("\(count)장", color: .brandPrimary)
-                .tint("을\n앨범으로 저장했어요", color: .mainLabel)
+            let attributedString = NSMutableAttributedString().highlight(
+                text: String(localized: "소중한 기록 \(count)장을\n앨범으로 저장했어요"),
+                highlights: [.init(text: "\(count)", color: .brandPrimary)]
+            )
+            mainLabel.attributedText = attributedString
             
         case let .updateRandomImageView(imageList):
             if let firstImage = imageList[safe: 0] {
@@ -142,7 +154,7 @@ extension CompleteRecordView {
                 to: record.endDate ?? Date()
             ).day ?? 0) +  1
             
-            recordInfoLabel.text = "\(startDate)부터, \(dayCount)일간 기록"
+            recordInfoLabel.text = String(localized: "\(startDate)부터, \(dayCount)일간 기록")
         }
     }
 }

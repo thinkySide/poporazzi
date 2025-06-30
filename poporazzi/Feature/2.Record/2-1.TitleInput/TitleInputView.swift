@@ -17,22 +17,26 @@ final class TitleInputView: CodeBaseUI {
     private lazy var navigationBar = NavigationBar()
     
     /// 메인 라벨
-    let mainLabel = UILabel(
-        "어떤 순간을 기록하고 싶으신가요?",
-        size: 22,
-        color: .mainLabel
-    )
+    let mainLabel: UILabel = {
+        let label = UILabel(
+            String(localized: "어떤 순간을 기록하고 싶으신가요?"),
+            size: 22,
+            color: .mainLabel
+        )
+        label.numberOfLines = 2
+        return label
+    }()
     
     /// 앨범 이름
-    let titleFormLabel = FormLabel(title: "앨범 이름")
+    let titleFormLabel = FormLabel(title: String(localized: "앨범 이름"))
     
     /// 제목 텍스트필드
-    let titleTextField = LineTextField(size: 24, placeholder: "부산 여행, 성수동 데이트")
+    let titleTextField = LineTextField(size: 24, placeholder: String(localized: "부산 여행, 성수동 데이트"))
     
     /// 앨범 이름 수정 가능 라벨
     let albumNameCanChangeAnytimeSubLabel: UILabel = {
         let label = UILabel(
-            "앨범 이름은 언제든 수정이 가능해요",
+            String(localized: "앨범 이름은 언제든 수정이 가능해요"),
             size: 14,
             color: .subLabel
         )
@@ -43,7 +47,7 @@ final class TitleInputView: CodeBaseUI {
     let keyboardAccessoryView = UIView()
     
     /// 다음 버튼
-    let nextButton = ActionButton(title: "다음", variation: .primary)
+    let nextButton = ActionButton(title: String(localized: "다음"), variation: .primary)
     
     init() {
         super.init(frame: .zero)

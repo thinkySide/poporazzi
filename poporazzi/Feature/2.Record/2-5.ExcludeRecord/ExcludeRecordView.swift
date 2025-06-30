@@ -18,7 +18,7 @@ final class ExcludeRecordView: CodeBaseUI {
     
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
-        title: "제외된 기록",
+        title: String(localized: "제외된 기록"),
         leading: backButton,
         trailing: navigationTrailingButtons
     )
@@ -31,20 +31,23 @@ final class ExcludeRecordView: CodeBaseUI {
     
     /// 선택 버튼
     let selectButton = NavigationButton(
-        buttonType: .text("선택"),
+        buttonType: .text(String(localized: "선택")),
         variation: .secondary
     )
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
+        let button = NavigationButton(
+            buttonType: .text(String(localized: "취소")),
+            variation: .secondary
+        )
         button.isHidden = true
         return button
     }()
     
     /// 정보 라벨
     let infoLabel = SymbolLabel(
-        title: "종료 시 앨범에 저장되지 않는 기록이에요",
+        title: String(localized: "종료 시 앨범에 저장되지 않는 기록이에요"),
         symbol: .info,
         tintColor: .subLabel
     )
@@ -52,7 +55,7 @@ final class ExcludeRecordView: CodeBaseUI {
     /// 제외된 사진이 없을 때 라벨
     private let emptyLabel: UILabel = {
         let label = UILabel()
-        label.text = "제외된 기록이 없어요!"
+        label.text = String(localized: "제외된 기록이 없어요!")
         label.font = .setDovemayo(16)
         label.textColor = .mainLabel
         return label
@@ -95,7 +98,7 @@ final class ExcludeRecordView: CodeBaseUI {
     let favoriteToolBarButton = ToolBarButton(.favorite)
     
     /// 앨범으로 복구 툴 바 버튼
-    let recoverToolBarButton = ToolBarButton(.title("앨범으로 복구"))
+    let recoverToolBarButton = ToolBarButton(.title(String(localized: "앨범으로 복구")))
     
     /// 더보기 툴 바 버튼
     let seemoreToolBarButton = ToolBarButton(.seemore)
@@ -137,7 +140,7 @@ extension ExcludeRecordView {
     func action(_ action: Action) {
         switch action {
         case let .setTotalImageCountLabel(count):
-            totalCountLabel.text = count > 0 ? "총 \(count)장" : ""
+            totalCountLabel.text = count > 0 ? String(localized: "총 \(count)장") : ""
             totalCountLabel.flex.markDirty()
             emptyLabel.isHidden = count > 0
             
@@ -160,14 +163,14 @@ extension ExcludeRecordView {
             
         case let .updateSelectedCountLabel(count):
             if count == 0 {
-                toolBar.action(.updateTitle("기록을 선택해주세요"))
+                toolBar.action(.updateTitle(AttributedString(String(localized: "기록을 선택해주세요"))))
                 [favoriteToolBarButton, recoverToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
                     $0.action(.toggleDisabled(true))
                 }
             } else {
                 let attributedText = NSMutableAttributedString()
-                    .tint("\(count)장", color: .brandPrimary)
-                    .tint("의 기록이 선택됨", color: .mainLabel)
+                    .tint(String(localized: "\(count)장"), color: .brandPrimary)
+                    .tint(String(localized: "의 기록이 선택됨"), color: .mainLabel)
                 
                 toolBar.action(.updateTitle(AttributedString(attributedText)))
                 [favoriteToolBarButton, recoverToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {

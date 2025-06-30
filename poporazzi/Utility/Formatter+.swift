@@ -36,31 +36,27 @@ extension Date {
     
     /// 시작 날짜 포맷을 반환합니다.
     var startDateFormat: String {
-        localizedString("yyyyMMMMdEEE") + " ~"
+        localizedString("yyyyMMMMdEEEE") + " ~"
     }
     
     /// 시작 날짜 전체 포맷을 반환합니다.
     var startDateFullFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy. M. d(E) a h:mm 부터"
-        return Date.dateFormatter.string(from: self)
+        localizedString("yyyyMMMMdEEEEa h:mm")
     }
     
     /// 종료 날짜 전체 포맷을 반환합니다.
     var endDateFullFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy. M. d(E) a h:mm 까지"
-        return Date.dateFormatter.string(from: self)
+        localizedString("yyyyMMMMdEEEEa h:mm")
     }
     
     /// Section의 Header 포맷을 반환합니다.
     var sectionHeaderFormat: String {
-        Date.dateFormatter.dateFormat = "M월 d일 EEEE"
-        return Date.dateFormatter.string(from: self)
+        localizedString("MMMMdEEEE")
     }
     
     /// Section의 Header 포맷을 반환합니다.
     var detailFormat: String {
-        Date.dateFormatter.dateFormat = "yyyy년 M월 d일 EEEE"
-        return Date.dateFormatter.string(from: self)
+        localizedString("yyyyMMMMdEEEE")
     }
 
     

@@ -39,14 +39,14 @@ final class RecordView: CodeBaseUI {
     let seemoreButton = NavigationButton(buttonType: .seemore, variation: .tertiary)
     
     /// 선택 버튼
-    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .tertiary)
+    let selectButton = NavigationButton(buttonType: .text(String(localized: "선택")), variation: .tertiary)
     
     /// 기록 종료 버튼
-    let finishRecordButton = NavigationButton(buttonType: .text("기록 종료"), variation: .primary)
+    let finishRecordButton = NavigationButton(buttonType: .text(String(localized: "기록 종료")), variation: .primary)
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .tertiary)
+        let button = NavigationButton(buttonType: .text(String(localized: "취소")), variation: .tertiary)
         button.isHidden = true
         return button
     }()
@@ -61,9 +61,27 @@ final class RecordView: CodeBaseUI {
     
     private let emptyView = UIView()
     
-    let emptyFirstLabel = UILabel("📸  지금부터 촬영한 모든 기록을 저장할게요", size: 16, color: .subLabel)
+    let emptyFirstLabel: UILabel = {
+        let label = UILabel(
+            String(localized: "📸  지금부터 촬영한 모든 기록을 저장할게요"),
+            size: 16,
+            color: .subLabel
+        )
+        label.numberOfLines = 2
+        label.textAlignment = .center
+        return label
+    }()
     
-    let emptySecondLabel = UILabel("👋  앨범 정리는 포포라치에게 맡기고 다녀오세요!", size: 16, color: .subLabel)
+    let emptySecondLabel: UILabel = {
+        let label = UILabel(
+            String(localized: "👋  앨범 정리는 포포라치에게 맡기고 다녀오세요!"),
+            size: 16,
+            color: .subLabel
+        )
+        label.numberOfLines = 2
+        label.textAlignment = .center
+        return label
+    }()
     
     /// ToolBar
     lazy var toolBar: ToolBar = {
@@ -80,7 +98,7 @@ final class RecordView: CodeBaseUI {
     let favoriteToolBarButton = ToolBarButton(.favorite)
     
     /// 앨범에서 제외 툴 바 버튼
-    let excludeToolBarButton = ToolBarButton(.title("앨범에서 제외"))
+    let excludeToolBarButton = ToolBarButton(.title(String(localized: "앨범에서 제외")))
     
     /// 더보기 툴 바 버튼
     let seemoreToolBarButton = ToolBarButton(.seemore)
@@ -145,7 +163,7 @@ extension RecordView {
             containerView.flex.layout()
             
         case let .updateTotalCountLabel(count):
-            totalCountLabel.text = count == 0 ? "" : "총 \(count)장"
+            totalCountLabel.text = count == 0 ? "" : String(localized: "총 \(count)장")
             emptyView.isHidden = count > 0
             totalCountLabel.flex.markDirty()
             containerView.flex.layout()
@@ -167,14 +185,14 @@ extension RecordView {
             
         case let .updateSelectedCountLabel(count):
             if count == 0 {
-                toolBar.action(.updateTitle("기록을 선택해주세요"))
+                toolBar.action(.updateTitle(AttributedString(String(localized: "기록을 선택해주세요"))))
                 [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
                     $0.action(.toggleDisabled(true))
                 }
             } else {
                 let attributedText = NSMutableAttributedString()
-                    .tint("\(count)장", color: .brandPrimary)
-                    .tint("의 기록이 선택됨", color: .mainLabel)
+                    .tint(String(localized: "\(count)장"), color: .brandPrimary)
+                    .tint(String(localized: "의 기록이 선택됨"), color: .mainLabel)
                 
                 toolBar.action(.updateTitle(AttributedString(attributedText)))
                 [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {

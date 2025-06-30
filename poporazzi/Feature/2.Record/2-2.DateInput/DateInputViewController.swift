@@ -57,7 +57,7 @@ extension DateInputViewController {
                 if let startDate = startDate {
                     owner.scene.startDatePicker.action(.updateDateLabel(startDate.startDateFullFormat))
                 } else {
-                    owner.scene.startDatePicker.action(.updateDateLabel("기록 시작 부터 ~"))
+                    owner.scene.startDatePicker.action(.updateDateLabel(String(localized: "기록 시작 부터")))
                 }
             }
             .disposed(by: disposeBag)
@@ -67,7 +67,7 @@ extension DateInputViewController {
                 if let endDate = endDate {
                     owner.scene.endDatePicker.action(.updateDateLabel(endDate.endDateFullFormat))
                 } else {
-                    owner.scene.endDatePicker.action(.updateDateLabel("~ 기록 종료 까지"))
+                    owner.scene.endDatePicker.action(.updateDateLabel(String(localized: "기록 종료 까지")))
                 }
             }
             .disposed(by: disposeBag)

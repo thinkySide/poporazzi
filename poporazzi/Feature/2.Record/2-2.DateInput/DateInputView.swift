@@ -20,35 +20,43 @@ final class DateInputView: CodeBaseUI {
     let backButton = NavigationButton(buttonType: .back)
     
     /// 메인 라벨
-    let mainLabel = UILabel(
-        "앨범을 기록할 시간대를 선택해주세요",
-        size: 22,
-        color: .mainLabel
-    )
+    let mainLabel: UILabel = {
+        let label = UILabel(
+            String(localized: "앨범을 기록할 시간대를 선택해주세요"),
+            size: 22,
+            color: .mainLabel
+        )
+        label.numberOfLines = 2
+        return label
+    }()
     
     /// 서브 라벨
-    let subLabel = UILabel(
-        "선택한 시간 사이의 항목을 기록할게요",
-        size: 16,
-        color: .subLabel
-    )
+    let subLabel: UILabel = {
+        let label = UILabel(
+            String(localized: "선택한 시간 사이의 항목을 기록할게요"),
+            size: 16,
+            color: .subLabel
+        )
+        label.numberOfLines = 2
+        return label
+    }()
     
     /// 시작시간 양식 라벨
-    let startDateFormLabel = FormLabel(title: "시작 시간")
+    let startDateFormLabel = FormLabel(title: String(localized: "시작 시간"))
     
     /// 시작시간 피커
     let startDatePicker = FormDatePicker()
     
     /// 종료시간 양식 라벨
-    let endDateFormLabel = FormLabel(title: "종료 시간")
+    let endDateFormLabel = FormLabel(title: String(localized: "종료 시간"))
     
     /// 종료시간 피커
-    let endDatePicker = FormDatePicker(title: "~ 기록 종료 시 까지")
+    let endDatePicker = FormDatePicker(title: String(localized: "기록 종료 까지"))
     
     /// 모든 정보 수정 가능 라벨
     private let allInfoCanChangeAnytimeSubLabel: UILabel = {
         let label = UILabel(
-            "모든 정보는 언제든지 수정이 가능해요",
+            String(localized: "모든 정보는 언제든지 수정이 가능해요"),
             size: 14,
             color: .subLabel
         )
@@ -57,7 +65,7 @@ final class DateInputView: CodeBaseUI {
     }()
     
     /// 시작 버튼
-    let startButton = ActionButton(title: "기록 시작하기", variation: .primary)
+    let startButton = ActionButton(title: String(localized: "기록 시작하기"), variation: .primary)
     
     init() {
         super.init(frame: .zero)
