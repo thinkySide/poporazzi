@@ -3,10 +3,18 @@
     {
       "filename" : "Group 26.png",
       "idiom" : "universal"
+    },
+    {
+      "filename" : "Group 27.png",
+      "idiom" : "universal",
+      "locale" : "en"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "localizable" : true
   }
 }
