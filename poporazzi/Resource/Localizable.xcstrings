@@ -145,12 +145,32 @@
         }
       }
     },
+    "👨‍💻 개발자랑 놀기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👨‍💻 Chat with the Developer"
+          }
+        }
+      }
+    },
     "📸  지금부터 촬영한 모든 기록을 저장할게요" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "📸 We’ll save everything\nyou capture from now on"
+          }
+        }
+      }
+    },
+    "🛎️ 서비스" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🛎️ Services"
           }
         }
       }
@@ -171,6 +191,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share"
+          }
+        }
+      }
+    },
+    "기능 요청 및 개선사항 제안" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggest a Feature or Improvement"
           }
         }
       }
@@ -281,6 +311,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Next"
+          }
+        }
+      }
+    },
+    "도움말" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help"
           }
         }
       }
@@ -465,6 +505,16 @@
         }
       }
     },
+    "설정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
     "소중한 기록 %lld장을\n앨범으로 저장했어요" : {
       "localizations" : {
         "en" : {
@@ -623,6 +673,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please select the time zone in which you want to record the album"
+          }
+        }
+      }
+    },
+    "앱스토어 리뷰 작성" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Review"
           }
         }
       }
@@ -815,6 +875,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "친구에게 공유" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share with Friends"
+          }
+        }
+      }
+    },
+    "포포라치 오픈채팅방" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "poporazzi Open Chat"
           }
         }
       }
