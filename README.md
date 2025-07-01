@@ -1,9 +1,9 @@
 # 🥷📸 poporazzi 포포라치
 > 여행 다녀와서 사진 정리하는게 너무 귀찮은 나! (개발자 본인 이야기입니다.) 이젠 좀 쉽게 사진 정리하자,,,!
 
-|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.5.2)|
+|상태|앱스토어 배포 완료 및 업데이트 진행 중(v1.5.3)|
 |:--|:--|
-|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Realm, XCTest, Xcode Cloud|
+|기술 스택|UIKit, RxSwift, FlexLayout, PinLayout, PhotoKit, Realm, XCTest, Xcode Cloud, String Catalog|
 |Link|[AppStore](https://apps.apple.com/kr/app/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98/id6744402068), [Figma](https://www.figma.com/design/4uudfkvUr18HbnBhyKSTro/%ED%8F%AC%ED%8F%AC%EB%9D%BC%EC%B9%98?node-id=57-364&p=f&t=5ZyurDKbkj51pwCl-11), [Instagram](https://www.instagram.com/poporazzzzzi?igsh=MWV1cDl4ZWU2b2p0bQ%3D%3D&utm_source=qr), [Thread](https://www.threads.com/@thinkydev?igshid=NTc4MTIwNjQ2YQ==)|
 |이메일 문의|eunlyuing@gmail.com|
 
@@ -12,7 +12,7 @@
 2. 내맘대로 여행 즐기며 마음껏 사진 찍기.
 3. 여행 다녀온 후 종료 버튼 눌러 앨범으로 쏙 저장하기!
 
-![Group 1](https://github.com/user-attachments/assets/05ee4fd6-2a20-40b3-875c-dfdcbb6ab307)
+![Group 50](https://github.com/user-attachments/assets/4961d377-bc77-4388-97aa-a93c20059344)
 
 ### 🛠️ 개발 타임라인
 
@@ -94,7 +94,7 @@
 |[#103 RecordCollectionView Sticky Header 기능 구현](https://github.com/thinkySide/poporazzi/pull/103)|CompositionalLayout Section Header를 활용한 StickyHeader 구현|
 |[#105 1.4.4 Minor 업데이트](https://github.com/thinkySide/poporazzi/pull/105)|저장 없이 종료 기능 버튼 이동, 기록 비어있을 경우 출력되는 UI 업데이트, 분류 기준 도움말 라벨 추가|
 
-#### v1.5.0 ~ 1.5.2 / 25.05.19 ~ 
+#### v1.5.0 ~ 1.5.3 / 25.05.19 ~ 
 > 상호작용 가능한 것 같은 부분들에 신경써 디테일을 올리고자 합니다.
 
 |PR 제목|주요 구현 내용|
@@ -120,3 +120,5 @@
 |[#144 CompleteRecord 화면 및 기능 구현](https://github.com/thinkySide/poporazzi/pull/144)|CompleteRecord 기능 구현, MyAlbumList 비어있는 케이스 처리|
 |[#146 앨범 시간대 지정 및 예약 기능 구현](https://github.com/thinkySide/poporazzi/pull/146)|Local Notification을 이용한 앨범 기록 알림 구현|
 |[#148 1.5.2 배포 전 QA](https://github.com/thinkySide/poporazzi/pull/148)|CGAffineTransform Rotate 트러블슈팅, 앱 아이콘 업데이트|
+|[#149 영어 Localization](https://github.com/thinkySide/poporazzi/pull/149)|String Catalog를 이용한 영어 Localization|
+|[#151 앨범 기록 예약 Notification 취소 로직 구현](https://github.com/thinkySide/poporazzi/pull/151)|예약된 UserNotification 취소 로직 적용|
