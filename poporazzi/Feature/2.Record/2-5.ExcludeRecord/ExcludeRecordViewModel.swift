@@ -335,9 +335,9 @@ extension ExcludeRecordViewModel {
     /// 기록 삭제 실패 Alert
     private var removeFailedAlert: AlertModel {
         AlertModel(
-            title: "사진을 삭제할 수 없어요",
-            message: "사진 라이브러리 권한을 확인해주세요",
-            eventButton: .init(title: "확인")
+            title: String(localized: "사진을 삭제할 수 없어요"),
+            message: String(localized: "사진 라이브러리 권한을 확인해주세요"),
+            eventButton: .init(title: String(localized: "확인"))
         )
     }
 }
@@ -350,10 +350,13 @@ extension ExcludeRecordViewModel {
     private func recoverActionSheet(from mediaList: [Media]) -> ActionSheetModel {
         ActionSheetModel(
             buttons: [
-                .init(title: "\(mediaList.count)장의 기록 앨범으로 복구", style: .default) { [weak self] in
+                .init(
+                    title: String(localized: "\(mediaList.count)장의 기록 앨범으로 복구"),
+                    style: .default
+                ) { [weak self] in
                     self?.actionSheetAction.accept(.recover(mediaList))
                 },
-                .init(title: "취소", style: .cancel)
+                .init(title: String(localized: "취소"), style: .cancel)
             ]
         )
     }
@@ -361,12 +364,15 @@ extension ExcludeRecordViewModel {
     /// 기록 삭제 Action Sheet
     private func removeActionSheet(from mediaList: [Media]) -> ActionSheetModel {
         return ActionSheetModel(
-            message: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요.",
+            message: String(localized: "선택한 기록이 ‘사진’ 앱에서 삭제돼요. 삭제한 항목은 사진 앱의 ‘최근 삭제된 항목’에 30일간 보관돼요."),
             buttons: [
-                .init(title: "\(mediaList.count)장의 기록 삭제", style: .destructive) { [weak self] in
+                .init(
+                    title: String(localized: "\(mediaList.count)장의 기록 삭제"),
+                    style: .destructive
+                ) { [weak self] in
                     self?.actionSheetAction.accept(.remove(mediaList))
                 },
-                .init(title: "취소", style: .cancel)
+                .init(title: String(localized: "취소"), style: .cancel)
             ]
         )
     }
@@ -378,7 +384,7 @@ extension ExcludeRecordViewModel {
     
     /// 더보기 툴바 버튼 Menu
     private var seemoreToolbarMenu: [MenuModel] {
-        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+        let share = MenuModel(symbol: .share, title: String(localized: "공유하기")) { [weak self] in
             self?.menuAction.accept(.share)
         }
         return [share]
@@ -388,17 +394,17 @@ extension ExcludeRecordViewModel {
     private func contextMenu(from media: Media) -> [MenuModel] {
         let favorite = MenuModel(
             symbol: media.isFavorite ? .favoriteRemoveLine : .favoriteActiveLine,
-            title: media.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"
+            title: media.isFavorite ? String(localized: "즐겨찾기 해제") : String(localized: "즐겨찾기")
         ) { [weak self] in
             self?.contextMenuAction.accept(.toggleFavorite(media))
         }
-        let share = MenuModel(symbol: .share, title: "공유하기") { [weak self] in
+        let share = MenuModel(symbol: .share, title: String(localized: "공유하기")) { [weak self] in
             self?.contextMenuAction.accept(.share(media))
         }
-        let recover = MenuModel(symbol: .recover, title: "앨범으로 복구하기") { [weak self] in
+        let recover = MenuModel(symbol: .recover, title: String(localized: "앨범으로 복구하기")) { [weak self] in
             self?.contextMenuAction.accept(.recover(media))
         }
-        let remove = MenuModel(symbol: .removeLine, title: "삭제하기", attributes: .destructive) { [weak self] in
+        let remove = MenuModel(symbol: .removeLine, title: String(localized: "삭제하기"), attributes: .destructive) { [weak self] in
             self?.contextMenuAction.accept(.remove(media))
         }
         return [favorite, share, recover, remove]

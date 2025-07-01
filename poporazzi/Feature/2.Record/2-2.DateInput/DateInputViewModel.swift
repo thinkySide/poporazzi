@@ -152,8 +152,8 @@ extension DateInputViewModel {
     private func registerNotification() {
         if let startDate = output.startDate.value {
             userNotificationService.registerNotification(
-                title: "\(output.titleText.value) 앨범 기록 시작 📸",
-                body: "지금부터 촬영한 모든 항목을 기록할게요!",
+                title: String(localized: "\(output.titleText.value) 앨범 기록 시작 📸"),
+                body: String(localized: "지금부터 촬영한 모든 항목을 기록할게요!"),
                 triggerDate: startDate
             )
         }

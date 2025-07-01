@@ -18,19 +18,23 @@ final class SettingsView: CodeBaseUI {
         trailing: versionLabel
     )
     
-    private let titleLabel = UILabel("설정", size: 20, color: .mainLabel)
+    private let titleLabel = UILabel(
+        String(localized: "설정"),
+        size: 20,
+        color: .mainLabel
+    )
     private let versionLabel = UILabel(size: 14, color: .subLabel)
     
-    private let serviceFormLabel = FormLabel(title: "🛎️ 서비스")
-    let helpButton = ListButton(title: "도움말")
-    let writeAppStoreReviviewButton = ListButton(title: "앱스토어 리뷰 작성")
-    let requestFeatureAndImprovementButton = ListButton(title: "기능 요청 및 개선사항 제안")
-    let shareWithFriendsButton = ListButton(title: "친구에게 공유")
+    private let serviceFormLabel = FormLabel(title: String(localized: "🛎️ 서비스"))
+    let helpButton = ListButton(title: String(localized: "도움말"))
+    let writeAppStoreReviviewButton = ListButton(title: String(localized: "앱스토어 리뷰 작성"))
+    let requestFeatureAndImprovementButton = ListButton(title: String(localized: "기능 요청 및 개선사항 제안"))
+    let shareWithFriendsButton = ListButton(title: String(localized: "친구에게 공유"))
     
     private let divider = UIView()
     
-    private let playWithDeveloperFormLabel = FormLabel(title: "👨‍💻 개발자랑 놀기")
-    let poporazziOpenChatRoomButton = ListButton(title: "포포라치 오픈채팅방")
+    private let playWithDeveloperFormLabel = FormLabel(title: String(localized: "👨‍💻 개발자랑 놀기"))
+    let poporazziOpenChatRoomButton = ListButton(title: String(localized: "포포라치 오픈채팅방"))
     let instagramButton = ListButton(title: "Instagram")
     let threadButton = ListButton(title: "Thread")
     

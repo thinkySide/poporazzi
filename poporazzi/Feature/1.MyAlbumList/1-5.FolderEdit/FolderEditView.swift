@@ -17,7 +17,7 @@ final class FolderEditView: CodeBaseUI {
     
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
-        title: "폴더 수정",
+        title: String(localized: "폴더 수정"),
         leading: backButton,
         trailing: saveButton
     )
@@ -27,15 +27,15 @@ final class FolderEditView: CodeBaseUI {
     
     /// 저장 버튼
     let saveButton = NavigationButton(
-        buttonType: .text("저장"),
+        buttonType: .text(String(localized: "저장")),
         variation: .secondary
     )
     
     /// 제목 양식 라벨
-    let titleFormLabel = FormLabel(title: "폴더 이름")
+    let titleFormLabel = FormLabel(title: String(localized: "폴더 이름"))
     
     /// 제목 텍스트필드
-    let titleTextField = LineTextField(size: 20, placeholder: "플레이스홀더")
+    let titleTextField = LineTextField(size: 20, placeholder: "")
     
     init() {
         super.init(frame: .zero)

@@ -17,7 +17,7 @@ final class RecordEditView: CodeBaseUI {
     
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(
-        title: "기록 수정",
+        title: String(localized: "기록 수정"),
         leading: backButton,
         trailing: saveButton
     )
@@ -27,54 +27,68 @@ final class RecordEditView: CodeBaseUI {
     
     /// 저장 버튼
     let saveButton = NavigationButton(
-        buttonType: .text("저장"),
+        buttonType: .text(String(localized: "저장")),
         variation: .secondary
     )
     
     /// 제목 양식 라벨
-    let titleFormLabel = FormLabel(title: "앨범 이름")
+    let titleFormLabel = FormLabel(title: String(localized: "앨범 이름"))
     
     /// 제목 텍스트필드
-    let titleTextField = LineTextField(size: 20, placeholder: "플레이스홀더")
+    let titleTextField = LineTextField(size: 20, placeholder: "")
     
     /// 시작시간 양식 라벨
-    let startDateFormLabel = FormLabel(title: "시작 시간")
+    let startDateFormLabel = FormLabel(title: String(localized: "시작 시간"))
     
     /// 시작시간 피커
     let startDatePicker = FormDatePicker()
     
     /// 종료시간 양식 라벨
-    let endDateFormLabel = FormLabel(title: "종료 시간")
+    let endDateFormLabel = FormLabel(title: String(localized: "종료 시간"))
     
     /// 종료시간 피커
-    let endDatePicker = FormDatePicker(title: "~ 기록 종료 시 까지")
+    let endDatePicker = FormDatePicker(title: String(localized: "기록 종료 까지"))
     
     /// 미디어 유형
-    private let saveItemFormLabel = FormLabel(title: "미디어 종류")
+    private let saveItemFormLabel = FormLabel(title: String(localized: "미디어 종류"))
     
     /// 선택 칩 뷰
     private let choiceChipView = UIView()
     
     /// 전체 선택 칩
-    let allChoiceChip = FormChoiceChip("사진 및 동영상", variation: .selected)
+    let allChoiceChip = FormChoiceChip(String(localized: "사진 및 동영상"), variation: .selected)
     
     /// 사진 선택 칩
-    let photoChoiceChip = FormChoiceChip("사진", variation: .deselected)
+    let photoChoiceChip = FormChoiceChip(String(localized: "사진"), variation: .deselected)
     
     /// 동영상 선택 칩
-    let videoChoiceChip = FormChoiceChip("동영상", variation: .deselected)
+    let videoChoiceChip = FormChoiceChip(String(localized: "동영상"), variation: .deselected)
     
     /// 필터 옵션
-    private let filterOptionsFormLabel = FormLabel(title: "분류 기준", subtitle: "1개 이상 선택")
+    private let filterOptionsFormLabel = FormLabel(
+        title: String(localized: "분류 기준"),
+        subtitle: String(localized: "1개 이상 선택")
+    )
     
     /// 직접 촬영한 항목 체크박스
-    let selfShootingOptionCheckBox = FormCheckBox("직접 촬영한 항목", subtitle: "HEIC / MOV", variation: .selected)
+    let selfShootingOptionCheckBox = FormCheckBox(
+        String(localized: "직접 촬영한 항목"),
+        subtitle: "HEIC / MOV",
+        variation: .selected
+    )
     
     /// 다운로드한 항목 체크박스
-    let downloadOptionCheckBox = FormCheckBox("다운로드한 항목", subtitle: "PNG / JPEG / MP4", variation: .deselected)
+    let downloadOptionCheckBox = FormCheckBox(
+        String(localized: "다운로드한 항목"),
+        subtitle: "PNG / JPEG / MP4",
+        variation: .deselected
+    )
     
     /// 스크린샷 항목 체크박스
-    let screenshotOptionCheckBox = FormCheckBox("스크린샷", variation: .deselected)
+    let screenshotOptionCheckBox = FormCheckBox(
+        String(localized: "스크린샷"),
+        variation: .deselected
+    )
     
     init() {
         super.init(frame: .zero)
@@ -136,7 +150,7 @@ extension RecordEditView {
             saveButton.action(.toggleDisabled(!isValid))
             
         case let .toggleFilterOptionsFormLabel(isValid):
-            let text = isValid ? "1개 이상 선택" : "⚠️ 1개 이상 선택"
+            let text = isValid ? String(localized: "1개 이상 선택") : String(localized: "⚠️ 1개 이상 선택")
             let color: UIColor = isValid ? .subLabel : .warning
             filterOptionsFormLabel.action(.updateSubLabel(text: text, color: color))
         }

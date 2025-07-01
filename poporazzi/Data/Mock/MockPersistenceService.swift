@@ -9,7 +9,7 @@ import Foundation
 
 struct MockPersistenceService: PersistenceInterface {
     func createAlbum(from album: Record) throws {
-        print("앨범 생성 완료: \(album.title), \(album.startDate.startDateFullFormat)")
+        print("앨범 생성 완료: \(album.title), \(album.startDate.description)")
     }
     
     func readAlbum(fromId: String) -> Record {
@@ -17,7 +17,7 @@ struct MockPersistenceService: PersistenceInterface {
     }
     
     func updateAlbum(to newAlbum: Record) {
-        print("앨범 업데이트 완료: \(newAlbum.title), \(newAlbum.startDate.startDateFullFormat)")
+        print("앨범 업데이트 완료: \(newAlbum.title), \(newAlbum.startDate.description)")
     }
     
     func updateAlbumExcludeMediaList(to album: Record) {

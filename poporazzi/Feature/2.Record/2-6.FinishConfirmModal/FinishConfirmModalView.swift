@@ -18,39 +18,42 @@ final class FinishConfirmModalView: CodeBaseUI {
     
     /// 기록 종료 라벨
     private let finishLabel = UILabel(
-        "기록을 종료할까요?",
+        String(localized: "기록을 종료할까요?"),
         size: 18,
         color: .mainLabel
     )
     
     /// 정보 라벨
     private let infoLabel = UILabel(
-        "앨범 저장 기준을 선택해주세요",
+        String(localized: "앨범 저장 기준을 선택해주세요"),
         size: 14,
         color: .subLabel
     )
     
     /// 하나로 저장 라디오 버튼
     let saveAsSingleRadioButton = RadioButton(
-        title: "하나로 저장",
-        sub: "모든 사진이 하나의 앨범으로 저장돼요",
+        title: String(localized: "하나로 저장"),
+        sub: String(localized: "모든 사진이 하나의 앨범으로 저장돼요"),
         variation: .selected
     )
     
     /// 일차별 저장 라디오 버튼
     let saveByDayRadioButton = RadioButton(
-        title: "일차별 저장",
-        sub: "모든 일차별로 앨범을 생성 후 한 폴더에 저장돼요",
+        title: String(localized: "일차별 저장"),
+        sub: String(localized: "모든 일차별로 앨범을 생성 후 한 폴더에 저장돼요"),
         variation: .deselected
     )
     
     private let actionbuttonView = UIView()
     
     /// 종료 버튼
-    let finishButton = ActionButton(title: "기록 종료하기", variation: .primary)
+    let finishButton = ActionButton(
+        title: String(localized: "기록 종료하기"),
+        variation: .primary
+    )
     
     /// 취소 버튼
-    let cancelButton = ActionButton(title: "취소", variation: .secondary)
+    let cancelButton = ActionButton(title: String(localized: "취소"), variation: .secondary)
     
     init() {
         super.init(frame: .zero)

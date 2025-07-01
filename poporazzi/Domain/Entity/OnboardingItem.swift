@@ -25,29 +25,31 @@ extension OnboardingItem {
     static var list: [OnboardingItem] {
         [
             .init(
-                title: .init()
-                    .tint("앨범 정리, ", color: .mainLabel)
-                    .tint("3단계", color: .brandPrimary)
-                    .tint("로\n", color: .mainLabel)
-                    .tint("쉽고 편하게 정리해요", color: .mainLabel),
+                title: .init().highlight(
+                    text: String(localized: "앨범 정리, 3단계로\n쉽고 편하게 정리해요"),
+                    highlights: [.init(text: String(localized: "3단계"), color: .brandPrimary)]
+                ),
                 image: .first
             ),
             .init(
-                title: .init()
-                    .tint("I. ", color: .brandPrimary)
-                    .tint("기록하고 싶은\n순간을 시작하고", color: .mainLabel),
+                title: .init().highlight(
+                    text: String(localized: "I. 기록하고 싶은\n순간을 시작하고"),
+                    highlights: [.init(text: "I.", color: .brandPrimary)]
+                ),
                 image: .second
             ),
             .init(
-                title: .init()
-                    .tint("II. ", color: .brandPrimary)
-                    .tint("마음껏 즐기러\n떠나보세요!", color: .mainLabel),
+                title: .init().highlight(
+                    text: String(localized: "II. 마음껏 즐기러\n떠나보세요!"),
+                    highlights: [.init(text: "II.", color: .brandPrimary)]
+                ),
                 image: .third
             ),
             .init(
-                title: .init()
-                    .tint("III. ", color: .brandPrimary)
-                    .tint("종료하면 앨범으로\n쏙 넣어드릴게요", color: .mainLabel),
+                title: .init().highlight(
+                    text: String(localized: "III. 종료하면 앨범으로\n쏙 넣어드릴게요"),
+                    highlights: [.init(text: "III.", color: .brandPrimary)]
+                ),
                 image: .fourth
             )
         ]

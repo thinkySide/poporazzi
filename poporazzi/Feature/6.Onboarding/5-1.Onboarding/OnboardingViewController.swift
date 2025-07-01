@@ -166,10 +166,10 @@ extension OnboardingViewController {
             .bind(with: self) { owner, index in
                 owner.scene.paginationIndicator.action(.updateCurrentIndex(index))
                 if index >= owner.viewModel.onboardingItems.count - 1 {
-                    let title = owner.viewModel.isOnboarding ? "시작하기" : "돌아가기"
+                    let title = owner.viewModel.isOnboarding ? String(localized: "시작하기") : String(localized: "돌아가기")
                     owner.scene.action(.updateActionButton(title, .primary))
                 } else {
-                    owner.scene.action(.updateActionButton("다음으로", .secondary))
+                    owner.scene.action(.updateActionButton(String(localized: "다음으로"), .secondary))
                 }
             }
             .disposed(by: disposeBag)

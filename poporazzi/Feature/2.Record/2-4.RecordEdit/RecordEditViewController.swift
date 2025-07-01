@@ -78,7 +78,7 @@ extension RecordEditViewController {
                 if let endDate = endDate {
                     owner.scene.endDatePicker.action(.updateDateLabel(endDate.endDateFullFormat))
                 } else {
-                    owner.scene.endDatePicker.action(.updateDateLabel("~ 기록 종료 까지"))
+                    owner.scene.endDatePicker.action(.updateDateLabel(String(localized: "기록 종료 까지")))
                 }
             }
             .disposed(by: disposeBag)

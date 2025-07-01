@@ -143,7 +143,7 @@ extension MyAlbumListCell {
             startDateLabel.text = album.creationDate.startDateFormat
             countLabel.text = album.estimateCount > 0 
             ? "\(album.estimateCount)"
-            : album.albumType == .album ? "빈 앨범" : "빈 폴더"
+            : album.albumType == .album ? String(localized: "빈 앨범") : String(localized: "빈 폴더")
             [titleLabel, startDateLabel, countLabel].forEach { $0.flex.markDirty() }
             containerView.flex.layout()
         }

@@ -16,10 +16,10 @@ final class AlbumDetailHeader: UICollectionReusableView {
     var containerView = UIView()
     
     /// 앨범 제목 라벨
-    private let albumTitleLabel = UILabel("제목", size: 24, color: .mainLabel)
+    private let albumTitleLabel = UILabel(size: 24, color: .mainLabel)
     
     /// 총 기록 개수 라벨
-    private let totalRecordCountLabel = UILabel("개수", size: 16, color: .subLabel)
+    private let totalRecordCountLabel = UILabel(size: 16, color: .subLabel)
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -55,7 +55,7 @@ extension AlbumDetailHeader {
             containerView.flex.layout()
             
         case let .updateTotalImageCountLabel(count):
-            totalRecordCountLabel.text = count > 0 ? "총 \(count)장" : ""
+            totalRecordCountLabel.text = count > 0 ? String(localized: "총 \(count)장"): ""
             totalRecordCountLabel.flex.markDirty()
             containerView.flex.layout()
         }

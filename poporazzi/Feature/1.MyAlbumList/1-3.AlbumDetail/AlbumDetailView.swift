@@ -33,11 +33,17 @@ final class AlbumDetailView: CodeBaseUI {
     let seemoreButton = NavigationButton(buttonType: .seemore)
     
     /// 선택 버튼
-    let selectButton = NavigationButton(buttonType: .text("선택"), variation: .secondary)
+    let selectButton = NavigationButton(
+        buttonType: .text(String(localized: "선택")),
+        variation: .secondary
+    )
     
     /// 선택 취소 버튼
     let selectCancelButton: NavigationButton = {
-        let button = NavigationButton(buttonType: .text("취소"), variation: .secondary)
+        let button = NavigationButton(
+            buttonType: .text(String(localized: "취소")),
+            variation: .secondary
+        )
         button.isHidden = true
         return button
     }()
@@ -63,7 +69,7 @@ final class AlbumDetailView: CodeBaseUI {
     let favoriteToolBarButton = ToolBarButton(.favorite)
     
     /// 앨범에서 제외 툴 바 버튼
-    let excludeToolBarButton = ToolBarButton(.title("앨범에서 제외"))
+    let excludeToolBarButton = ToolBarButton(.title(String(localized: "앨범에서 제외")))
     
     /// 더보기 툴 바 버튼
     let seemoreToolBarButton = ToolBarButton(.seemore)
@@ -125,14 +131,14 @@ extension AlbumDetailView {
             
         case let .updateSelectedCount(count):
             if count == 0 {
-                toolBar.action(.updateTitle("기록을 선택해주세요"))
+                toolBar.action(.updateTitle(AttributedString(String(localized: "기록을 선택해주세요"))))
                 [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {
                     $0.action(.toggleDisabled(true))
                 }
             } else {
                 let attributedText = NSMutableAttributedString()
-                    .tint("\(count)장", color: .brandPrimary)
-                    .tint("의 기록이 선택됨", color: .mainLabel)
+                    .tint(String(localized: "\(count)장"), color: .brandPrimary)
+                    .tint(String(localized: "의 기록이 선택됨"), color: .mainLabel)
                 
                 toolBar.action(.updateTitle(AttributedString(attributedText)))
                 [favoriteToolBarButton, excludeToolBarButton, seemoreToolBarButton, removeToolBarButton].forEach {

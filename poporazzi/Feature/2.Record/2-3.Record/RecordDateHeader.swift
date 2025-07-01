@@ -61,7 +61,7 @@ extension RecordDateHeader {
         switch action {
         case .updateDayCountLabel(let order):
             dayCountLabel.flex.markDirty()
-            dayCountLabel.text = "\(order)일차"
+            dayCountLabel.text = String(localized: "\(order)일차")
             setNeedsLayout()
             
         case .updateDateLabel(let date):

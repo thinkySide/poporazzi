@@ -26,11 +26,7 @@ struct PoporazziWidgetLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: 0) {
-                        Image(.appIcon)
-                            .resizable()
-                            .frame(width: 52, height: 52)
-                        
+                    HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(context.state.albumTitle)
                                 .font(.doveMayo(size: 20))
@@ -76,11 +72,7 @@ private struct LockScreen: View {
     let context: ActivityViewContext<PoporazziWidgetAttributes>
     
     var body: some View {
-        HStack(spacing: 12) {
-            Image(.appIcon)
-                .resizable()
-                .frame(width: 52, height: 52)
-            
+        HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(context.state.albumTitle)
                     .font(.doveMayo(size: 20))

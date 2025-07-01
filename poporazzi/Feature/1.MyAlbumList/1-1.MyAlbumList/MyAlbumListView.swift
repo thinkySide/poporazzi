@@ -16,7 +16,11 @@ final class MyAlbumListView: CodeBaseUI {
     /// NavigationBar
     private lazy var navigationBar = NavigationBar(leading: titleLabel)
     
-    private let titleLabel = UILabel("내 앨범", size: 20, color: .mainLabel)
+    private let titleLabel = UILabel(
+        String(localized: "내 앨범"),
+        size: 20,
+        color: .mainLabel
+    )
     
     let albumCollectionView: UICollectionView = {
         let collectionView = UICollectionView(

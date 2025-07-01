@@ -16,7 +16,7 @@ final class CancelButton: CodeBaseUI {
     /// 버튼
     let button: UIButton = {
         let button = UIButton()
-        button.setTitle("취소", for: .normal)
+        button.setTitle(String(localized: "취소"), for: .normal)
         button.titleLabel?.font = .setDovemayo(16)
         button.backgroundColor = .white
         button.setTitleColor(.mainLabel, for: .normal)
