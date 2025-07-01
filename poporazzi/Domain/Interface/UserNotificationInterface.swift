@@ -18,4 +18,7 @@ protocol UserNotificationInterface {
     
     /// Notification을 등록합니다.
     func registerNotification(title: String, body: String, triggerDate: Date)
+    
+    /// 등록된 전체 Notification을 취소합니다.
+    func cancelAllNotification()
 }
