@@ -14,6 +14,7 @@ final class RecordViewModel: ViewModel {
     @Dependency(\.persistenceService) private var persistenceService
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
+    @Dependency(\.userNotificationService) private var userNotificationService
     
     private let paginationManager = PaginationManager(pageSize: 100, threshold: 10)
     
@@ -337,6 +338,7 @@ extension RecordViewModel {
                 case .finishWithoutRecord:
                     owner.navigation.accept(.stopRecord)
                     owner.liveActivityService.stop()
+                    owner.userNotificationService.cancelAllNotification()
                     UserDefaultsService.trackingAlbumId = ""
                 }
             }

@@ -13,6 +13,7 @@ final class FinishConfirmModalViewModel: ViewModel {
     
     @Dependency(\.liveActivityService) private var liveActivityService
     @Dependency(\.photoKitService) private var photoKitService
+    @Dependency(\.userNotificationService) private var userNotificationService
     
     private let disposeBag = DisposeBag()
     private let output: Output
@@ -115,8 +116,9 @@ extension FinishConfirmModalViewModel {
     
     /// 기록을 종료합니다.
     private func finishRecord() {
-        liveActivityService.stop()
         navigation.accept(.finishRecord)
+        liveActivityService.stop()
+        userNotificationService.cancelAllNotification()
         HapticManager.notification(type: .success)
         UserDefaultsService.trackingAlbumId = ""
     }

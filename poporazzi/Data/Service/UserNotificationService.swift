@@ -60,4 +60,9 @@ struct UserNotificationService: UserNotificationInterface {
         
         UNUserNotificationCenter.current().add(request) { _ in }
     }
+    
+    /// 등록된 전체 Notification을 취소합니다.
+    func cancelAllNotification() {
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+    }
 }
