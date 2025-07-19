@@ -12,6 +12,7 @@ import RxCocoa
 final class Coordinator: NSObject {
     
     @Dependency(\.persistenceService) var persistenceService
+    @Dependency(\.photoKitService) var photoKitService
     
     private var window: UIWindow?
     
@@ -153,7 +154,8 @@ final class Coordinator: NSObject {
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
         
-        if UserDefaultsService.isFirstLaunch {
+        let status = photoKitService.checkPermission()
+        if status != .authorized {
             let onboardingVM = OnboardingViewModel(output: .init(isOnboarding: .init(value: true)))
             let onboardingVC = OnboardingViewController(viewModel: onboardingVM)
             onboardingVC.modalPresentationStyle = .overFullScreen

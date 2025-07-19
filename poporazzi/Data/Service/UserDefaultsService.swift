@@ -13,9 +13,6 @@ struct UserDefaultsService {
     
     @UserDefault(key: "trackingAlbumId", defaultValue: "")
     static var trackingAlbumId: String
-    
-    @UserDefault(key: "isFirstLaunch", defaultValue: true)
-    static var isFirstLaunch: Bool
 }
 
 // MARK: - propertyWrapper
