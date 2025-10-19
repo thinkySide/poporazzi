@@ -1,0 +1,8 @@
+app_identifier("com.thinkyside.poporazzi") # The bundle identifier of your app
+apple_id("eunlyuing@gmail.com") # Your Apple Developer Portal username
+
+itc_team_id("126811531") # App Store Connect Team ID
+team_id("9XG4S4XZWN") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
