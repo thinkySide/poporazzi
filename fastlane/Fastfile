@@ -1,25 +1,43 @@
-# This file contains the fastlane.tools configuration
-# You can find the documentation at https://docs.fastlane.tools
-#
-# For a list of all available actions, check out
-#
-#     https://docs.fastlane.tools/actions
-#
-# For a list of all available plugins, check out
-#
-#     https://docs.fastlane.tools/plugins/available-plugins
-#
-
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
 default_platform(:ios)
 
 platform :ios do
-  desc "Push a new beta build to TestFlight"
-  lane :beta do
-    increment_build_number(xcodeproj: "poporazzi.xcodeproj")
-    build_app(scheme: "poporazzi")
-    upload_to_testflight
+  desc "QA 빌드를 배포합니다."
+  lane :qa do |options|
+    _set_build_number_with_timestamp
+    _build
+    release_notes = _prepare_release_notes(options)
+    _upload_to_firebase_app_distribution(release_notes: release_notes)
+  end
+
+  # Private lane: 날짜/시간 기반 빌드 번호 생성 (YYMMDDHHMM)
+  private_lane :_set_build_number_with_timestamp do
+    new_build_number = Time.now.strftime("%y%m%d%H%M")
+    increment_build_number(
+      xcodeproj: "poporazzi.xcodeproj",
+      build_number: new_build_number
+    )
+  end
+
+  # Private lane: 앱 빌드
+  private_lane :_build do
+    build_app(
+      scheme: "poporazzi",
+      export_method: "development"
+    )
+  end
+
+  # Private lane: 출시 노트 준비
+  private_lane :_prepare_release_notes do |options|
+    options[:notes] || "QA 빌드"
+  end
+
+  # Private lane: Firebase App Distribution에 업로드
+  private_lane :_upload_to_firebase_app_distribution do |options|
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      groups: "internal",
+      release_notes: options[:release_notes],
+      firebase_cli_path: "/usr/local/bin/firebase"
+    )
   end
 end
