@@ -18,5 +18,29 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         coordinator = Coordinator(window: window)
         coordinator?.start()
+
+        // Universal Link 처리 (앱이 실행되지 않은 상태)
+        if let userActivity = connectionOptions.userActivities.first {
+            handleUniversalLink(userActivity)
+        }
+    }
+
+    // Universal Link 처리 (앱이 이미 실행 중일 때)
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        handleUniversalLink(userActivity)
+    }
+
+    private func handleUniversalLink(_ userActivity: NSUserActivity) {
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let url = userActivity.webpageURL else {
+            return
+        }
+
+        print("🔗 Universal Link Received")
+        print("Full URL: \(url.absoluteString)")
+        print("Scheme: \(url.scheme ?? "")")
+        print("Host: \(url.host ?? "")")
+        print("Path: \(url.path)")
+        print("Query: \(url.query ?? "")")
     }
 }
